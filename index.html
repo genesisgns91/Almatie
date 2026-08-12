@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Almatiê Art</title>
+  <title>Vitrine de Artes - Sublimação</title>
 
   <link id="dynamicFavicon" rel="icon" type="image/x-icon" href="">
 
@@ -25,11 +25,11 @@
     <div class="brand-container">
       <img id="siteLogo" class="logo-img escondido" src="" alt="Logo">
       <div class="brand">
-        <h1>Almatiê Art</h1>
-        <span>Pacote de artes digitais prontas para sublimação</span>
+        <h1>Vitrine de Artes</h1>
+        <span>Artes digitais prontas para sublimação</span>
       </div>
     </div>
-    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa">⚙️</button>
+    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa">⚙️ Painel Admin</button>
   </header>
 
   <div id="modalOverlay" class="modal-overlay escondido"></div>
@@ -47,52 +47,107 @@
       <label for="senhaInput">Senha:</label>
       <input type="password" id="senhaInput" placeholder="••••••••">
     </div>
-    <button id="btnFazerLogin" class="btn btn-primary">Entrar</button>
+    <button id="btnFazerLogin" class="btn btn-primary">Entrar no Painel</button>
     <div id="msgErro" class="status-msg" style="color: var(--danger);"></div>
   </div>
 
   <div id="painelAdmin" class="painel-admin escondido">
-    <h3 id="tituloPainel">
-      Painel de Gestão
-      <button id="btnFazerLogout" class="btn-link" style="color: var(--danger);">Sair</button>
-    </h3>
-
-    <details class="secao-personalizacao">
-      <summary>⚙️ Personalizar Identidade da Loja (Logo & Favicon)</summary>
-      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 16px;">
-        <div class="form-group">
-          <label>Logo da Loja:</label>
-          <div class="upload-preview-container">
-            <div class="preview-box">
-              <img id="previewLogo" src="" alt="Preview Logo" class="escondido">
-              <span id="textNoLogo" class="hint">Sem logo</span>
-            </div>
-            <button type="button" id="btnUploadLogo" class="btn btn-secondary">📁 Upload Logo</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Favicon:</label>
-          <div class="upload-preview-container">
-            <div class="preview-box preview-favicon">
-              <img id="previewFavicon" src="" alt="Preview Favicon" class="escondido">
-              <span id="textNoFavicon" class="hint">Sem favicon</span>
-            </div>
-            <button type="button" id="btnUploadFavicon" class="btn btn-secondary">📁 Upload Favicon</button>
-          </div>
-        </div>
-
-        <button id="btnSalvarConfig" class="btn btn-primary">Salvar Identidade Visual</button>
+    
+    <div class="painel-header-bar">
+      <div class="painel-titulo-wrap">
+        <h2 id="tituloPainel">Painel de Gestão</h2>
+        <span class="subtitulo-painel">Gerencie sua vitrine, produtos e identidade</span>
       </div>
-    </details>
+      <button id="btnFazerLogout" class="btn-logout">Sair do Painel 🚪</button>
+    </div>
 
-    <details class="secao-personalizacao">
-      <summary>🏷️ Cadastrar Tipos / Categorias / Subcategorias</summary>
-      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
-        <div class="form-row">
+    <nav class="admin-tabs-nav">
+      <button class="tab-btn ativo" data-tab="tabCarrossel">📦 Produto / Carrossel</button>
+      <button class="tab-btn" data-tab="tabCategorias">🏷️ Tipos & Categorias</button>
+      <button class="tab-btn" data-tab="tabLoja">⚙️ Identidade Visual</button>
+    </nav>
+
+    <div id="tabCarrossel" class="tab-content ativo">
+      <input type="hidden" id="editDocId" value="">
+
+      <div class="form-grid-layout">
+        
+        <div class="col-form-dados">
+          <div class="form-group">
+            <label for="titulo">Título do Carrossel:</label>
+            <input type="text" id="titulo" placeholder="Ex: Pacote de Artes Canecas Kombi Vintage">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="selectTipo">Tipo:</label>
+              <select id="selectTipo" class="select-custom"><option value="">Selecione...</option></select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="selectCategoria">Categoria:</label>
+              <select id="selectCategoria" class="select-custom"><option value="">Selecione...</option></select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="selectSubcategoria">Subcategoria:</label>
+              <select id="selectSubcategoria" class="select-custom"><option value="">Selecione...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="preco">Valor (R$):</label>
+              <input type="text" id="preco" placeholder="Ex: 16,90">
+            </div>
+            <div class="form-group flex-2">
+              <label for="linkCompra">Link Checkout / WhatsApp:</label>
+              <input type="url" id="linkCompra" placeholder="https://seu-checkout.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Descrição com Formatação:</label>
+            <div class="editor-toolbar">
+              <button type="button" onclick="formatarTexto('bold')" title="Negrito"><b>B</b></button>
+              <button type="button" onclick="formatarTexto('italic')" title="Itálico"><i>I</i></button>
+              <button type="button" onclick="formatarTexto('underline')" title="Sublinhado"><u>U</u></button>
+              <button type="button" onclick="formatarTexto('insertUnorderedList')" title="Lista">• Lista</button>
+              <button type="button" onclick="formatarTexto('insertOrderedList')" title="Lista Núm.">1. Lista</button>
+              <input type="color" id="corTextoEditor" onchange="formatarCor(this.value)" title="Cor da Fonte">
+            </div>
+            <div id="editorDescricao" class="editor-content" contenteditable="true" placeholder="Detalhes do pacote de artes..."></div>
+          </div>
+        </div>
+
+        <div class="col-form-midia">
+          <div class="form-group">
+            <label>Sequência de Imagens (Carrossel):</label>
+            <div class="grid-imagens-modal" id="gridImagens">
+              <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
+                <span class="icone-add">＋</span>
+                <p>Adicionar Imagens</p>
+              </div>
+            </div>
+            <span class="hint">Adicione ou remova fotos. A primeira foto será a capa principal do card.</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="sticky-action-bar">
+        <button id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar Edição</button>
+        <button id="btnSalvar" class="btn btn-primary">🚀 Publicar Carrossel</button>
+      </div>
+    </div>
+
+    <div id="tabCategorias" class="tab-content">
+      <div class="card-painel-interno">
+        <h4>Cadastrar Novas Opções para Seleção</h4>
+        <p class="hint">Cadastre as opções que serão exibidas nos campos de seleção ao criar carrosséis.</p>
+        
+        <div class="form-row style-gap-lg" style="margin-top: 15px;">
           <div class="form-group flex-1">
             <label for="novoTipo">Tipo:</label>
-            <input type="text" id="novoTipo" placeholder="Ex: Canecas, Almofadas">
+            <input type="text" id="novoTipo" placeholder="Ex: Caneca, Almofada">
           </div>
           <div class="form-group flex-1">
             <label for="novaCategoria">Categoria:</label>
@@ -100,74 +155,51 @@
           </div>
           <div class="form-group flex-1">
             <label for="novaSubcategoria">Subcategoria:</label>
-            <input type="text" id="novaSubcategoria" placeholder="Ex: Dia das Mães">
+            <input type="text" id="novaSubcategoria" placeholder="Ex: Dia dos Namorados">
           </div>
         </div>
-        <button id="btnCadastrarTaxonomia" class="btn btn-secondary">＋ Cadastrar Opção</button>
+        
+        <button id="btnCadastrarTaxonomia" class="btn btn-secondary" style="margin-top: 10px;">＋ Adicionar Taxonomia</button>
+
+        <hr class="form-divider">
+
+        <label>Opções Cadastradas:</label>
         <div id="listaTaxonomias" class="tags-taxonomia-container"></div>
       </div>
-    </details>
-
-    <hr class="form-divider">
-
-    <input type="hidden" id="editDocId" value="">
-
-    <div class="form-group">
-      <label for="titulo">Título do Carrossel:</label>
-      <input type="text" id="titulo" placeholder="Ex: Pacote de Artes Canecas Kombi Vintage">
     </div>
 
-    <div class="form-row">
-      <div class="form-group flex-1">
-        <label for="selectTipo">Tipo:</label>
-        <select id="selectTipo" class="select-custom"><option value="">Selecione...</option></select>
-      </div>
-      <div class="form-group flex-1">
-        <label for="selectCategoria">Categoria:</label>
-        <select id="selectCategoria" class="select-custom"><option value="">Selecione...</option></select>
-      </div>
-      <div class="form-group flex-1">
-        <label for="selectSubcategoria">Subcategoria / Classe:</label>
-        <select id="selectSubcategoria" class="select-custom"><option value="">Selecione...</option></select>
-      </div>
-    </div>
+    <div id="tabLoja" class="tab-content">
+      <div class="card-painel-interno">
+        <h4>Personalização do Logotipo e Ícone</h4>
+        
+        <div class="grid-identidade-visual">
+          <div class="form-group">
+            <label>Logo da Loja:</label>
+            <div class="upload-preview-container">
+              <div class="preview-box">
+                <img id="previewLogo" src="" alt="Preview Logo" class="escondido">
+                <span id="textNoLogo" class="hint">Sem logo</span>
+              </div>
+              <button type="button" id="btnUploadLogo" class="btn btn-secondary">📁 Fazer Upload Logo</button>
+            </div>
+          </div>
 
-    <div class="form-group">
-      <label>Descrição do Produto (com Formatação):</label>
-      <div class="editor-toolbar">
-        <button type="button" onclick="formatarTexto('bold')" title="Negrito"><b>B</b></button>
-        <button type="button" onclick="formatarTexto('italic')" title="Itálico"><i>I</i></button>
-        <button type="button" onclick="formatarTexto('underline')" title="Sublinhado"><u>U</u></button>
-        <button type="button" onclick="formatarTexto('insertUnorderedList')" title="Lista de Marcadores">• Lista</button>
-        <button type="button" onclick="formatarTexto('insertOrderedList')" title="Lista Numerada">1. Lista</button>
-        <input type="color" id="corTextoEditor" onchange="formatarCor(this.value)" title="Cor do Texto">
-      </div>
-      <div id="editorDescricao" class="editor-content" contenteditable="true" placeholder="Digite aqui a descrição detalhada..."></div>
-    </div>
-
-    <div class="form-group">
-      <label for="preco">Valor (R$):</label>
-      <input type="text" id="preco" placeholder="Ex: 16,90">
-    </div>
-
-    <div class="form-group">
-      <label for="linkCompra">Link de Destino / Checkout:</label>
-      <input type="url" id="linkCompra" placeholder="https://seu-link.com">
-    </div>
-
-    <div class="form-group">
-      <label>Imagens do Carrossel:</label>
-      <div class="grid-imagens-modal" id="gridImagens">
-        <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
-          <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
-          <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
+          <div class="form-group">
+            <label>Favicon (Ícone do Navegador):</label>
+            <div class="upload-preview-container">
+              <div class="preview-box preview-favicon">
+                <img id="previewFavicon" src="" alt="Preview Favicon" class="escondido">
+                <span id="textNoFavicon" class="hint">Sem favicon</span>
+              </div>
+              <button type="button" id="btnUploadFavicon" class="btn btn-secondary">📁 Fazer Upload Favicon</button>
+            </div>
+          </div>
         </div>
+
+        <button id="btnSalvarConfig" class="btn btn-primary" style="margin-top: 20px;">Salvar Identidade Visual</button>
       </div>
-      <span class="hint">Adicione ou remova fotos para montar a sequência do carrossel.</span>
     </div>
 
-    <button id="btnSalvar" class="btn btn-primary" style="margin-top: 15px;">Publicar Carrossel</button>
-    <button id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar Edição</button>
   </div>
 
   <div class="area-filtros">
@@ -209,14 +241,19 @@
       setTimeout(() => toast.remove(), 2600);
     }
 
-    // EDITOR DE TEXTO FORMATADO
-    window.formatarTexto = (comando) => {
-      document.execCommand(comando, false, null);
-    };
+    // NAVEGAÇÃO POR ABAS NO PAINEL ADMIN
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('ativo'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('ativo'));
+        btn.classList.add('ativo');
+        document.getElementById(btn.dataset.tab).classList.add('ativo');
+      });
+    });
 
-    window.formatarCor = (cor) => {
-      document.execCommand('foreColor', false, cor);
-    };
+    // EDITOR DE TEXTO FORMATADO
+    window.formatarTexto = (comando) => document.execCommand(comando, false, null);
+    window.formatarCor = (cor) => document.execCommand('foreColor', false, cor);
 
     // CLOUDINARY LOGO & FAVICON
     const widgetLogo = cloudinary.createUploadWidget({ cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: false }, (err, res) => {
@@ -243,7 +280,7 @@
       }
     }
 
-    // TAXONOMIAS (TIPOS, CATEGORIAS, SUBCATEGORIAS)
+    // TAXONOMIAS
     async function carregarTaxonomias() {
       try {
         const querySnapshot = await getDocs(collection(db, "taxonomias"));
@@ -253,9 +290,7 @@
         });
         preencherSelectsTaxonomia();
         renderizarTagsTaxonomias();
-      } catch (e) {
-        console.error("Erro ao carregar categorias:", e);
-      }
+      } catch (e) { console.error(e); }
     }
 
     async function cadastrarTaxonomia() {
@@ -264,7 +299,7 @@
       const subcategoria = document.getElementById('novaSubcategoria').value.trim();
 
       if (!tipo && !categoria && !subcategoria) {
-        mostrarToast("Preencha ao menos um campo para cadastrar!", "erro");
+        mostrarToast("Preencha ao menos um campo!", "erro");
         return;
       }
 
@@ -273,11 +308,9 @@
         document.getElementById('novoTipo').value = '';
         document.getElementById('novaCategoria').value = '';
         document.getElementById('novaSubcategoria').value = '';
-        mostrarToast("Opção cadastrada com sucesso!", "sucesso");
+        mostrarToast("Opção cadastrada!", "sucesso");
         carregarTaxonomias();
-      } catch (e) {
-        mostrarToast("Erro ao cadastrar opção.", "erro");
-      }
+      } catch (e) { mostrarToast("Erro ao cadastrar.", "erro"); }
     }
 
     function preencherSelectsTaxonomia() {
@@ -306,7 +339,7 @@
     }
 
     window.excluirTaxonomia = async (id) => {
-      if(confirm("Excluir esta categoria cadastrada?")) {
+      if(confirm("Excluir esta categoria?")) {
         await deleteDoc(doc(db, "taxonomias", id));
         carregarTaxonomias();
       }
@@ -362,8 +395,8 @@
       const grid = document.getElementById('gridImagens');
       grid.innerHTML = `
         <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
-          <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
-          <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
+          <span class="icone-add">＋</span>
+          <p>Adicionar Imagens</p>
         </div>
       `;
       document.getElementById("btnAbrirWidgetCloudinary").onclick = () => myWidget.open();
@@ -431,6 +464,9 @@
       listaImagensAtuais = [...(p.imagens || [])];
       renderizarGridImagens();
 
+      // Mudar para a aba do carrossel caso esteja em outra
+      document.querySelector('[data-tab="tabCarrossel"]').click();
+
       document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
       document.getElementById('btnCancelarEdit').classList.remove('escondido');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -448,7 +484,7 @@
       listaImagensAtuais = [];
       renderizarGridImagens();
 
-      document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
+      document.getElementById('btnSalvar').innerText = "🚀 Publicar Carrossel";
       document.getElementById('btnCancelarEdit').classList.add('escondido');
     }
 
@@ -556,14 +592,14 @@
               <div class="card-descricao">${prod.descricao || ''}</div>
             </div>
             <div class="card-preco-box">
-              <span class="preco-label">--</span>
+              <span class="preco-label">Valor</span>
               <div class="card-preco"><small>R$</small> ${prod.preco || '0,00'}</div>
             </div>
             <a href="${prod.link}" target="_blank" class="btn-comprar">Comprar Arte</a>
             ${usuarioAtual ? `
               <div class="acoes-admin">
-                <button class="btn-editar">Editar</button>
-                <button class="btn-excluir">Excluir</button>
+                <button class="btn-editar">✏️ Editar</button>
+                <button class="btn-excluir">🗑️ Excluir</button>
               </div>
             ` : ''}
           </div>
