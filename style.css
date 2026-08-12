@@ -54,15 +54,16 @@ body {
 .btn-engrenagem {
   background: none;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   cursor: pointer;
-  opacity: 0.2;
+  opacity: 0.35;
   transition: opacity 0.3s ease, transform 0.2s ease;
-  padding: 4px;
+  padding: 6px;
+  user-select: none;
 }
 
 .btn-engrenagem:hover {
-  opacity: 0.9;
+  opacity: 0.95;
   transform: rotate(45deg);
 }
 
