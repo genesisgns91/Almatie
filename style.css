@@ -733,3 +733,37 @@ input:focus, textarea:focus {
     padding: 12px 18px;
   }
 }
+
+
+/* ESTILOS PARA CAIXA DE UPLOAD DO LOGO E FAVICON */
+.upload-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.preview-box {
+  width: 50px;
+  height: 50px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+  padding: 2px;
+}
+
+.preview-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.preview-favicon {
+  width: 36px;
+  height: 36px;
+}
