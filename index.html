@@ -14,7 +14,7 @@
 <body>
 
   <div class="top-bar">
-    <button onclick="alternarTelaLogin()" id="btnLogin" class="btn-link">🔒 Área Administrativa</button>
+    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa">⚙️</button>
   </div>
 
   <div id="boxLogin" class="modal-login escondido">
@@ -26,14 +26,14 @@
       <label>Senha:</label>
       <input type="password" id="senhaInput" placeholder="••••••••">
     </div>
-    <button onclick="fazerLogin()" class="btn btn-primary">Entrar</button>
+    <button id="btnFazerLogin" class="btn btn-primary">Entrar</button>
     <div id="msgErro" class="status-msg" style="color: var(--danger);"></div>
   </div>
 
   <div id="painelAdmin" class="painel-admin escondido">
     <h3 id="tituloPainel">
       Painel de Gestão
-      <button onclick="fazerLogout()" class="btn-link" style="color: var(--danger);">Sair</button>
+      <button id="btnFazerLogout" class="btn-link" style="color: var(--danger);">Sair</button>
     </h3>
     
     <input type="hidden" id="editDocId" value="">
@@ -62,13 +62,13 @@
       </small>
     </div>
     
-    <button onclick="salvarCarrossel()" id="btnSalvar" class="btn btn-primary">Publicar Carrossel</button>
-    <button onclick="cancelarEdicao()" id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar</button>
+    <button id="btnSalvar" class="btn btn-primary">Publicar Carrossel</button>
+    <button id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar</button>
     <div id="statusUpload" class="status-msg"></div>
   </div>
 
   <div class="area-busca">
-    <input type="text" id="campoBusca" class="campo-busca" placeholder="🔍 Digite para buscar uma arte..." onkeyup="filtrarVitrine()">
+    <input type="text" id="campoBusca" class="campo-busca" placeholder="🔍 Digite para buscar uma arte...">
   </div>
 
   <div class="vitrine" id="vitrineProdutos"></div>
@@ -81,22 +81,12 @@
     let usuarioAtual = null;
     let produtosMemoria = [];
 
-    // Monitora autenticação
-    onAuthStateChanged(auth, (user) => {
-      usuarioAtual = user;
-      if (user) {
-        document.getElementById('painelAdmin').classList.remove('escondido');
-        document.getElementById('boxLogin').classList.add('escondido');
-        document.getElementById('btnLogin').style.display = 'none';
-      } else {
-        document.getElementById('painelAdmin').classList.add('escondido');
-        document.getElementById('btnLogin').style.display = 'inline';
-      }
-      carregarProdutos();
+    // EVENTOS DE CLIQUE (Garante funcionamento no módulo ES6)
+    document.getElementById('btnLogin').addEventListener('click', () => {
+      document.getElementById('boxLogin').classList.toggle('escondido');
     });
 
-    // Login
-    window.fazerLogin = async function() {
+    document.getElementById('btnFazerLogin').addEventListener('click', async () => {
       const email = document.getElementById('emailInput').value;
       const senha = document.getElementById('senhaInput').value;
       const msgErro = document.getElementById('msgErro');
@@ -107,21 +97,29 @@
       } catch (error) {
         msgErro.innerText = "Credenciais inválidas. Tente novamente.";
       }
-    };
+    });
 
-    window.fazerLogout = function() {
+    document.getElementById('btnFazerLogout').addEventListener('click', () => {
       signOut(auth);
-    };
+    });
 
-    window.alternarTelaLogin = function() {
-      document.getElementById('boxLogin').classList.toggle('escondido');
-    };
+    document.getElementById('btnSalvar').addEventListener('click', salvarCarrossel);
+    document.getElementById('btnCancelarEdit').addEventListener('click', cancelarEdicao);
+    document.getElementById('campoBusca').addEventListener('keyup', filtrarVitrine);
 
-    /**
-     * FUNÇÃO DE COMPRESSÃO AUTOMÁTICA DE IMAGEM
-     * - Redimensiona mantendo a proporção (Largura máxima: 1000px)
-     * - Converte para WebP com qualidade 82% (alta fidelidade e tamanho mínimo)
-     */
+    // Monitora autenticação
+    onAuthStateChanged(auth, (user) => {
+      usuarioAtual = user;
+      if (user) {
+        document.getElementById('painelAdmin').classList.remove('escondido');
+        document.getElementById('boxLogin').classList.add('escondido');
+      } else {
+        document.getElementById('painelAdmin').classList.add('escondido');
+      }
+      carregarProdutos();
+    });
+
+    // COMPRESSÃO AUTOMÁTICA DE IMAGEM (WEBP)
     async function comprimirEConverterImagem(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -131,7 +129,7 @@
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const maxDimension = 1000; // Redimensiona apenas se for maior que 1000px
+            const maxDimension = 1000;
 
             if (width > height && width > maxDimension) {
               height = Math.round((height * maxDimension) / width);
@@ -145,12 +143,10 @@
             canvas.height = height;
 
             const ctx = canvas.getContext('2d');
-            // Suavização do Canvas para manter alta definição
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Tenta exportar em formato WebP (mais leve), com fallback para JPEG
             let base64 = canvas.toDataURL('image/webp', 0.82);
             if (!base64.startsWith('data:image/webp')) {
               base64 = canvas.toDataURL('image/jpeg', 0.82);
@@ -163,8 +159,8 @@
       });
     }
 
-    // Salvar / Editar
-    window.salvarCarrossel = async function() {
+    // Salvar / Editar Carrossel
+    async function salvarCarrossel() {
       const docId = document.getElementById('editDocId').value;
       const titulo = document.getElementById('titulo').value;
       const descricao = document.getElementById('descricao').value;
@@ -209,14 +205,14 @@
         }
         statusUpload.innerText = "✅ Publicado com sucesso!";
         setTimeout(() => { statusUpload.innerText = ""; }, 2500);
-        window.cancelarEdicao();
+        cancelarEdicao();
         carregarProdutos();
       } catch (e) {
         statusUpload.innerText = "❌ Erro ao salvar no banco de dados.";
       }
-    };
+    }
 
-    // Carregar Banco de Dados
+    // Carregar Produtos do Firebase
     async function carregarProdutos() {
       try {
         const querySnapshot = await getDocs(collection(db, "produtos"));
@@ -230,7 +226,7 @@
       }
     }
 
-    // Renderizar Cards
+    // Renderizar Vitrine
     function renderizarVitrine() {
       const vitrine = document.getElementById('vitrineProdutos');
       vitrine.innerHTML = '';
@@ -258,8 +254,8 @@
           <div class="carrossel-container">
             ${slidesHTML}
             ${temVarios ? `
-              <button class="btn-nav btn-prev" onclick="MudarSlide(this, -1)">❮</button>
-              <button class="btn-nav btn-next" onclick="MudarSlide(this, 1)">❯</button>
+              <button class="btn-nav btn-prev">❮</button>
+              <button class="btn-nav btn-next">❯</button>
               <div class="dots-container">${dotsHTML}</div>
             ` : ''}
           </div>
@@ -271,21 +267,34 @@
             
             ${usuarioAtual ? `
               <div class="acoes-admin">
-                <button class="btn-editar" onclick="prepararEdicao('${prod.id}')">Editar</button>
-                <button class="btn-excluir" onclick="excluirCarrossel('${prod.id}')">Excluir</button>
+                <button class="btn-editar">Editar</button>
+                <button class="btn-excluir">Excluir</button>
               </div>
             ` : ''}
           </div>
         `;
+
+        // Eventos do carrossel no card
+        if (temVarios) {
+          const btnPrev = card.querySelector('.btn-prev');
+          const btnNext = card.querySelector('.btn-next');
+          btnPrev.addEventListener('click', () => mudarSlide(card, -1));
+          btnNext.addEventListener('click', () => mudarSlide(card, 1));
+        }
+
+        // Eventos do admin no card
+        if (usuarioAtual) {
+          card.querySelector('.btn-editar').addEventListener('click', () => prepararEdicao(prod.id));
+          card.querySelector('.btn-excluir').addEventListener('click', () => excluirCarrossel(prod.id));
+        }
+
         vitrine.appendChild(card);
       });
     }
 
-    // Navegação entre fotos
-    window.MudarSlide = function(btn, dir) {
-      const container = btn.parentElement;
-      const slides = container.getElementsByClassName('carrossel-slide');
-      const dots = container.getElementsByClassName('dot');
+    function mudarSlide(card, dir) {
+      const slides = card.getElementsByClassName('carrossel-slide');
+      const dots = card.getElementsByClassName('dot');
       let ativoIdx = 0;
 
       for (let i = 0; i < slides.length; i++) {
@@ -303,9 +312,9 @@
 
       slides[novoIdx].classList.add('ativo');
       if (dots[novoIdx]) dots[novoIdx].classList.add('ativo');
-    };
+    }
 
-    window.prepararEdicao = function(id) {
+    function prepararEdicao(id) {
       const p = produtosMemoria.find(item => item.id === id);
       if (!p) return;
 
@@ -319,9 +328,9 @@
       document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
       document.getElementById('btnCancelarEdit').classList.remove('escondido');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    }
 
-    window.cancelarEdicao = function() {
+    function cancelarEdicao() {
       document.getElementById('editDocId').value = '';
       document.getElementById('titulo').value = '';
       document.getElementById('descricao').value = '';
@@ -332,16 +341,16 @@
       document.getElementById('tituloPainel').childNodes[0].nodeValue = "Painel de Gestão ";
       document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
       document.getElementById('btnCancelarEdit').classList.add('escondido');
-    };
+    }
 
-    window.excluirCarrossel = async function(id) {
+    async function excluirCarrossel(id) {
       if (confirm("Deseja remover este carrossel?")) {
         await deleteDoc(doc(db, "produtos", id));
         carregarProdutos();
       }
-    };
+    }
 
-    window.filtrarVitrine = function() {
+    function filtrarVitrine() {
       const termo = document.getElementById('campoBusca').value.toLowerCase();
       const cards = document.getElementsByClassName('card-carrossel');
 
@@ -349,7 +358,7 @@
         const texto = card.innerText.toLowerCase();
         card.style.display = texto.includes(termo) ? "flex" : "none";
       }
-    };
+    }
   </script>
 </body>
 </html>
