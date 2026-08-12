@@ -1,435 +1,475 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<style>
-  * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-  body { margin: 0; padding: 15px; background-color: #f4f6f9; }
-
-  /* ÁREA DE LOGIN */
-  .modal-login {
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 15px;
-    max-width: 300px;
-    margin: 0 auto 15px auto;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
-
-  /* ÁREA DO ADMINISTRADOR */
-  .painel-admin {
-    background: #ffffff;
-    border: 2px dashed #0275d8;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 25px;
-  }
-  .painel-admin h3 { margin-top: 0; color: #0275d8; display: flex; align-items: center; justify-content: space-between; }
-  .form-group { margin-bottom: 10px; }
-  .form-group label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 13px; color: #333; }
-  .form-group input, .form-group textarea {
-    width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
-  }
-  .btn-admin {
-    background: #0275d8; color: white; border: none; padding: 10px 15px;
-    border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px;
-  }
-  .btn-admin:hover { background: #025aa5; }
-  .btn-cancelar { background: #6c757d; margin-top: 5px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vitrine de Artes - Sublimação</title>
   
-  /* ÁREA DE BUSCA */
-  .area-busca {
-    text-align: center;
-    margin-bottom: 25px;
-  }
-  .campo-busca {
-    width: 100%;
-    max-width: 500px;
-    padding: 12px;
-    font-size: 16px;
-    border: 2px solid #0275d8;
-    border-radius: 25px;
-    outline: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  }
-
-  /* VITRINE E CARDS */
-  .vitrine {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-  }
-
-  .card-carrossel {
-    background: white;
-    width: 290px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  .card-header {
-    background: #0275d8;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 15px;
-    text-transform: uppercase;
-  }
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --success: #10B981;
+      --success-hover: #059669;
+      --danger: #EF4444;
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.05);
+    }
 
-  /* ESTRUTURA DO CARROSSEL DE IMAGENS */
-  .carrossel-container {
-    position: relative;
-    width: 100%;
-    height: 200px;
-    background: #111;
-    overflow: hidden;
-  }
-  .carrossel-slide {
-    display: none;
-    width: 100%;
-    height: 100%;
-  }
-  .carrossel-slide.ativo {
-    display: block;
-  }
-  .carrossel-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 24px 16px; min-height: 100vh; }
 
-  /* SETAS NAVEGAÇÃO */
-  .btn-prev, .btn-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 3px;
-    user-select: none;
-  }
-  .btn-prev:hover, .btn-next:hover { background: rgba(0,0,0,0.8); }
-  .btn-prev { left: 5px; }
-  .btn-next { right: 5px; }
+    /* BARRA SUPERIOR */
+    .top-bar { max-width: 1200px; margin: 0 auto 20px auto; display: flex; justify-content: flex-end; }
+    .btn-link { background: none; border: none; color: var(--text-muted); font-size: 0.875rem; cursor: pointer; font-weight: 500; transition: color 0.2s; }
+    .btn-link:hover { color: var(--primary); }
 
-  .card-body { padding: 12px; }
-  .card-descricao { font-size: 13px; color: #666; margin-bottom: 10px; min-height: 36px; }
-  .card-preco { font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 10px; text-align: center; }
-  
-  .btn-comprar {
-    display: block;
-    background: #28a745;
-    color: white;
-    text-decoration: none;
-    text-align: center;
-    padding: 10px;
-    border-radius: 5px;
-    font-weight: bold;
-  }
-  .btn-comprar:hover { background: #218838; }
+    /* PAINEL DE LOGIN / MODAL */
+    .modal-login {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      max-width: 320px;
+      margin: 0 auto 24px auto;
+      box-shadow: var(--shadow);
+    }
 
-  /* BOTÕES DO ADMIN NOS CARDS */
-  .acoes-admin { display: flex; gap: 5px; margin-top: 8px; }
-  .btn-editar { background: #ffc107; color: #000; border: none; padding: 6px; flex: 1; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
-  .btn-excluir { background: #dc3545; color: white; border: none; padding: 6px; flex: 1; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+    /* PAINEL DO ADMIN */
+    .painel-admin {
+      background: var(--surface);
+      border: 2px dashed var(--primary);
+      border-radius: var(--radius);
+      padding: 24px;
+      max-width: 800px;
+      margin: 0 auto 32px auto;
+      box-shadow: var(--shadow);
+    }
+    .painel-admin h3 { color: var(--primary); font-size: 1.25rem; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
 
-  .escondido { display: none !important; }
-</style>
+    /* FORMULÁRIOS */
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 6px; color: var(--text); }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+
+    .btn {
+      padding: 10px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background-color 0.2s; width: 100%;
+    }
+    .btn-primary { background-color: var(--primary); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-secondary { background-color: var(--text-muted); color: white; margin-top: 8px; }
+
+    /* BUSCA */
+    .area-busca { text-align: center; margin-bottom: 40px; }
+    .campo-busca {
+      width: 100%; max-width: 550px; padding: 14px 20px; font-size: 1rem; border: 1px solid var(--border); border-radius: 30px; outline: none; box-shadow: var(--shadow); transition: all 0.2s;
+    }
+    .campo-busca:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+
+    /* VITRINE (GRID RESPONSIVO) */
+    .vitrine {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* CARD DO CARROSSEL */
+    .card-carrossel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card-carrossel:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .card-header { padding: 14px 16px; font-weight: 700; font-size: 0.95rem; color: var(--text); border-bottom: 1px solid var(--border); text-align: center; }
+
+    /* ESTRUTURA DO CARROSSEL */
+    .carrossel-container { position: relative; width: 100%; height: 220px; background: #0F172A; }
+    .carrossel-slide { display: none; width: 100%; height: 100%; }
+    .carrossel-slide.ativo { display: block; }
+    .carrossel-slide img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* NAVEGAÇÃO DO CARROSSEL */
+    .btn-nav {
+      position: absolute; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.6); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    .btn-nav:hover { background: rgba(15, 23, 42, 0.9); }
+    .btn-prev { left: 8px; }
+    .btn-next { right: 8px; }
+
+    .dots-container {
+      position: absolute; bottom: 8px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.5); }
+    .dot.ativo { background: #FFFFFF; width: 16px; border-radius: 4px; }
+
+    /* CORPO DO CARD */
+    .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+    .card-descricao { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4; }
+    .card-preco { font-size: 1.25rem; font-weight: 700; color: var(--success); text-align: center; margin-bottom: 12px; }
+    
+    .btn-comprar {
+      background-color: var(--success); color: white; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: 600; display: block; transition: background-color 0.2s;
+    }
+    .btn-comprar:hover { background-color: var(--success-hover); }
+
+    .acoes-admin { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-editar { background: #F59E0B; color: white; border: none; padding: 8px; flex: 1; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .btn-excluir { background: var(--danger); color: white; border: none; padding: 8px; flex: 1; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+    .escondido { display: none !important; }
+    .status-msg { font-size: 0.85rem; margin-top: 8px; text-align: center; }
+  </style>
 </head>
 <body>
 
-<div style="text-align: right; margin-bottom: 5px;">
-  <button onclick="alternarTelaLogin()" id="btnLogin" style="background: none; border: none; color: #aaa; font-size: 11px; cursor: pointer;">🔒 Área do Dono</button>
-</div>
-
-<div id="boxLogin" class="modal-login escondido">
-  <div class="form-group">
-    <label>Senha de Acesso:</label>
-    <input type="password" id="senhaInput" placeholder="Digite sua senha">
+  <div class="top-bar">
+    <button onclick="alternarTelaLogin()" id="btnLogin" class="btn-link">🔒 Área Administrativa</button>
   </div>
-  <button onclick="verificarSenha()" class="btn-admin" style="padding: 5px;">Entrar</button>
-  <p id="msgErro" style="color: red; font-size: 12px; margin: 5px 0 0 0; display: none;">Senha incorreta!</p>
-</div>
 
-<div id="painelAdmin" class="painel-admin escondido">
-  <h3 id="tituloPainel">
-    Painel do Proprietário 
-    <button onclick="logoutAdmin()" style="font-size: 11px; background: #6c757d; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer;">Sair da Conta</button>
-  </h3>
-  
-  <input type="hidden" id="editIndex" value="-1">
-
-  <div class="form-group">
-    <label>Título do Carrossel / Categoria:</label>
-    <input type="text" id="titulo" placeholder="Ex: CHOCOLATE / PÁSCOA">
+  <div id="boxLogin" class="modal-login escondido">
+    <div class="form-group">
+      <label>E-mail do Admin:</label>
+      <input type="email" id="emailInput" placeholder="admin@email.com">
+    </div>
+    <div class="form-group">
+      <label>Senha:</label>
+      <input type="password" id="senhaInput" placeholder="••••••••">
+    </div>
+    <button onclick="fazerLogin()" class="btn btn-primary">Entrar</button>
+    <div id="msgErro" class="status-msg" style="color: var(--danger);"></div>
   </div>
-  <div class="form-group">
-    <label>Descrição rápida:</label>
-    <textarea id="descricao" rows="2" placeholder="Ex: Pacote com 10 artes de caneca M&Ms"></textarea>
+
+  <div id="painelAdmin" class="painel-admin escondido">
+    <h3 id="tituloPainel">
+      Painel de Gestão
+      <button onclick="fazerLogout()" class="btn-link" style="color: var(--danger);">Sair</button>
+    </h3>
+    
+    <input type="hidden" id="editDocId" value="">
+
+    <div class="form-group">
+      <label>Título do Carrossel / Categoria:</label>
+      <input type="text" id="titulo" placeholder="Ex: CHOCOLATE / PÁSCOA">
+    </div>
+    <div class="form-group">
+      <label>Descrição:</label>
+      <textarea id="descricao" rows="2" placeholder="Ex: Pacote com 10 artes digitais..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Valor (R$):</label>
+      <input type="text" id="preco" placeholder="Ex: 29,90">
+    </div>
+    <div class="form-group">
+      <label>Link de Destino / Checkout:</label>
+      <input type="url" id="linkCompra" placeholder="https://seu-link.com">
+    </div>
+    <div class="form-group">
+      <label>Imagens (Selecione uma ou mais fotos):</label>
+      <input type="file" id="imagemFile" accept="image/*" multiple>
+    </div>
+    
+    <button onclick="salvarCarrossel()" id="btnSalvar" class="btn btn-primary">Publicar Carrossel</button>
+    <button onclick="cancelarEdicao()" id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar</button>
+    <div id="statusUpload" class="status-msg"></div>
   </div>
-  <div class="form-group">
-    <label>Valor (R$):</label>
-    <input type="text" id="preco" placeholder="Ex: 29,90">
+
+  <div class="area-busca">
+    <input type="text" id="campoBusca" class="campo-busca" placeholder="🔍 Digite para buscar uma arte..." onkeyup="filtrarVitrine()">
   </div>
-  <div class="form-group">
-    <label>Link da Página de Compra:</label>
-    <input type="url" id="linkCompra" placeholder="https://seu-site-de-vendas.com/item">
-  </div>
-  <div class="form-group">
-    <label>Imagens (Selecione uma ou VÁRIAS fotos de uma vez):</label>
-    <input type="file" id="imagemFile" accept="image/*" multiple>
-  </div>
-  
-  <button onclick="salvarCarrossel()" id="btnSalvar" class="btn-admin">Publicar Carrossel</button>
-  <button onclick="cancelarEdicao()" id="btnCancelarEdit" class="btn-admin btn-cancelar escondido">Cancelar Edição</button>
-</div>
 
-<div class="area-busca">
-  <input type="text" id="campoBusca" class="campo-busca" placeholder="🔍 Digite para buscar uma arte..." onkeyup="filtrarVitrine()">
-</div>
+  <div class="vitrine" id="vitrineProdutos"></div>
 
-<div class="vitrine" id="vitrineProdutos"></div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-<script>
-  let eAdmin = false;
-  const SENHA_MESTRE = "1234"; // SUA SENHA AQUI
-  
-  // Lista em memória dos produtos
-  let produtos = [
-    {
-      titulo: "CHOCOLATE / PÁSCOA",
-      descricao: "Artes exclusivas estilo M&Ms para sublimação de canecas.",
-      preco: "29,90",
-      link: "https://google.com",
-      imagens: ["https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=400"]
-    },
-    {
-      titulo: "LIGA NFL",
-      descricao: "Vários modelos de camisetas e canecas de times da NFL.",
-      preco: "35,00",
-      link: "https://google.com",
-      imagens: ["https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=400"]
-    }
-  ];
+    // -------------------------------------------------------------
+    // CONFIGURAÇÃO DO SEU PROJETO FIREBASE
+    // -------------------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY_AQUI",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      projectId: "SEU_PROJETO_ID",
+      storageBucket: "SEU_PROJETO.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
+    };
 
-  function alternarTelaLogin() {
-    document.getElementById('boxLogin').classList.toggle('escondido');
-  }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-  function verificarSenha() {
-    if (document.getElementById('senhaInput').value === SENHA_MESTRE) {
-      eAdmin = true;
-      document.getElementById('painelAdmin').classList.remove('escondido');
-      document.getElementById('boxLogin').classList.add('escondido');
-      document.getElementById('btnLogin').style.display = 'none';
-      renderizarVitrine();
-    } else {
-      document.getElementById('msgErro').style.display = 'block';
-    }
-  }
+    let usuarioAtual = null;
+    let produtosMemoria = [];
 
-  function logoutAdmin() {
-    eAdmin = false;
-    document.getElementById('painelAdmin').classList.add('escondido');
-    document.getElementById('btnLogin').style.display = 'inline';
-    cancelarEdicao();
-    renderizarVitrine();
-  }
-
-  // Comprime as imagens enviadas para deixar a página leve e carregar rápido
-  async function comprimirImagem(file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          const max = 500; // Redimensiona para no máximo 500px para economizar memória
-
-          if (width > height && width > max) {
-            height *= max / width; width = max;
-          } else if (height > max) {
-            width *= max / height; height = max;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.7)); // Salva em qualidade leve
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+    // MONITORAR SESSÃO DO USUÁRIO
+    onAuthStateChanged(auth, (user) => {
+      usuarioAtual = user;
+      if (user) {
+        document.getElementById('painelAdmin').classList.remove('escondido');
+        document.getElementById('boxLogin').classList.add('escondido');
+        document.getElementById('btnLogin').style.display = 'none';
+      } else {
+        document.getElementById('painelAdmin').classList.add('escondido');
+        document.getElementById('btnLogin').style.display = 'inline';
+      }
+      carregarProdutos();
     });
-  }
 
-  async function salvarCarrossel() {
-    const editIdx = parseInt(document.getElementById('editIndex').value);
-    const titulo = document.getElementById('titulo').value;
-    const descricao = document.getElementById('descricao').value;
-    const preco = document.getElementById('preco').value;
-    const link = document.getElementById('linkCompra').value;
-    const files = document.getElementById('imagemFile').files;
+    // LOGIN
+    window.fazerLogin = async function() {
+      const email = document.getElementById('emailInput').value;
+      const senha = document.getElementById('senhaInput').value;
+      const msgErro = document.getElementById('msgErro');
 
-    if (!titulo || !link) {
-      alert("Preencha ao menos o Título e o Link de Compra!");
-      return;
-    }
-
-    let imgs = [];
-    if (files.length > 0) {
-      for (let i = 0; i < files.length; i++) {
-        const imgComprimida = await comprimirImagem(files[i]);
-        imgs.push(imgComprimida);
+      try {
+        await signInWithEmailAndPassword(auth, email, senha);
+        msgErro.innerText = "";
+      } catch (error) {
+        msgErro.innerText = "Credenciais inválidas. Tente novamente.";
       }
-    } else if (editIdx >= 0) {
-      imgs = produtos[editIdx].imagens; // Mantém as imagens anteriores se não alterou
-    } else {
-      alert("Selecione pelo menos uma imagem!");
-      return;
+    };
+
+    window.fazerLogout = function() {
+      signOut(auth);
+    };
+
+    window.alternarTelaLogin = function() {
+      document.getElementById('boxLogin').classList.toggle('escondido');
+    };
+
+    // COMPRESSÃO DE IMAGENS
+    async function comprimirImagem(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const max = 600;
+
+            if (width > height && width > max) {
+              height *= max / width; width = max;
+            } else if (height > max) {
+              width *= max / height; height = max;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
-    const novoProduto = { titulo, descricao, preco, link, imagens: imgs };
+    // SALVAR / ATUALIZAR
+    window.salvarCarrossel = async function() {
+      const docId = document.getElementById('editDocId').value;
+      const titulo = document.getElementById('titulo').value;
+      const descricao = document.getElementById('descricao').value;
+      const preco = document.getElementById('preco').value;
+      const link = document.getElementById('linkCompra').value;
+      const files = document.getElementById('imagemFile').files;
+      const statusUpload = document.getElementById('statusUpload');
 
-    if (editIdx >= 0) {
-      produtos[editIdx] = novoProduto;
-    } else {
-      produtos.push(novoProduto);
-    }
+      if (!titulo || !link) {
+        alert("Preencha ao menos o Título e o Link!");
+        return;
+      }
 
-    cancelarEdicao();
-    renderizarVitrine();
-  }
+      statusUpload.innerText = "Processando imagens...";
+      let imgs = [];
 
-  function prepararEdicao(idx) {
-    const p = produtos[idx];
-    document.getElementById('editIndex').value = idx;
-    document.getElementById('titulo').value = p.titulo;
-    document.getElementById('descricao').value = p.descricao;
-    document.getElementById('preco').value = p.preco;
-    document.getElementById('linkCompra').value = p.link;
-    
-    document.getElementById('tituloPainel').childNodes[0].nodeValue = "Editando Carrossel ";
-    document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
-    document.getElementById('btnCancelarEdit').classList.remove('escondido');
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const base64 = await comprimirImagem(files[i]);
+          imgs.push(base64);
+        }
+      } else if (docId) {
+        const itemExistente = produtosMemoria.find(p => p.id === docId);
+        if (itemExistente) imgs = itemExistente.imagens;
+      }
 
-  function cancelarEdicao() {
-    document.getElementById('editIndex').value = "-1";
-    document.getElementById('titulo').value = '';
-    document.getElementById('descricao').value = '';
-    document.getElementById('preco').value = '';
-    document.getElementById('linkCompra').value = '';
-    document.getElementById('imagemFile').value = '';
-    
-    document.getElementById('tituloPainel').childNodes[0].nodeValue = "Painel do Proprietário ";
-    document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
-    document.getElementById('btnCancelarEdit').classList.add('escondido');
-  }
+      if (imgs.length === 0) {
+        alert("Selecione pelo menos uma imagem!");
+        statusUpload.innerText = "";
+        return;
+      }
 
-  function excluirCarrossel(idx) {
-    if (confirm("Deseja realmente excluir este carrossel?")) {
-      produtos.splice(idx, 1);
+      const dados = { titulo, descricao, preco, link, imagens: imgs, criadoEm: new Date() };
+
+      try {
+        if (docId) {
+          await updateDoc(doc(db, "produtos", docId), dados);
+        } else {
+          await addDoc(collection(db, "produtos"), dados);
+        }
+        statusUpload.innerText = "Concluído com sucesso!";
+        setTimeout(() => { statusUpload.innerText = ""; }, 2000);
+        window.cancelarEdicao();
+        carregarProdutos();
+      } catch (e) {
+        statusUpload.innerText = "Erro ao salvar no banco de dados.";
+      }
+    };
+
+    // CARREGAR PRODUTOS DO FIRESTORE
+    async function carregarProdutos() {
+      const querySnapshot = await getDocs(collection(db, "produtos"));
+      produtosMemoria = [];
+      querySnapshot.forEach((doc) => {
+        produtosMemoria.push({ id: doc.id, ...doc.data() });
+      });
       renderizarVitrine();
     }
-  }
 
-  // Troca de imagem no carrossel
-  function MudarSlide(btn, dir) {
-    const container = btn.parentElement;
-    const slides = container.getElementsByClassName('carrossel-slide');
-    let ativoIdx = 0;
+    // RENDERIZAR NA TELA
+    function renderizarVitrine() {
+      const vitrine = document.getElementById('vitrineProdutos');
+      vitrine.innerHTML = '';
 
-    for (let i = 0; i < slides.length; i++) {
-      if (slides[i].classList.contains('ativo')) {
-        ativoIdx = i;
-        slides[i].classList.remove('ativo');
-        break;
-      }
-    }
+      produtosMemoria.forEach((prod) => {
+        let slidesHTML = '';
+        let dotsHTML = '';
 
-    let novoIdx = ativoIdx + dir;
-    if (novoIdx >= slides.length) novoIdx = 0;
-    if (novoIdx < 0) novoIdx = slides.length - 1;
+        prod.imagens.forEach((imgUrl, idx) => {
+          slidesHTML += `
+            <div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}">
+              <img src="${imgUrl}" alt="${prod.titulo}">
+            </div>
+          `;
+          dotsHTML += `<div class="dot ${idx === 0 ? 'ativo' : ''}"></div>`;
+        });
 
-    slides[novoIdx].classList.add('ativo');
-  }
+        const temVarios = prod.imagens.length > 1;
 
-  function renderizarVitrine() {
-    const vitrine = document.getElementById('vitrineProdutos');
-    vitrine.innerHTML = '';
+        const card = document.createElement('div');
+        card.className = 'card-carrossel';
+        card.innerHTML = `
+          <div class="card-header">${prod.titulo}</div>
+          
+          <div class="carrossel-container">
+            ${slidesHTML}
+            ${temVarios ? `
+              <button class="btn-nav btn-prev" onclick="MudarSlide(this, -1)">❮</button>
+              <button class="btn-nav btn-next" onclick="MudarSlide(this, 1)">❯</button>
+              <div class="dots-container">${dotsHTML}</div>
+            ` : ''}
+          </div>
 
-    produtos.forEach((prod, idx) => {
-      let slidesHTML = '';
-      prod.imagens.forEach((imgUrl, imgIdx) => {
-        slidesHTML += `
-          <div class="carrossel-slide ${imgIdx === 0 ? 'ativo' : ''}">
-            <img src="${imgUrl}" alt="${prod.titulo}">
+          <div class="card-body">
+            <div class="card-descricao">${prod.descricao || ''}</div>
+            <div class="card-preco">R$ ${prod.preco || '0,00'}</div>
+            <a href="${prod.link}" target="_blank" class="btn-comprar">Comprar Arte</a>
+            
+            ${usuarioAtual ? `
+              <div class="acoes-admin">
+                <button class="btn-editar" onclick="prepararEdicao('${prod.id}')">Editar</button>
+                <button class="btn-excluir" onclick="excluirCarrossel('${prod.id}')">Excluir</button>
+              </div>
+            ` : ''}
           </div>
         `;
+        vitrine.appendChild(card);
       });
-
-      const mostraControles = prod.imagens.length > 1;
-
-      const card = document.createElement('div');
-      card.className = 'card-carrossel';
-      card.innerHTML = `
-        <div class="card-header">${prod.titulo}</div>
-        
-        <div class="carrossel-container">
-          ${slidesHTML}
-          ${mostraControles ? `
-            <button class="btn-prev" onclick="MudarSlide(this, -1)">❮</button>
-            <button class="btn-next" onclick="MudarSlide(this, 1)">❯</button>
-          ` : ''}
-        </div>
-
-        <div class="card-body">
-          <div class="card-descricao">${prod.descricao || ''}</div>
-          <div class="card-preco">R$ ${prod.preco || '0,00'}</div>
-          <a href="${prod.link}" target="_blank" class="btn-comprar">Comprar Arte</a>
-          
-          ${eAdmin ? `
-            <div class="acoes-admin">
-              <button class="btn-editar" onclick="prepararEdicao(${idx})">✏️ Editar</button>
-              <button class="btn-excluir" onclick="excluirCarrossel(${idx})">🗑️ Excluir</button>
-            </div>
-          ` : ''}
-        </div>
-      `;
-      vitrine.appendChild(card);
-    });
-  }
-
-  function filtrarVitrine() {
-    const termo = document.getElementById('campoBusca').value.toLowerCase();
-    const cards = document.getElementsByClassName('card-carrossel');
-
-    for (let card of cards) {
-      const texto = card.innerText.toLowerCase();
-      card.style.display = texto.includes(termo) ? "flex" : "none";
     }
-  }
 
-  // Inicializa a vitrine
-  renderizarVitrine();
-</script>
+    // NAVEGAÇÃO DOS SLIDES
+    window.MudarSlide = function(btn, dir) {
+      const container = btn.parentElement;
+      const slides = container.getElementsByClassName('carrossel-slide');
+      const dots = container.getElementsByClassName('dot');
+      let ativoIdx = 0;
 
+      for (let i = 0; i < slides.length; i++) {
+        if (slides[i].classList.contains('ativo')) {
+          ativoIdx = i;
+          slides[i].classList.remove('ativo');
+          if (dots[i]) dots[i].classList.remove('ativo');
+          break;
+        }
+      }
+
+      let novoIdx = ativoIdx + dir;
+      if (novoIdx >= slides.length) novoIdx = 0;
+      if (novoIdx < 0) novoIdx = slides.length - 1;
+
+      slides[novoIdx].classList.add('ativo');
+      if (dots[novoIdx]) dots[novoIdx].classList.add('ativo');
+    };
+
+    window.prepararEdicao = function(id) {
+      const p = produtosMemoria.find(item => item.id === id);
+      if (!p) return;
+
+      document.getElementById('editDocId').value = p.id;
+      document.getElementById('titulo').value = p.titulo;
+      document.getElementById('descricao').value = p.descricao;
+      document.getElementById('preco').value = p.preco;
+      document.getElementById('linkCompra').value = p.link;
+
+      document.getElementById('tituloPainel').childNodes[0].nodeValue = "Editando Carrossel ";
+      document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
+      document.getElementById('btnCancelarEdit').classList.remove('escondido');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.cancelarEdicao = function() {
+      document.getElementById('editDocId').value = '';
+      document.getElementById('titulo').value = '';
+      document.getElementById('descricao').value = '';
+      document.getElementById('preco').value = '';
+      document.getElementById('linkCompra').value = '';
+      document.getElementById('imagemFile').value = '';
+
+      document.getElementById('tituloPainel').childNodes[0].nodeValue = "Painel de Gestão ";
+      document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
+      document.getElementById('btnCancelarEdit').classList.add('escondido');
+    };
+
+    window.excluirCarrossel = async function(id) {
+      if (confirm("Deseja remover este carrossel permanentemente?")) {
+        await deleteDoc(doc(db, "produtos", id));
+        carregarProdutos();
+      }
+    };
+
+    window.filtrarVitrine = function() {
+      const termo = document.getElementById('campoBusca').value.toLowerCase();
+      const cards = document.getElementsByClassName('card-carrossel');
+
+      for (let card of cards) {
+        const texto = card.innerText.toLowerCase();
+        card.style.display = texto.includes(termo) ? "flex" : "none";
+      }
+    };
+  </script>
 </body>
 </html>
