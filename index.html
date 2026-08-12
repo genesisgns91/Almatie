@@ -22,16 +22,14 @@
   </div>
 
   <header class="site-header">
-    <div class="brand">
-      <h1>Vitrine de Artes</h1>
-      <span>Artes digitais prontas para sublimação</span>
+    <div class="brand-container">
+      <img id="siteLogo" class="logo-img escondido" src="" alt="Logo">
+      <div class="brand">
+        <h1>Vitrine de Artes</h1>
+        <span>Artes digitais prontas para sublimação</span>
+      </div>
     </div>
-    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </svg>
-    </button>
+    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa">⚙️</button>
   </header>
 
   <div id="modalOverlay" class="modal-overlay escondido"></div>
@@ -39,12 +37,7 @@
   <div id="boxLogin" class="modal-login escondido" role="dialog" aria-modal="true">
     <div class="modal-login-header">
       <h3>Acesso Restrito</h3>
-      <button id="btnFecharModal" class="btn-fechar-modal">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
+      <button id="btnFecharModal" class="btn-fechar-modal">✕</button>
     </div>
     <div class="form-group">
       <label for="emailInput">E-mail do Admin:</label>
@@ -63,6 +56,21 @@
       Painel de Gestão
       <button id="btnFazerLogout" class="btn-link" style="color: var(--danger);">Sair</button>
     </h3>
+
+    <details class="secao-personalizacao">
+      <summary>⚙️ Personalizar Identidade da Loja (Logo & Favicon)</summary>
+      <div style="margin-top: 12px;">
+        <div class="form-group">
+          <label for="inputLogoUrl">URL do Logo (ao lado do título):</label>
+          <input type="url" id="inputLogoUrl" placeholder="https://exemplo.com/logo.png">
+        </div>
+        <div class="form-group">
+          <label for="inputFaviconUrl">URL do Favicon (Ícone da Aba do Navegador):</label>
+          <input type="url" id="inputFaviconUrl" placeholder="https://exemplo.com/favicon.ico">
+        </div>
+        <button id="btnSalvarConfig" class="btn btn-secondary" style="margin-top: 8px;">Salvar Identidade Visual</button>
+      </div>
+    </details>
 
     <hr class="form-divider">
 
@@ -104,11 +112,8 @@
       
       <div class="grid-imagens-modal" id="gridImagens">
         <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
-          <svg class="icon" style="width: 28px; height: 28px; color: var(--text-muted); margin-bottom: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Adicionar Imagens</p>
+          <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
         </div>
       </div>
       <span class="hint">Adicione ou remova fotos para montar a sequência do carrossel.</span>
@@ -122,12 +127,7 @@
   <div class="area-filtros">
     <div class="area-busca">
       <div class="campo-busca-wrap">
-        <span class="icone-busca">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-        </span>
+        <span class="icone-busca">🔍</span>
         <input type="text" id="campoBusca" class="campo-busca" placeholder="Digite para buscar uma arte...">
       </div>
     </div>
@@ -138,12 +138,9 @@
 
   <script type="module">
     import { db, auth } from './firebase-config.js';
-    import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // =========================================================
-    // ⚙️ DADOS DO CLOUDINARY CONFIGURADOS:
-    // =========================================================
     const CLOUD_NAME = "zxi2bufg"; 
     const UPLOAD_PRESET = "almatie";
 
@@ -152,31 +149,59 @@
     let listaImagensAtuais = [];
     let filtroCategoriaAtiva = 'TODOS';
 
-    // SVG Icons
-    const SVG_PREV = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
-    const SVG_NEXT = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
-    const SVG_CART = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>`;
-
     function mostrarToast(texto, tipo = 'padrao') {
       const anterior = document.querySelector('.toast');
       if (anterior) anterior.remove();
-      
       const toast = document.createElement('div');
       toast.className = `toast ${tipo === 'erro' ? 'toast-erro' : tipo === 'sucesso' ? 'toast-sucesso' : ''}`;
-      
-      let icone = '';
-      if (tipo === 'sucesso') {
-        icone = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-      } else if (tipo === 'erro') {
-        icone = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
-      }
-      
-      toast.innerHTML = `${icone} <span>${texto}</span>`;
+      toast.innerText = texto;
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2800);
+      setTimeout(() => toast.remove(), 2600);
     }
 
-    // WIDGET DO CLOUDINARY
+    // CARREGAR E APLICAR CONFIGURAÇÕES VISUAIS DA LOJA (LOGO & FAVICON)
+    async function carregarConfiguracoesLoja() {
+      try {
+        const docRef = doc(db, "configuracoes", "geral");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const config = docSnap.data();
+          if (config.logoUrl) {
+            const imgLogo = document.getElementById('siteLogo');
+            imgLogo.src = config.logoUrl;
+            imgLogo.classList.remove('escondido');
+            document.getElementById('inputLogoUrl').value = config.logoUrl;
+          }
+          if (config.faviconUrl) {
+            document.getElementById('dynamicFavicon').href = config.faviconUrl;
+            document.getElementById('inputFaviconUrl').value = config.faviconUrl;
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao carregar configurações da loja:", e);
+      }
+    }
+
+    // SALVAR CONFIGURAÇÕES VISUAIS
+    async function salvarConfiguracoesLoja() {
+      const logoUrl = document.getElementById('inputLogoUrl').value.trim();
+      const faviconUrl = document.getElementById('inputFaviconUrl').value.trim();
+
+      try {
+        await setDoc(doc(db, "configuracoes", "geral"), {
+          logoUrl,
+          faviconUrl,
+          atualizadoEm: new Date()
+        }, { merge: true });
+
+        mostrarToast("Identidade visual salva!", "sucesso");
+        carregarConfiguracoesLoja();
+      } catch (e) {
+        mostrarToast("Erro ao salvar configurações.", "erro");
+      }
+    }
+
+    // WIDGET CLOUDINARY
     const myWidget = cloudinary.createUploadWidget({
         cloudName: CLOUD_NAME, 
         uploadPreset: UPLOAD_PRESET,
@@ -187,16 +212,16 @@
         styles: {
           palette: {
             window: "#FFFFFF",
-            windowBorder: "#CBD5E1",
-            tabIcon: "#E63956",
-            menuBg: "#F8FAFC",
-            link: "#E63956",
-            action: "#E63956",
-            activeTab: "#E63956",
-            error: "#EF4444",
-            inProgress: "#E63956",
-            complete: "#10B981",
-            sourceBg: "#F8FAFC"
+            windowBorder: "#90A4AE",
+            tabIcon: "#0078FF",
+            menuBg: "#F4F6F8",
+            link: "#0078FF",
+            action: "#0078FF",
+            activeTab: "#0078FF",
+            error: "#F44235",
+            inProgress: "#0078FF",
+            complete: "#20B832",
+            sourceBg: "#F4F6F8"
           }
         }
       }, (error, result) => { 
@@ -216,11 +241,8 @@
       const grid = document.getElementById('gridImagens');
       grid.innerHTML = `
         <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
-          <svg class="icon" style="width: 28px; height: 28px; color: var(--text-muted); margin-bottom: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Adicionar Imagens</p>
+          <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
         </div>
       `;
 
@@ -231,7 +253,7 @@
         div.className = 'item-img-grid';
         div.innerHTML = `
           <img src="${url}">
-          <button type="button" class="btn-remover-img" onclick="window.removerImagemGrid(${index})" title="Remover Imagem">✕</button>
+          <button type="button" class="btn-remover-img" onclick="window.removerImagemGrid(${index})">✕</button>
         `;
         grid.appendChild(div);
       });
@@ -242,7 +264,7 @@
       renderizarGridImagens();
     };
 
-    // SALVAR CARROSSEL NO FIRESTORE
+    // SALVAR CARROSSEL
     async function salvarCarrossel() {
       const docId = document.getElementById('editDocId').value;
       const titulo = document.getElementById('titulo').value;
@@ -271,7 +293,7 @@
           await addDoc(collection(db, "produtos"), dados);
         }
 
-        mostrarToast(docId ? "Carrossel atualizado com sucesso!" : "Carrossel publicado com sucesso!", "sucesso");
+        mostrarToast(docId ? "Carrossel atualizado!" : "Carrossel publicado!", "sucesso");
         cancelarEdicao();
         carregarProdutos();
       } catch (e) {
@@ -329,8 +351,10 @@
       document.getElementById('btnFazerLogout').addEventListener('click', () => signOut(auth));
       document.getElementById('btnSalvar').addEventListener('click', salvarCarrossel);
       document.getElementById('btnCancelarEdit').addEventListener('click', cancelarEdicao);
+      document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
       document.getElementById('campoBusca').addEventListener('keyup', filtrarVitrine);
 
+      carregarConfiguracoesLoja();
       carregarProdutos();
     });
 
@@ -345,7 +369,6 @@
       try {
         await signInWithEmailAndPassword(auth, email, senha);
         fecharModalLogin();
-        mostrarToast("Login efetuado com sucesso!", "sucesso");
       } catch (error) {
         document.getElementById('msgErro').innerText = "Credenciais inválidas.";
       }
@@ -399,36 +422,29 @@
         let slidesHTML = '';
         let dotsHTML = '';
         (prod.imagens || []).forEach((imgUrl, idx) => {
-          slidesHTML += `<div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}"><img src="${imgUrl}" alt="${prod.titulo}"></div>`;
+          slidesHTML += `<div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}"><img src="${imgUrl}"></div>`;
           dotsHTML += `<div class="dot ${idx === 0 ? 'ativo' : ''}"></div>`;
         });
-
-        const valorFormatado = prod.preco ? (prod.preco.toString().includes('R$') ? prod.preco : `R$ ${prod.preco}`) : 'R$ 0,00';
 
         const card = document.createElement('div');
         card.className = 'card-carrossel';
         card.innerHTML = `
           <div class="card-header">
-            <span title="${prod.titulo}">${prod.titulo}</span>
+            <span>${prod.titulo}</span>
             <small class="badge-cat">${prod.categoria || 'Geral'}</small>
           </div>
           <div class="carrossel-container">
             ${slidesHTML}
             ${prod.imagens && prod.imagens.length > 1 ? `
-              <button class="btn-nav btn-prev" aria-label="Imagem Anterior">${SVG_PREV}</button>
-              <button class="btn-nav btn-next" aria-label="Próxima Imagem">${SVG_NEXT}</button>
+              <button class="btn-nav btn-prev">❮</button>
+              <button class="btn-nav btn-next">❯</button>
               <div class="dots-container">${dotsHTML}</div>
             ` : ''}
           </div>
           <div class="card-body">
             <div class="card-descricao">${prod.descricao || ''}</div>
-            <div class="card-preco-wrap">
-              <span class="card-preco-label">Valor do pacote</span>
-              <div class="card-preco">${valorFormatado}</div>
-            </div>
-            <a href="${prod.link}" target="_blank" rel="noopener noreferrer" class="btn-comprar">
-              ${SVG_CART} Comprar Arte
-            </a>
+            <div class="card-preco">${prod.preco || '0,00'}</div>
+            <a href="${prod.link}" target="_blank" class="btn-comprar">Comprar Arte</a>
             ${usuarioAtual ? `
               <div class="acoes-admin">
                 <button class="btn-editar">Editar</button>
@@ -471,13 +487,8 @@
 
     async function excluirCarrossel(id) {
       if (confirm("Remover este carrossel?")) {
-        try {
-          await deleteDoc(doc(db, "produtos", id));
-          mostrarToast("Carrossel removido!", "sucesso");
-          carregarProdutos();
-        } catch(e) {
-          mostrarToast("Erro ao remover carrossel.", "erro");
-        }
+        await deleteDoc(doc(db, "produtos", id));
+        carregarProdutos();
       }
     }
 
