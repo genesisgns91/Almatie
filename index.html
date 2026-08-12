@@ -55,8 +55,11 @@
       <input type="url" id="linkCompra" placeholder="https://seu-link.com">
     </div>
     <div class="form-group">
-      <label>Imagens (Selecione uma ou mais fotos de uma vez):</label>
+      <label>Imagens (Compactação automática ao selecionar):</label>
       <input type="file" id="imagemFile" accept="image/*" multiple>
+      <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">
+        ⚡ As imagens serão reduzidas e convertidas para WebP sem perda visual de qualidade.
+      </small>
     </div>
     
     <button onclick="salvarCarrossel()" id="btnSalvar" class="btn btn-primary">Publicar Carrossel</button>
@@ -114,8 +117,12 @@
       document.getElementById('boxLogin').classList.toggle('escondido');
     };
 
-    // Compressão de imagens leve
-    async function comprimirImagem(file) {
+    /**
+     * FUNÇÃO DE COMPRESSÃO AUTOMÁTICA DE IMAGEM
+     * - Redimensiona mantendo a proporção (Largura máxima: 1000px)
+     * - Converte para WebP com qualidade 82% (alta fidelidade e tamanho mínimo)
+     */
+    async function comprimirEConverterImagem(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -124,19 +131,31 @@
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const max = 600;
+            const maxDimension = 1000; // Redimensiona apenas se for maior que 1000px
 
-            if (width > height && width > max) {
-              height *= max / width; width = max;
-            } else if (height > max) {
-              width *= max / height; height = max;
+            if (width > height && width > maxDimension) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else if (height > maxDimension) {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
             }
 
             canvas.width = width;
             canvas.height = height;
+
             const ctx = canvas.getContext('2d');
+            // Suavização do Canvas para manter alta definição
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.75));
+
+            // Tenta exportar em formato WebP (mais leve), com fallback para JPEG
+            let base64 = canvas.toDataURL('image/webp', 0.82);
+            if (!base64.startsWith('data:image/webp')) {
+              base64 = canvas.toDataURL('image/jpeg', 0.82);
+            }
+            resolve(base64);
           };
           img.src = e.target.result;
         };
@@ -159,13 +178,13 @@
         return;
       }
 
-      statusUpload.innerText = "Processando...";
       let imgs = [];
 
       if (files.length > 0) {
+        statusUpload.innerText = "⏳ Compactando e otimizando imagens...";
         for (let i = 0; i < files.length; i++) {
-          const base64 = await comprimirImagem(files[i]);
-          imgs.push(base64);
+          const base64Otimizada = await comprimirEConverterImagem(files[i]);
+          imgs.push(base64Otimizada);
         }
       } else if (docId) {
         const itemExistente = produtosMemoria.find(p => p.id === docId);
@@ -178,6 +197,8 @@
         return;
       }
 
+      statusUpload.innerText = "💾 Salvando no banco de dados...";
+
       const dados = { titulo, descricao, preco, link, imagens: imgs, criadoEm: new Date() };
 
       try {
@@ -186,12 +207,12 @@
         } else {
           await addDoc(collection(db, "produtos"), dados);
         }
-        statusUpload.innerText = "Salvo com sucesso!";
-        setTimeout(() => { statusUpload.innerText = ""; }, 2000);
+        statusUpload.innerText = "✅ Publicado com sucesso!";
+        setTimeout(() => { statusUpload.innerText = ""; }, 2500);
         window.cancelarEdicao();
         carregarProdutos();
       } catch (e) {
-        statusUpload.innerText = "Erro ao salvar no banco de dados.";
+        statusUpload.innerText = "❌ Erro ao salvar no banco de dados.";
       }
     };
 
@@ -221,7 +242,7 @@
         prod.imagens.forEach((imgUrl, idx) => {
           slidesHTML += `
             <div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}">
-              <img src="${imgUrl}" alt="${prod.titulo}">
+              <img src="${imgUrl}" alt="${prod.titulo}" loading="lazy">
             </div>
           `;
           dotsHTML += `<div class="dot ${idx === 0 ? 'ativo' : ''}"></div>`;
