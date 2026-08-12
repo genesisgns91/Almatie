@@ -1,35 +1,142 @@
+/* =========================================================
+   DESIGN TOKENS — PALETA "TINTA DE SUBLIMAÇÃO" & VARIÁVEIS
+   ========================================================= */
 :root {
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
-  --primary-soft: #e0f2fe;
+  /* Cores de marca — inspiradas no processo CMY da sublimação */
+  --primary: #D6336C;          /* magenta — tinta primária */
+  --primary-hover: #B92457;
+  --primary-soft: #FBE4ED;
+
+  --secondary-accent: #0E8FA3; /* ciano — tinta secundária, usada em gradientes/realces */
+  --secondary-soft: #E0F4F6;
+
   --surface: #ffffff;
-  --bg: #f8fafc;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-  --danger: #ef4444;
-  --radius: 12px;
+  --bg: #FBF8F4;               /* branco quente, como papel de transfer */
+  --bg-alt: #F3ECE3;
+
+  --text: #1B1230;             /* tinta quase-preta com base violeta */
+  --text-muted: #6E6480;
+  --border: #E6DFD3;
+
+  --danger: #DC2626;
+  --danger-hover: #B91C1C;
+  --danger-soft: #FDE8E8;
+
+  /* Raios de borda */
+  --radius: 14px;
   --radius-sm: 8px;
-  --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  /* Sombras suaves e em camadas */
+  --shadow-sm: 0 1px 2px rgba(27, 18, 48, 0.06);
+  --shadow: 0 6px 16px -4px rgba(27, 18, 48, 0.12), 0 2px 6px -2px rgba(27, 18, 48, 0.08);
+  --shadow-lg: 0 20px 40px -12px rgba(27, 18, 48, 0.22), 0 8px 16px -8px rgba(27, 18, 48, 0.12);
+
+  /* Elemento de assinatura: gradiente de tinta, usado com moderação */
+  --gradient-ink: linear-gradient(135deg, var(--primary) 0%, var(--secondary-accent) 100%);
+
+  /* Tipografia */
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Interatividade */
+  --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --focus-ring: 0 0 0 3px rgba(214, 51, 108, 0.35);
 }
 
+/* =========================================================
+   RESET
+   ========================================================= */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   background-color: var(--bg);
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.6;
   padding-bottom: 60px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* =========================================================
+   TIPOGRAFIA & HIERARQUIA DE TÍTULOS
+   ========================================================= */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+h1 { font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); font-weight: 700; }
+h2 { font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem); }
+h3 { font-size: 1.125rem; font-weight: 600; }
+
+p {
+  color: var(--text-muted);
 }
 
 .escondido {
   display: none !important;
+}
+
+/* =========================================================
+   ÍCONES (base para substituição de emojis por SVG — Etapa 3)
+   ========================================================= */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.icon-btn:hover {
+  background: var(--bg-alt);
+  color: var(--text);
+}
+
+.icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* BANNER DE CABEÇALHO DA LOJA */
@@ -53,39 +160,63 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: var(--surface);
+  padding: 14px 24px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
 .brand h1 {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--primary);
+  font-size: 1.35rem;
+  font-weight: 700;
   letter-spacing: -0.02em;
+  background: var(--gradient-ink);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .brand span {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
 }
 
+/* Botão de acesso admin — discreto, vira ícone circular (ver .icon-btn) */
 .btn-engrenagem {
   background: transparent;
-  border: none;
-  font-size: 1.25rem;
+  border: 1px solid transparent;
+  font-size: 1.1rem;
   cursor: pointer;
-  padding: 8px;
-  border-radius: var(--radius-sm);
-  transition: background 0.2s;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  transition: var(--transition);
 }
 
 .btn-engrenagem:hover {
-  background: var(--bg);
+  background: var(--bg-alt);
+  color: var(--primary);
+  transform: rotate(20deg);
+}
+
+.btn-engrenagem:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 /* MODAL OVERLAY E LOGIN */
@@ -213,38 +344,79 @@ input:focus, textarea:focus {
   margin: 16px 0;
 }
 
-/* BOTÕES */
+/* =========================================================
+   BOTÕES — sistema reutilizável com estados de interação
+   ========================================================= */
 .btn {
-  padding: 10px 16px;
+  padding: 11px 20px;
   border-radius: var(--radius-sm);
-  border: none;
+  border: 1px solid transparent;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 0.9rem;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
   width: 100%;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  gap: 8px;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: var(--gradient-ink);
   color: white;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-  background: var(--primary-hover);
+  filter: brightness(1.06);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
 }
 
 .btn-secondary {
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
-  border: 1px solid var(--border);
+  border-color: var(--border);
 }
 
 .btn-secondary:hover {
-  background: var(--border);
+  background: var(--bg-alt);
+  border-color: var(--text-muted);
+}
+
+.btn-danger {
+  background: var(--danger-soft);
+  color: var(--danger-hover);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+.btn-danger:hover {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
 }
 
 .btn-link {
@@ -253,35 +425,59 @@ input:focus, textarea:focus {
   font-size: 0.85rem;
   cursor: pointer;
   text-decoration: underline;
+  color: var(--primary);
+  width: auto;
+  padding: 0;
+}
+
+.btn-link:hover {
+  color: var(--primary-hover);
 }
 
 /* BUSCA E FILTROS */
 .area-filtros {
   max-width: 1200px;
-  margin: 20px auto;
+  margin: 24px auto;
   padding: 0 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .campo-busca-wrap {
   position: relative;
-  max-width: 400px;
+  max-width: 420px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .icone-busca {
   position: absolute;
-  left: 12px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  pointer-events: none;
+}
+
+.icone-busca svg {
+  width: 18px;
+  height: 18px;
 }
 
 .campo-busca {
-  padding-left: 36px;
-  border-radius: 20px;
+  padding: 12px 16px 12px 44px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.campo-busca:focus {
+  border-color: var(--primary);
+  box-shadow: var(--focus-ring);
 }
 
 .menu-categorias {
@@ -294,30 +490,52 @@ input:focus, textarea:focus {
 .grupo-filtro {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .grupo-filtro span {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
 }
 
 .btn-tag {
-  padding: 4px 12px;
-  border-radius: 16px;
+  padding: 7px 16px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: var(--surface);
+  color: var(--text);
   font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
+}
+
+.btn-tag:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.btn-tag:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .btn-tag.ativo {
-  background: var(--primary);
+  background: var(--gradient-ink);
   color: white;
-  border-color: var(--primary);
+  border-color: transparent;
+  box-shadow: var(--shadow);
+}
+
+.btn-tag.ativo:hover {
+  color: white;
+  transform: translateY(-1px);
 }
 
 /* VITRINE / GRID */
@@ -575,4 +793,27 @@ input:focus, textarea:focus {
 .box-add-imagem:hover {
   border-color: var(--primary);
   background: var(--primary-soft);
+}
+
+/* =========================================================
+   RESPONSIVIDADE BASE
+   ========================================================= */
+@media (max-width: 480px) {
+  body {
+    font-size: 0.9375rem;
+  }
+
+  .btn {
+    padding: 12px 18px;
+  }
+}
+
+/* Respeita preferência do usuário por menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
