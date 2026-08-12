@@ -127,9 +127,10 @@
   <div class="vitrine" id="vitrineProdutos"></div>
 
   <script type="module">
-    import { db, auth } from './firebase-config.js';
+    import { db, auth, storage } from './firebase-config.js';
     import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { ref, uploadString, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     let usuarioAtual = null;
     let produtosMemoria = [];
@@ -257,6 +258,30 @@
       });
     }
 
+    // ENVIO PARA O FIREBASE STORAGE
+    // Em vez de guardar a imagem em base64 dentro do documento do Firestore
+    // (que tem limite rígido de 1 MiB por documento), enviamos o arquivo para
+    // o Storage e guardamos apenas a URL pública no Firestore.
+    async function enviarParaStorage(base64, caminho) {
+      const storageRef = ref(storage, caminho);
+      await uploadString(storageRef, base64, 'data_url');
+      return await getDownloadURL(storageRef);
+    }
+
+    // Remove imagens antigas do Storage (usado ao editar ou excluir um carrossel).
+    // Silencia erros individuais para não travar o fluxo caso um arquivo já
+    // tenha sido removido antes.
+    async function removerImagensStorage(urls) {
+      if (!urls || urls.length === 0) return;
+      await Promise.all(urls.map(async (url) => {
+        try {
+          await deleteObject(ref(storage, url));
+        } catch (e) {
+          console.warn("Não foi possível remover imagem antiga do Storage:", url, e);
+        }
+      }));
+    }
+
     // GESTÃO DE IDENTIDADE VISUAL
     async function salvarIdentidadeVisual() {
       const favFile = document.getElementById('faviconFile').files[0];
@@ -270,22 +295,27 @@
       }
 
       btn.disabled = true;
-      status.innerText = "Atualizando visual...";
       let dadosConfig = {};
 
-      if (favFile) {
-        dadosConfig.favicon = await comprimirImagem(favFile, 128);
-      }
-      if (headFile) {
-        dadosConfig.headerBanner = await comprimirImagem(headFile, 1200);
-      }
-
       try {
+        if (favFile) {
+          status.innerText = "⏳ Enviando favicon...";
+          const base64Fav = await comprimirImagem(favFile, 128);
+          dadosConfig.favicon = await enviarParaStorage(base64Fav, `configuracoes/favicon_${Date.now()}.webp`);
+        }
+        if (headFile) {
+          status.innerText = "⏳ Enviando banner...";
+          const base64Head = await comprimirImagem(headFile, 1200);
+          dadosConfig.headerBanner = await enviarParaStorage(base64Head, `configuracoes/header_${Date.now()}.webp`);
+        }
+
+        status.innerText = "💾 Salvando configurações...";
         await setDoc(doc(db, "configuracoes", "visual"), dadosConfig, { merge: true });
         status.innerText = "";
         mostrarToast("Visual do site atualizado!", "sucesso");
         carregarIdentidadeVisual();
       } catch (e) {
+        console.error("Erro ao atualizar visual:", e);
         status.innerText = "";
         mostrarToast("Erro ao atualizar visual.", "erro");
       } finally {
@@ -330,40 +360,64 @@
       }
 
       let imgs = [];
+      let imagensAntigasParaRemover = [];
       btnSalvar.disabled = true;
 
-      if (files.length > 0) {
-        statusUpload.innerText = "⏳ Otimizando imagens...";
-        for (let i = 0; i < files.length; i++) {
-          const base64 = await comprimirImagem(files[i]);
-          imgs.push(base64);
-        }
-      } else if (docId) {
-        const itemExistente = produtosMemoria.find(p => p.id === docId);
-        if (itemExistente) imgs = itemExistente.imagens;
-      }
-
-      if (imgs.length === 0) {
-        mostrarToast("Selecione ao menos uma imagem!", "erro");
-        statusUpload.innerText = "";
-        btnSalvar.disabled = false;
-        return;
-      }
-
-      statusUpload.innerText = "💾 Salvando no banco de dados...";
-      const dados = { titulo, categoria, classe, descricao, preco, link, imagens: imgs, criadoEm: new Date() };
-
       try {
+        if (files.length > 0) {
+          // ID usado apenas para organizar as pastas no Storage.
+          const idBase = docId || `novo_${Date.now()}`;
+
+          // Se estamos editando e o usuário selecionou novas imagens, as
+          // antigas serão substituídas — marcamos para remover do Storage
+          // depois que a gravação der certo.
+          if (docId) {
+            const itemExistente = produtosMemoria.find(p => p.id === docId);
+            if (itemExistente) imagensAntigasParaRemover = itemExistente.imagens || [];
+          }
+
+          for (let i = 0; i < files.length; i++) {
+            statusUpload.innerText = `⏳ Otimizando e enviando imagem ${i + 1} de ${files.length}...`;
+            const base64 = await comprimirImagem(files[i]);
+            const caminho = `produtos/${idBase}/${Date.now()}_${i}.webp`;
+            const url = await enviarParaStorage(base64, caminho);
+            imgs.push(url);
+          }
+        } else if (docId) {
+          const itemExistente = produtosMemoria.find(p => p.id === docId);
+          if (itemExistente) imgs = itemExistente.imagens;
+        }
+
+        if (imgs.length === 0) {
+          mostrarToast("Selecione ao menos uma imagem!", "erro");
+          statusUpload.innerText = "";
+          btnSalvar.disabled = false;
+          return;
+        }
+
+        // Agora o documento do Firestore guarda apenas as URLs das imagens
+        // (poucos KB), então não existe mais limite prático de quantidade
+        // de imagens no carrossel.
+        statusUpload.innerText = "💾 Salvando no banco de dados...";
+        const dados = { titulo, categoria, classe, descricao, preco, link, imagens: imgs, criadoEm: new Date() };
+
         if (docId) {
           await updateDoc(doc(db, "produtos", docId), dados);
         } else {
           await addDoc(collection(db, "produtos"), dados);
         }
+
+        // Limpa do Storage as imagens antigas que foram substituídas.
+        if (imagensAntigasParaRemover.length > 0) {
+          removerImagensStorage(imagensAntigasParaRemover);
+        }
+
         statusUpload.innerText = "";
         mostrarToast(docId ? "Carrossel atualizado!" : "Carrossel publicado!", "sucesso");
         cancelarEdicao();
         carregarProdutos();
       } catch (e) {
+        console.error("Erro ao salvar carrossel:", e);
         statusUpload.innerText = "";
         mostrarToast("Erro ao salvar. Tente novamente.", "erro");
       } finally {
@@ -591,7 +645,9 @@
     async function excluirCarrossel(id) {
       if (confirm("Deseja remover este carrossel?")) {
         try {
+          const prod = produtosMemoria.find(p => p.id === id);
           await deleteDoc(doc(db, "produtos", id));
+          if (prod) removerImagensStorage(prod.imagens);
           mostrarToast("Carrossel removido.", "sucesso");
           carregarProdutos();
         } catch (e) {
