@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vitrine de Artes - Sublimação</title>
-  
+
   <link id="dynamicFavicon" rel="icon" type="image/x-icon" href="">
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,22 +19,31 @@
     <img id="headerBannerImg" src="" alt="Cabeçalho">
   </div>
 
-  <div class="top-bar">
-    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa" onclick="window.abrirModalLogin && window.abrirModalLogin()">⚙️</button>
-  </div>
+  <header class="site-header">
+    <div class="brand">
+      <h1>Vitrine de Artes</h1>
+      <span>Artes digitais prontas para sublimação</span>
+    </div>
+    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa" aria-label="Abrir área administrativa">⚙️</button>
+  </header>
 
-  <div id="boxLogin" class="modal-login escondido">
-    <h3>Acesso Restrito</h3>
-    <div class="form-group">
-      <label>E-mail do Admin:</label>
-      <input type="email" id="emailInput" placeholder="admin@email.com">
+  <div id="modalOverlay" class="modal-overlay escondido"></div>
+
+  <div id="boxLogin" class="modal-login escondido" role="dialog" aria-modal="true" aria-labelledby="tituloLogin">
+    <div class="modal-login-header">
+      <h3 id="tituloLogin">Acesso Restrito</h3>
+      <button id="btnFecharModal" class="btn-fechar-modal" aria-label="Fechar">✕</button>
     </div>
     <div class="form-group">
-      <label>Senha:</label>
-      <input type="password" id="senhaInput" placeholder="••••••••">
+      <label for="emailInput">E-mail do Admin:</label>
+      <input type="email" id="emailInput" placeholder="admin@email.com" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label for="senhaInput">Senha:</label>
+      <input type="password" id="senhaInput" placeholder="••••••••" autocomplete="current-password">
     </div>
     <button id="btnFazerLogin" class="btn btn-primary">Entrar</button>
-    <div id="msgErro" class="status-msg" style="color: var(--danger);"></div>
+    <div id="msgErro" class="status-msg" style="color: var(--danger);" role="alert"></div>
   </div>
 
   <div id="painelAdmin" class="painel-admin escondido">
@@ -42,60 +51,63 @@
       Painel de Gestão
       <button id="btnFazerLogout" class="btn-link" style="color: var(--danger);">Sair</button>
     </h3>
-    
+
     <details class="secao-personalizacao">
-      <summary>🎨 Identidade Visual (Favicon & Banner)</summary>
-      <div class="form-group" style="margin-top: 12px;">
-        <label>Favicon da Página (Ícone da Aba):</label>
+      <summary>🎨 Identidade Visual (Favicon &amp; Banner)</summary>
+      <div class="form-group" style="margin-top: 14px;">
+        <label for="faviconFile">Favicon da Página (Ícone da Aba):</label>
         <input type="file" id="faviconFile" accept="image/*">
+        <span class="hint">Imagem quadrada funciona melhor.</span>
       </div>
-      <div class="form-group">
-        <label>Banner Superior (Header do Site):</label>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="headerFile">Banner Superior (Header do Site):</label>
         <input type="file" id="headerFile" accept="image/*">
+        <span class="hint">Formato paisagem, largo e baixo.</span>
       </div>
-      <button id="btnSalvarIdentidade" class="btn btn-secondary">Atualizar Visual do Site</button>
+      <button id="btnSalvarIdentidade" class="btn btn-secondary" style="margin-top: 16px;">Atualizar Visual do Site</button>
     </details>
 
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+    <hr class="form-divider">
 
     <input type="hidden" id="editDocId" value="">
 
     <div class="form-group">
-      <label>Título do Carrossel:</label>
+      <label for="titulo">Título do Carrossel:</label>
       <input type="text" id="titulo" placeholder="Ex: Pacote Canecas de Páscoa">
     </div>
 
     <div class="form-row">
       <div class="form-group flex-1">
-        <label>Categoria:</label>
+        <label for="categoria">Categoria:</label>
         <input type="text" id="categoria" placeholder="Ex: Páscoa">
       </div>
       <div class="form-group flex-1">
-        <label>Classe / Subcategoria:</label>
+        <label for="classe">Classe / Subcategoria:</label>
         <input type="text" id="classe" placeholder="Ex: Canecas, Almofadas...">
       </div>
     </div>
 
     <div class="form-group">
-      <label>Descrição:</label>
+      <label for="descricao">Descrição:</label>
       <textarea id="descricao" rows="2" placeholder="Ex: Pacote com 10 artes digitais em alta resolução..."></textarea>
     </div>
 
     <div class="form-group">
-      <label>Valor (R$):</label>
+      <label for="preco">Valor (R$):</label>
       <input type="text" id="preco" placeholder="Ex: 29,90">
     </div>
 
     <div class="form-group">
-      <label>Link de Destino / Checkout:</label>
+      <label for="linkCompra">Link de Destino / Checkout:</label>
       <input type="url" id="linkCompra" placeholder="https://seu-link.com">
     </div>
 
     <div class="form-group">
-      <label>Imagens do Carrossel (Otimização Automática):</label>
+      <label for="imagemFile">Imagens do Carrossel (Otimização Automática):</label>
       <input type="file" id="imagemFile" accept="image/*" multiple>
+      <span class="hint">Deixe em branco na edição para manter as imagens atuais.</span>
     </div>
-    
+
     <button id="btnSalvar" class="btn btn-primary">Publicar Carrossel</button>
     <button id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar Edição</button>
     <div id="statusUpload" class="status-msg"></div>
@@ -103,11 +115,13 @@
 
   <div class="area-filtros">
     <div class="area-busca">
-      <input type="text" id="campoBusca" class="campo-busca" placeholder="🔍 Digite para buscar uma arte...">
+      <div class="campo-busca-wrap">
+        <span class="icone-busca" aria-hidden="true">🔍</span>
+        <input type="text" id="campoBusca" class="campo-busca" placeholder="Digite para buscar uma arte..." aria-label="Buscar arte">
+      </div>
     </div>
 
-    <div id="containerFiltros" class="menu-categorias">
-      </div>
+    <div id="containerFiltros" class="menu-categorias"></div>
   </div>
 
   <div class="vitrine" id="vitrineProdutos"></div>
@@ -122,23 +136,40 @@
     let filtroCategoriaAtiva = 'TODOS';
     let filtroClasseAtiva = 'TODOS';
 
-    // FUNÇÃO GLOBAL DE ABERTURA DO MODAL (EVITA PROBLEMAS DE EVENTO)
+    // ===== TOAST (feedback visual não intrusivo) =====
+    function mostrarToast(texto, tipo = 'padrao') {
+      const anterior = document.querySelector('.toast');
+      if (anterior) anterior.remove();
+      const toast = document.createElement('div');
+      toast.className = `toast ${tipo === 'erro' ? 'toast-erro' : tipo === 'sucesso' ? 'toast-sucesso' : ''}`;
+      toast.innerText = texto;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2600);
+    }
+
+    // ===== MODAL DE LOGIN =====
     window.abrirModalLogin = function() {
       const box = document.getElementById('boxLogin');
-      if (box) {
-        box.classList.toggle('escondido');
-        if (!box.classList.contains('escondido')) {
-          document.getElementById('emailInput').focus();
-        }
+      const overlay = document.getElementById('modalOverlay');
+      if (box && overlay) {
+        box.classList.remove('escondido');
+        overlay.classList.remove('escondido');
+        document.getElementById('emailInput').focus();
       }
     };
 
-    // INICIALIZAÇÃO SEGURA
+    window.fecharModalLogin = function() {
+      document.getElementById('boxLogin').classList.add('escondido');
+      document.getElementById('modalOverlay').classList.add('escondido');
+    };
+
     document.addEventListener("DOMContentLoaded", () => {
-      const btnEngrenagem = document.getElementById('btnLogin');
-      if (btnEngrenagem) {
-        btnEngrenagem.onclick = window.abrirModalLogin;
-      }
+      document.getElementById('btnLogin').addEventListener('click', window.abrirModalLogin);
+      document.getElementById('btnFecharModal').addEventListener('click', window.fecharModalLogin);
+      document.getElementById('modalOverlay').addEventListener('click', window.fecharModalLogin);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') window.fecharModalLogin();
+      });
 
       document.getElementById('btnFazerLogin').addEventListener('click', fazerLogin);
       document.getElementById('btnFazerLogout').addEventListener('click', () => signOut(auth));
@@ -147,6 +178,7 @@
       document.getElementById('btnCancelarEdit').addEventListener('click', cancelarEdicao);
       document.getElementById('campoBusca').addEventListener('keyup', filtrarVitrine);
 
+      mostrarSkeletons();
       carregarIdentidadeVisual();
     });
 
@@ -155,7 +187,7 @@
       usuarioAtual = user;
       if (user) {
         document.getElementById('painelAdmin').classList.remove('escondido');
-        document.getElementById('boxLogin').classList.add('escondido');
+        window.fecharModalLogin();
       } else {
         document.getElementById('painelAdmin').classList.add('escondido');
       }
@@ -166,12 +198,23 @@
       const email = document.getElementById('emailInput').value;
       const senha = document.getElementById('senhaInput').value;
       const msgErro = document.getElementById('msgErro');
+      const btn = document.getElementById('btnFazerLogin');
 
+      if (!email || !senha) {
+        msgErro.innerText = "Preencha e-mail e senha.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Entrando...";
       try {
         await signInWithEmailAndPassword(auth, email, senha);
         msgErro.innerText = "";
       } catch (error) {
         msgErro.innerText = "Credenciais inválidas. Tente novamente.";
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Entrar";
       }
     }
 
@@ -219,7 +262,14 @@
       const favFile = document.getElementById('faviconFile').files[0];
       const headFile = document.getElementById('headerFile').files[0];
       const status = document.getElementById('statusUpload');
+      const btn = document.getElementById('btnSalvarIdentidade');
 
+      if (!favFile && !headFile) {
+        mostrarToast("Selecione uma imagem antes de atualizar.", "erro");
+        return;
+      }
+
+      btn.disabled = true;
       status.innerText = "Atualizando visual...";
       let dadosConfig = {};
 
@@ -232,11 +282,14 @@
 
       try {
         await setDoc(doc(db, "configuracoes", "visual"), dadosConfig, { merge: true });
-        status.innerText = "✅ Visual atualizado!";
+        status.innerText = "";
+        mostrarToast("Visual do site atualizado!", "sucesso");
         carregarIdentidadeVisual();
-        setTimeout(() => { status.innerText = ""; }, 2000);
       } catch (e) {
-        status.innerText = "Erro ao atualizar visual.";
+        status.innerText = "";
+        mostrarToast("Erro ao atualizar visual.", "erro");
+      } finally {
+        btn.disabled = false;
       }
     }
 
@@ -269,13 +322,16 @@
       const link = document.getElementById('linkCompra').value;
       const files = document.getElementById('imagemFile').files;
       const statusUpload = document.getElementById('statusUpload');
+      const btnSalvar = document.getElementById('btnSalvar');
 
       if (!titulo || !link) {
-        alert("Preencha ao menos o Título e o Link!");
+        mostrarToast("Preencha ao menos o Título e o Link!", "erro");
         return;
       }
 
       let imgs = [];
+      btnSalvar.disabled = true;
+
       if (files.length > 0) {
         statusUpload.innerText = "⏳ Otimizando imagens...";
         for (let i = 0; i < files.length; i++) {
@@ -288,8 +344,9 @@
       }
 
       if (imgs.length === 0) {
-        alert("Selecione ao menos uma imagem!");
+        mostrarToast("Selecione ao menos uma imagem!", "erro");
         statusUpload.innerText = "";
+        btnSalvar.disabled = false;
         return;
       }
 
@@ -302,12 +359,27 @@
         } else {
           await addDoc(collection(db, "produtos"), dados);
         }
-        statusUpload.innerText = "✅ Sucesso!";
-        setTimeout(() => { statusUpload.innerText = ""; }, 2000);
+        statusUpload.innerText = "";
+        mostrarToast(docId ? "Carrossel atualizado!" : "Carrossel publicado!", "sucesso");
         cancelarEdicao();
         carregarProdutos();
       } catch (e) {
-        statusUpload.innerText = "❌ Erro ao salvar.";
+        statusUpload.innerText = "";
+        mostrarToast("Erro ao salvar. Tente novamente.", "erro");
+      } finally {
+        btnSalvar.disabled = false;
+      }
+    }
+
+    // ESTADOS DE CARREGAMENTO
+    function mostrarSkeletons() {
+      const vitrine = document.getElementById('vitrineProdutos');
+      vitrine.innerHTML = '';
+      for (let i = 0; i < 4; i++) {
+        const sk = document.createElement('div');
+        sk.className = 'skeleton-card';
+        sk.innerHTML = '<div class="skeleton-shimmer"></div>';
+        vitrine.appendChild(sk);
       }
     }
 
@@ -323,6 +395,14 @@
         renderizarVitrine();
       } catch (e) {
         console.error("Erro ao carregar produtos:", e);
+        const vitrine = document.getElementById('vitrineProdutos');
+        vitrine.innerHTML = `
+          <div class="estado-vazio">
+            <div class="emoji">⚠️</div>
+            <h3>Não foi possível carregar as artes</h3>
+            <p>Verifique sua conexão e tente novamente em instantes.</p>
+          </div>
+        `;
       }
     }
 
@@ -372,6 +452,28 @@
         return bateCat && bateCls;
       });
 
+      if (produtosMemoria.length === 0) {
+        vitrine.innerHTML = `
+          <div class="estado-vazio">
+            <div class="emoji">🖼️</div>
+            <h3>Nenhuma arte publicada ainda</h3>
+            <p>${usuarioAtual ? 'Use o painel acima para publicar o primeiro carrossel.' : 'Volte em breve para conferir as novidades.'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (filtrados.length === 0) {
+        vitrine.innerHTML = `
+          <div class="estado-vazio">
+            <div class="emoji">🔍</div>
+            <h3>Nada encontrado por aqui</h3>
+            <p>Tente outro filtro ou termo de busca.</p>
+          </div>
+        `;
+        return;
+      }
+
       filtrados.forEach((prod) => {
         let slidesHTML = '';
         let dotsHTML = '';
@@ -393,21 +495,21 @@
             <span>${prod.titulo}</span>
             <small class="badge-cat">${prod.categoria || 'Geral'} • ${prod.classe || 'Geral'}</small>
           </div>
-          
+
           <div class="carrossel-container">
             ${slidesHTML}
             ${temVarios ? `
-              <button class="btn-nav btn-prev">❮</button>
-              <button class="btn-nav btn-next">❯</button>
+              <button class="btn-nav btn-prev" aria-label="Imagem anterior">❮</button>
+              <button class="btn-nav btn-next" aria-label="Próxima imagem">❯</button>
               <div class="dots-container">${dotsHTML}</div>
             ` : ''}
           </div>
 
           <div class="card-body">
             <div class="card-descricao">${prod.descricao || ''}</div>
-            <div class="card-preco">R$ ${prod.preco || '0,00'}</div>
-            <a href="${prod.link}" target="_blank" class="btn-comprar">Comprar Arte</a>
-            
+            <div class="card-preco">${prod.preco || '0,00'}</div>
+            <a href="${prod.link}" target="_blank" rel="noopener" class="btn-comprar">Comprar Arte</a>
+
             ${usuarioAtual ? `
               <div class="acoes-admin">
                 <button class="btn-editar">Editar</button>
@@ -488,8 +590,13 @@
 
     async function excluirCarrossel(id) {
       if (confirm("Deseja remover este carrossel?")) {
-        await deleteDoc(doc(db, "produtos", id));
-        carregarProdutos();
+        try {
+          await deleteDoc(doc(db, "produtos", id));
+          mostrarToast("Carrossel removido.", "sucesso");
+          carregarProdutos();
+        } catch (e) {
+          mostrarToast("Erro ao remover.", "erro");
+        }
       }
     }
 
