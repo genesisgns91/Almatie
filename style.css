@@ -23,16 +23,31 @@
 body { 
   background-color: var(--bg); 
   color: var(--text); 
-  padding: 24px 16px; 
+  padding: 12px 16px 24px 16px; 
   min-height: 100vh; 
 }
 
-/* BARRA SUPERIOR */
+/* BARRA SUPERIOR & BOTÃO ENGRENAGEM DISCRETO */
 .top-bar { 
   max-width: 1200px; 
-  margin: 0 auto 20px auto; 
+  margin: 0 auto 10px auto; 
   display: flex; 
   justify-content: flex-end; 
+}
+
+.btn-engrenagem {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.25; /* Deixa quase invisível */
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  padding: 4px;
+}
+
+.btn-engrenagem:hover {
+  opacity: 0.8; /* Destaca levemente ao passar o mouse */
+  transform: rotate(45deg);
 }
 
 .btn-link { 
