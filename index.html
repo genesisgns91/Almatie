@@ -59,16 +59,31 @@
 
     <details class="secao-personalizacao">
       <summary>⚙️ Personalizar Identidade da Loja (Logo & Favicon)</summary>
-      <div style="margin-top: 12px;">
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 16px;">
+        
         <div class="form-group">
-          <label for="inputLogoUrl">URL do Logo (ao lado do título):</label>
-          <input type="url" id="inputLogoUrl" placeholder="https://exemplo.com/logo.png">
+          <label>Logo da Loja (ao lado do título):</label>
+          <div class="upload-preview-container">
+            <div class="preview-box">
+              <img id="previewLogo" src="" alt="Pré-visualização Logo" class="escondido">
+              <span id="textNoLogo" class="hint">Nenhum logo enviado</span>
+            </div>
+            <button type="button" id="btnUploadLogo" class="btn btn-secondary">📁 Fazer Upload do Logo</button>
+          </div>
         </div>
+
         <div class="form-group">
-          <label for="inputFaviconUrl">URL do Favicon (Ícone da Aba do Navegador):</label>
-          <input type="url" id="inputFaviconUrl" placeholder="https://exemplo.com/favicon.ico">
+          <label>Favicon (Ícone da aba do navegador):</label>
+          <div class="upload-preview-container">
+            <div class="preview-box preview-favicon">
+              <img id="previewFavicon" src="" alt="Pré-visualização Favicon" class="escondido">
+              <span id="textNoFavicon" class="hint">Nenhum favicon enviado</span>
+            </div>
+            <button type="button" id="btnUploadFavicon" class="btn btn-secondary">📁 Fazer Upload do Favicon</button>
+          </div>
         </div>
-        <button id="btnSalvarConfig" class="btn btn-secondary" style="margin-top: 8px;">Salvar Identidade Visual</button>
+
+        <button id="btnSalvarConfig" class="btn btn-primary" style="margin-top: 8px;">Salvar Identidade Visual</button>
       </div>
     </details>
 
@@ -149,6 +164,9 @@
     let listaImagensAtuais = [];
     let filtroCategoriaAtiva = 'TODOS';
 
+    let logoUrlTemp = "";
+    let faviconUrlTemp = "";
+
     function mostrarToast(texto, tipo = 'padrao') {
       const anterior = document.querySelector('.toast');
       if (anterior) anterior.remove();
@@ -159,7 +177,47 @@
       setTimeout(() => toast.remove(), 2600);
     }
 
-    // CARREGAR E APLICAR CONFIGURAÇÕES VISUAIS DA LOJA (LOGO & FAVICON)
+    // WIDGET DE UPLOAD DE LOGO
+    const widgetLogo = cloudinary.createUploadWidget({
+      cloudName: CLOUD_NAME,
+      uploadPreset: UPLOAD_PRESET,
+      multiple: false,
+      sources: ['local', 'url'],
+      clientAllowedFormats: ["png", "jpeg", "jpg", "webp", "svg"]
+    }, (error, result) => {
+      if (!error && result && result.event === "success") {
+        logoUrlTemp = result.info.secure_url;
+        atualizarPreviewElemento('previewLogo', 'textNoLogo', logoUrlTemp);
+        mostrarToast("Logo enviado! Clique em Salvar.", "sucesso");
+      }
+    });
+
+    // WIDGET DE UPLOAD DE FAVICON
+    const widgetFavicon = cloudinary.createUploadWidget({
+      cloudName: CLOUD_NAME,
+      uploadPreset: UPLOAD_PRESET,
+      multiple: false,
+      sources: ['local', 'url'],
+      clientAllowedFormats: ["png", "jpeg", "jpg", "webp", "ico", "svg"]
+    }, (error, result) => {
+      if (!error && result && result.event === "success") {
+        faviconUrlTemp = result.info.secure_url;
+        atualizarPreviewElemento('previewFavicon', 'textNoFavicon', faviconUrlTemp);
+        mostrarToast("Favicon enviado! Clique em Salvar.", "sucesso");
+      }
+    });
+
+    function atualizarPreviewElemento(imgId, textId, url) {
+      const img = document.getElementById(imgId);
+      const txt = document.getElementById(textId);
+      if (url) {
+        img.src = url;
+        img.classList.remove('escondido');
+        if (txt) txt.classList.add('escondido');
+      }
+    }
+
+    // CARREGAR E APLICAR CONFIGURAÇÕES VISUAIS DA LOJA
     async function carregarConfiguracoesLoja() {
       try {
         const docRef = doc(db, "configuracoes", "geral");
@@ -167,63 +225,47 @@
         if (docSnap.exists()) {
           const config = docSnap.data();
           if (config.logoUrl) {
+            logoUrlTemp = config.logoUrl;
             const imgLogo = document.getElementById('siteLogo');
             imgLogo.src = config.logoUrl;
             imgLogo.classList.remove('escondido');
-            document.getElementById('inputLogoUrl').value = config.logoUrl;
+            atualizarPreviewElemento('previewLogo', 'textNoLogo', config.logoUrl);
           }
           if (config.faviconUrl) {
+            faviconUrlTemp = config.faviconUrl;
             document.getElementById('dynamicFavicon').href = config.faviconUrl;
-            document.getElementById('inputFaviconUrl').value = config.faviconUrl;
+            atualizarPreviewElemento('previewFavicon', 'textNoFavicon', config.faviconUrl);
           }
         }
       } catch (e) {
-        console.error("Erro ao carregar configurações da loja:", e);
+        console.error("Erro ao carregar configurações:", e);
       }
     }
 
-    // SALVAR CONFIGURAÇÕES VISUAIS
+    // SALVAR CONFIGURAÇÕES VISUAIS NO FIRESTORE
     async function salvarConfiguracoesLoja() {
-      const logoUrl = document.getElementById('inputLogoUrl').value.trim();
-      const faviconUrl = document.getElementById('inputFaviconUrl').value.trim();
-
       try {
         await setDoc(doc(db, "configuracoes", "geral"), {
-          logoUrl,
-          faviconUrl,
+          logoUrl: logoUrlTemp,
+          faviconUrl: faviconUrlTemp,
           atualizadoEm: new Date()
         }, { merge: true });
 
-        mostrarToast("Identidade visual salva!", "sucesso");
+        mostrarToast("Identidade visual salva com sucesso!", "sucesso");
         carregarConfiguracoesLoja();
       } catch (e) {
-        mostrarToast("Erro ao salvar configurações.", "erro");
+        mostrarToast("Erro ao salvar no banco de dados.", "erro");
       }
     }
 
-    // WIDGET CLOUDINARY
+    // WIDGET CLOUDINARY PARA CARROSSEL
     const myWidget = cloudinary.createUploadWidget({
         cloudName: CLOUD_NAME, 
         uploadPreset: UPLOAD_PRESET,
         multiple: true,
         sources: ['local', 'url'],
         maxFileSize: 15000000,
-        clientAllowedFormats: ["png", "jpeg", "jpg", "webp"],
-        styles: {
-          palette: {
-            window: "#FFFFFF",
-            windowBorder: "#90A4AE",
-            tabIcon: "#0078FF",
-            menuBg: "#F4F6F8",
-            link: "#0078FF",
-            action: "#0078FF",
-            activeTab: "#0078FF",
-            error: "#F44235",
-            inProgress: "#0078FF",
-            complete: "#20B832",
-            sourceBg: "#F4F6F8"
-          }
-        }
+        clientAllowedFormats: ["png", "jpeg", "jpg", "webp"]
       }, (error, result) => { 
         if (!error && result && result.event === "success") {
           let urlOtimizada = result.info.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_1200/');
@@ -338,7 +380,7 @@
       document.getElementById('btnCancelarEdit').classList.add('escondido');
     }
 
-    // INICIALIZAÇÃO
+    // INICIALIZAÇÃO E LISTENERS
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('btnLogin').addEventListener('click', () => {
         document.getElementById('boxLogin').classList.remove('escondido');
@@ -351,7 +393,11 @@
       document.getElementById('btnFazerLogout').addEventListener('click', () => signOut(auth));
       document.getElementById('btnSalvar').addEventListener('click', salvarCarrossel);
       document.getElementById('btnCancelarEdit').addEventListener('click', cancelarEdicao);
+      
+      document.getElementById('btnUploadLogo').addEventListener('click', () => widgetLogo.open());
+      document.getElementById('btnUploadFavicon').addEventListener('click', () => widgetFavicon.open());
       document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
+      
       document.getElementById('campoBusca').addEventListener('keyup', filtrarVitrine);
 
       carregarConfiguracoesLoja();
