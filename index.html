@@ -20,7 +20,7 @@
   </div>
 
   <div class="top-bar">
-    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa">⚙️</button>
+    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa" onclick="window.abrirModalLogin && window.abrirModalLogin()">⚙️</button>
   </div>
 
   <div id="boxLogin" class="modal-login escondido">
@@ -122,11 +122,23 @@
     let filtroCategoriaAtiva = 'TODOS';
     let filtroClasseAtiva = 'TODOS';
 
-    // ELEMENTOS E EVENTOS
+    // FUNÇÃO GLOBAL DE ABERTURA DO MODAL (EVITA PROBLEMAS DE EVENTO)
+    window.abrirModalLogin = function() {
+      const box = document.getElementById('boxLogin');
+      if (box) {
+        box.classList.toggle('escondido');
+        if (!box.classList.contains('escondido')) {
+          document.getElementById('emailInput').focus();
+        }
+      }
+    };
+
+    // INICIALIZAÇÃO SEGURA
     document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById('btnLogin').addEventListener('click', () => {
-        document.getElementById('boxLogin').classList.toggle('escondido');
-      });
+      const btnEngrenagem = document.getElementById('btnLogin');
+      if (btnEngrenagem) {
+        btnEngrenagem.onclick = window.abrirModalLogin;
+      }
 
       document.getElementById('btnFazerLogin').addEventListener('click', fazerLogin);
       document.getElementById('btnFazerLogout').addEventListener('click', () => signOut(auth));
