@@ -239,13 +239,19 @@ p {
 
 /* PAINEL ADMIN E SEÇÃO DE PERSONALIZAÇÃO */
 .painel-admin {
-  max-width: 600px;
+  max-width: min(920px, 94vw);
   margin: 20px auto;
   background: var(--surface);
-  padding: 24px;
+  padding: 22px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+}
+
+@media (min-width: 640px) {
+  .painel-admin {
+    padding: 30px 34px 34px;
+  }
 }
 
 .painel-admin h3 {
@@ -282,10 +288,15 @@ p {
 .form-row {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .flex-1 {
-  flex: 1;
+  flex: 1 1 160px;
+}
+
+.campo-valor-group {
+  flex: 0 1 160px;
 }
 
 label {
@@ -881,27 +892,77 @@ input:focus, textarea:focus {
 /* EDITOR DE TEXTO FORMATADO (ADMIN) */
 .editor-toolbar {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   background: var(--bg-alt);
-  padding: 6px;
+  padding: 8px;
   border: 1px solid var(--border);
   border-bottom: none;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
+.editor-toolbar-grupo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-toolbar-divisor {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  margin: 0 2px;
+}
+
 .editor-toolbar button {
-  padding: 4px 10px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
 }
 
 .editor-toolbar button:hover {
   background: var(--primary-soft);
   color: var(--primary);
+  border-color: var(--primary);
+}
+
+.editor-select-tamanho {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition);
+}
+
+.editor-select-tamanho:hover {
+  border-color: var(--primary);
+}
+
+.editor-toolbar input[type="color"] {
+  width: 30px;
+  height: 30px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  background: var(--surface);
 }
 
 .editor-content {
@@ -1191,4 +1252,24 @@ input:focus, textarea:focus {
   .galeria-info {
     overflow-y: visible;
   }
+}
+
+/* CAMPO DE VALOR COM MÁSCARA DE MOEDA */
+.campo-moeda-wrap {
+  position: relative;
+}
+
+.campo-moeda-wrap .prefixo-moeda {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.campo-moeda-wrap input {
+  padding-left: 34px;
 }
