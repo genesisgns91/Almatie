@@ -182,6 +182,30 @@
 
   <div class="vitrine" id="vitrineProdutos"></div>
 
+  <div id="modalGaleria" class="modal-galeria-overlay escondido">
+    <div class="modal-galeria-container">
+      <button id="btnFecharGaleria" class="btn-fechar-galeria" title="Fechar">✕</button>
+
+      <div class="galeria-carrossel-wrap">
+        <div class="galeria-carrossel" id="galeriaCarrosselImgs"></div>
+        <button class="btn-nav-galeria btn-prev-galeria" id="btnPrevGaleria">❮</button>
+        <button class="btn-nav-galeria btn-next-galeria" id="btnNextGaleria">❯</button>
+        <div class="galeria-dots" id="galeriaDots"></div>
+      </div>
+
+      <div class="galeria-info">
+        <h2 id="galeriaTitulo" class="galeria-titulo"></h2>
+        <div class="galeria-meta card-meta" id="galeriaMeta"></div>
+        <div class="galeria-descricao" id="galeriaDescricao"></div>
+        <div class="galeria-preco-box">
+          <span class="preco-label">--</span>
+          <div class="card-preco"><small>R$</small> <span id="galeriaPrecoValor">0,00</span></div>
+        </div>
+        <a href="#" id="galeriaBtnComprar" target="_blank" class="btn-comprar btn-comprar-galeria">Comprar Arte</a>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { db, auth } from './firebase-config.js';
     import { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -198,6 +222,59 @@
 
     let logoUrlTemp = "";
     let faviconUrlTemp = "";
+
+    let galeriaImagens = [];
+    let galeriaIndexAtual = 0;
+
+    // GALERIA EXPANDIDA (LIGHTBOX)
+    function abrirGaleria(prod) {
+      galeriaImagens = prod.imagens || [];
+      galeriaIndexAtual = 0;
+
+      document.getElementById('galeriaTitulo').innerText = prod.titulo || '';
+
+      let metaHTML = '';
+      if (prod.tipo) metaHTML += `<span class="badge-tag badge-tipo">${prod.tipo}</span>`;
+      metaHTML += `<span class="badge-tag badge-cat">${prod.categoria || 'Geral'}</span>`;
+      if (prod.classe) metaHTML += `<span class="badge-tag badge-sub">${prod.classe}</span>`;
+      document.getElementById('galeriaMeta').innerHTML = metaHTML;
+
+      document.getElementById('galeriaDescricao').innerHTML = prod.descricao || '';
+      document.getElementById('galeriaPrecoValor').innerText = prod.preco || '0,00';
+      document.getElementById('galeriaBtnComprar').href = prod.link || '#';
+
+      renderizarGaleriaImagens();
+
+      document.getElementById('modalGaleria').classList.remove('escondido');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function renderizarGaleriaImagens() {
+      const container = document.getElementById('galeriaCarrosselImgs');
+      const dotsContainer = document.getElementById('galeriaDots');
+      let slidesHTML = '';
+      let dotsHTML = '';
+      galeriaImagens.forEach((url, idx) => {
+        slidesHTML += `<div class="galeria-slide ${idx === galeriaIndexAtual ? 'ativo' : ''}"><img src="${url}"></div>`;
+        dotsHTML += `<div class="dot ${idx === galeriaIndexAtual ? 'ativo' : ''}"></div>`;
+      });
+      container.innerHTML = slidesHTML;
+      const temVarias = galeriaImagens.length > 1;
+      dotsContainer.innerHTML = temVarias ? dotsHTML : '';
+      document.getElementById('btnPrevGaleria').style.display = temVarias ? 'flex' : 'none';
+      document.getElementById('btnNextGaleria').style.display = temVarias ? 'flex' : 'none';
+    }
+
+    function mudarSlideGaleria(dir) {
+      if (!galeriaImagens.length) return;
+      galeriaIndexAtual = (galeriaIndexAtual + dir + galeriaImagens.length) % galeriaImagens.length;
+      renderizarGaleriaImagens();
+    }
+
+    function fecharGaleria() {
+      document.getElementById('modalGaleria').classList.add('escondido');
+      document.body.style.overflow = '';
+    }
 
     function mostrarToast(texto, tipo = 'padrao') {
       const anterior = document.querySelector('.toast');
@@ -470,6 +547,19 @@
       document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
       document.getElementById('campoBusca').addEventListener('keyup', filtrarVitrine);
 
+      document.getElementById('btnFecharGaleria').addEventListener('click', fecharGaleria);
+      document.getElementById('modalGaleria').addEventListener('click', (e) => {
+        if (e.target.id === 'modalGaleria') fecharGaleria();
+      });
+      document.getElementById('btnPrevGaleria').addEventListener('click', () => mudarSlideGaleria(-1));
+      document.getElementById('btnNextGaleria').addEventListener('click', () => mudarSlideGaleria(1));
+      document.addEventListener('keydown', (e) => {
+        if (document.getElementById('modalGaleria').classList.contains('escondido')) return;
+        if (e.key === 'Escape') fecharGaleria();
+        if (e.key === 'ArrowLeft') mudarSlideGaleria(-1);
+        if (e.key === 'ArrowRight') mudarSlideGaleria(1);
+      });
+
       carregarConfiguracoesLoja();
       carregarTaxonomias();
       carregarProdutos();
@@ -550,6 +640,7 @@
               <button class="btn-nav btn-next">❯</button>
               <div class="dots-container">${dotsHTML}</div>
             ` : ''}
+            <span class="icone-expandir" title="Ver galeria completa">⤢</span>
           </div>
           <div class="card-body">
             <div class="card-descricao-wrap">
@@ -570,9 +661,11 @@
         `;
 
         if (prod.imagens && prod.imagens.length > 1) {
-          card.querySelector('.btn-prev').addEventListener('click', () => mudarSlide(card, -1));
-          card.querySelector('.btn-next').addEventListener('click', () => mudarSlide(card, 1));
+          card.querySelector('.btn-prev').addEventListener('click', (e) => { e.stopPropagation(); mudarSlide(card, -1); });
+          card.querySelector('.btn-next').addEventListener('click', (e) => { e.stopPropagation(); mudarSlide(card, 1); });
         }
+
+        card.querySelector('.carrossel-container').addEventListener('click', () => abrirGaleria(prod));
 
         if (usuarioAtual) {
           card.querySelector('.btn-editar').addEventListener('click', () => prepararEdicao(prod.id));
