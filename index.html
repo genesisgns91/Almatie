@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  body { margin: 0; padding: 15px; background-color: #f4f6f9; }
+
+  /* ÁREA DE LOGIN */
+  .modal-login {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    max-width: 300px;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  /* ÁREA DO ADMINISTRADOR */
+  .painel-admin {
+    background: #ffffff;
+    border: 2px dashed #0275d8;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 25px;
+  }
+  .painel-admin h3 { margin-top: 0; color: #0275d8; display: flex; align-items: center; justify-content: space-between; }
+  .form-group { margin-bottom: 10px; }
+  .form-group label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 13px; color: #333; }
+  .form-group input, .form-group textarea {
+    width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
+  }
+  .btn-admin {
+    background: #0275d8; color: white; border: none; padding: 10px 15px;
+    border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px;
+  }
+  .btn-admin:hover { background: #025aa5; }
+  .btn-cancelar { background: #6c757d; margin-top: 5px; }
+  
+  /* ÁREA DE BUSCA */
+  .area-busca {
+    text-align: center;
+    margin-bottom: 25px;
+  }
+  .campo-busca {
+    width: 100%;
+    max-width: 500px;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #0275d8;
+    border-radius: 25px;
+    outline: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+
+  /* VITRINE E CARDS */
+  .vitrine {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .card-carrossel {
+    background: white;
+    width: 290px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .card-header {
+    background: #0275d8;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 15px;
+    text-transform: uppercase;
+  }
+
+  /* ESTRUTURA DO CARROSSEL DE IMAGENS */
+  .carrossel-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: #111;
+    overflow: hidden;
+  }
+  .carrossel-slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+  }
+  .carrossel-slide.ativo {
+    display: block;
+  }
+  .carrossel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* SETAS NAVEGAÇÃO */
+  .btn-prev, .btn-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 3px;
+    user-select: none;
+  }
+  .btn-prev:hover, .btn-next:hover { background: rgba(0,0,0,0.8); }
+  .btn-prev { left: 5px; }
+  .btn-next { right: 5px; }
+
+  .card-body { padding: 12px; }
+  .card-descricao { font-size: 13px; color: #666; margin-bottom: 10px; min-height: 36px; }
+  .card-preco { font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 10px; text-align: center; }
+  
+  .btn-comprar {
+    display: block;
+    background: #28a745;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+  .btn-comprar:hover { background: #218838; }
+
+  /* BOTÕES DO ADMIN NOS CARDS */
+  .acoes-admin { display: flex; gap: 5px; margin-top: 8px; }
+  .btn-editar { background: #ffc107; color: #000; border: none; padding: 6px; flex: 1; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+  .btn-excluir { background: #dc3545; color: white; border: none; padding: 6px; flex: 1; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+
+  .escondido { display: none !important; }
+</style>
+</head>
+<body>
+
+<div style="text-align: right; margin-bottom: 5px;">
+  <button onclick="alternarTelaLogin()" id="btnLogin" style="background: none; border: none; color: #aaa; font-size: 11px; cursor: pointer;">🔒 Área do Dono</button>
+</div>
+
+<div id="boxLogin" class="modal-login escondido">
+  <div class="form-group">
+    <label>Senha de Acesso:</label>
+    <input type="password" id="senhaInput" placeholder="Digite sua senha">
+  </div>
+  <button onclick="verificarSenha()" class="btn-admin" style="padding: 5px;">Entrar</button>
+  <p id="msgErro" style="color: red; font-size: 12px; margin: 5px 0 0 0; display: none;">Senha incorreta!</p>
+</div>
+
+<div id="painelAdmin" class="painel-admin escondido">
+  <h3 id="tituloPainel">
+    Painel do Proprietário 
+    <button onclick="logoutAdmin()" style="font-size: 11px; background: #6c757d; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer;">Sair da Conta</button>
+  </h3>
+  
+  <input type="hidden" id="editIndex" value="-1">
+
+  <div class="form-group">
+    <label>Título do Carrossel / Categoria:</label>
+    <input type="text" id="titulo" placeholder="Ex: CHOCOLATE / PÁSCOA">
+  </div>
+  <div class="form-group">
+    <label>Descrição rápida:</label>
+    <textarea id="descricao" rows="2" placeholder="Ex: Pacote com 10 artes de caneca M&Ms"></textarea>
+  </div>
+  <div class="form-group">
+    <label>Valor (R$):</label>
+    <input type="text" id="preco" placeholder="Ex: 29,90">
+  </div>
+  <div class="form-group">
+    <label>Link da Página de Compra:</label>
+    <input type="url" id="linkCompra" placeholder="https://seu-site-de-vendas.com/item">
+  </div>
+  <div class="form-group">
+    <label>Imagens (Selecione uma ou VÁRIAS fotos de uma vez):</label>
+    <input type="file" id="imagemFile" accept="image/*" multiple>
+  </div>
+  
+  <button onclick="salvarCarrossel()" id="btnSalvar" class="btn-admin">Publicar Carrossel</button>
+  <button onclick="cancelarEdicao()" id="btnCancelarEdit" class="btn-admin btn-cancelar escondido">Cancelar Edição</button>
+</div>
+
+<div class="area-busca">
+  <input type="text" id="campoBusca" class="campo-busca" placeholder="🔍 Digite para buscar uma arte..." onkeyup="filtrarVitrine()">
+</div>
+
+<div class="vitrine" id="vitrineProdutos"></div>
+
+<script>
+  let eAdmin = false;
+  const SENHA_MESTRE = "1234"; // SUA SENHA AQUI
+  
+  // Lista em memória dos produtos
+  let produtos = [
+    {
+      titulo: "CHOCOLATE / PÁSCOA",
+      descricao: "Artes exclusivas estilo M&Ms para sublimação de canecas.",
+      preco: "29,90",
+      link: "https://google.com",
+      imagens: ["https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=400"]
+    },
+    {
+      titulo: "LIGA NFL",
+      descricao: "Vários modelos de camisetas e canecas de times da NFL.",
+      preco: "35,00",
+      link: "https://google.com",
+      imagens: ["https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=400"]
+    }
+  ];
+
+  function alternarTelaLogin() {
+    document.getElementById('boxLogin').classList.toggle('escondido');
+  }
+
+  function verificarSenha() {
+    if (document.getElementById('senhaInput').value === SENHA_MESTRE) {
+      eAdmin = true;
+      document.getElementById('painelAdmin').classList.remove('escondido');
+      document.getElementById('boxLogin').classList.add('escondido');
+      document.getElementById('btnLogin').style.display = 'none';
+      renderizarVitrine();
+    } else {
+      document.getElementById('msgErro').style.display = 'block';
+    }
+  }
+
+  function logoutAdmin() {
+    eAdmin = false;
+    document.getElementById('painelAdmin').classList.add('escondido');
+    document.getElementById('btnLogin').style.display = 'inline';
+    cancelarEdicao();
+    renderizarVitrine();
+  }
+
+  // Comprime as imagens enviadas para deixar a página leve e carregar rápido
+  async function comprimirImagem(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const max = 500; // Redimensiona para no máximo 500px para economizar memória
+
+          if (width > height && width > max) {
+            height *= max / width; width = max;
+          } else if (height > max) {
+            width *= max / height; height = max;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7)); // Salva em qualidade leve
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function salvarCarrossel() {
+    const editIdx = parseInt(document.getElementById('editIndex').value);
+    const titulo = document.getElementById('titulo').value;
+    const descricao = document.getElementById('descricao').value;
+    const preco = document.getElementById('preco').value;
+    const link = document.getElementById('linkCompra').value;
+    const files = document.getElementById('imagemFile').files;
+
+    if (!titulo || !link) {
+      alert("Preencha ao menos o Título e o Link de Compra!");
+      return;
+    }
+
+    let imgs = [];
+    if (files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const imgComprimida = await comprimirImagem(files[i]);
+        imgs.push(imgComprimida);
+      }
+    } else if (editIdx >= 0) {
+      imgs = produtos[editIdx].imagens; // Mantém as imagens anteriores se não alterou
+    } else {
+      alert("Selecione pelo menos uma imagem!");
+      return;
+    }
+
+    const novoProduto = { titulo, descricao, preco, link, imagens: imgs };
+
+    if (editIdx >= 0) {
+      produtos[editIdx] = novoProduto;
+    } else {
+      produtos.push(novoProduto);
+    }
+
+    cancelarEdicao();
+    renderizarVitrine();
+  }
+
+  function prepararEdicao(idx) {
+    const p = produtos[idx];
+    document.getElementById('editIndex').value = idx;
+    document.getElementById('titulo').value = p.titulo;
+    document.getElementById('descricao').value = p.descricao;
+    document.getElementById('preco').value = p.preco;
+    document.getElementById('linkCompra').value = p.link;
+    
+    document.getElementById('tituloPainel').childNodes[0].nodeValue = "Editando Carrossel ";
+    document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
+    document.getElementById('btnCancelarEdit').classList.remove('escondido');
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelarEdicao() {
+    document.getElementById('editIndex').value = "-1";
+    document.getElementById('titulo').value = '';
+    document.getElementById('descricao').value = '';
+    document.getElementById('preco').value = '';
+    document.getElementById('linkCompra').value = '';
+    document.getElementById('imagemFile').value = '';
+    
+    document.getElementById('tituloPainel').childNodes[0].nodeValue = "Painel do Proprietário ";
+    document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
+    document.getElementById('btnCancelarEdit').classList.add('escondido');
+  }
+
+  function excluirCarrossel(idx) {
+    if (confirm("Deseja realmente excluir este carrossel?")) {
+      produtos.splice(idx, 1);
+      renderizarVitrine();
+    }
+  }
+
+  // Troca de imagem no carrossel
+  function MudarSlide(btn, dir) {
+    const container = btn.parentElement;
+    const slides = container.getElementsByClassName('carrossel-slide');
+    let ativoIdx = 0;
+
+    for (let i = 0; i < slides.length; i++) {
+      if (slides[i].classList.contains('ativo')) {
+        ativoIdx = i;
+        slides[i].classList.remove('ativo');
+        break;
+      }
+    }
+
+    let novoIdx = ativoIdx + dir;
+    if (novoIdx >= slides.length) novoIdx = 0;
+    if (novoIdx < 0) novoIdx = slides.length - 1;
+
+    slides[novoIdx].classList.add('ativo');
+  }
+
+  function renderizarVitrine() {
+    const vitrine = document.getElementById('vitrineProdutos');
+    vitrine.innerHTML = '';
+
+    produtos.forEach((prod, idx) => {
+      let slidesHTML = '';
+      prod.imagens.forEach((imgUrl, imgIdx) => {
+        slidesHTML += `
+          <div class="carrossel-slide ${imgIdx === 0 ? 'ativo' : ''}">
+            <img src="${imgUrl}" alt="${prod.titulo}">
+          </div>
+        `;
+      });
+
+      const mostraControles = prod.imagens.length > 1;
+
+      const card = document.createElement('div');
+      card.className = 'card-carrossel';
+      card.innerHTML = `
+        <div class="card-header">${prod.titulo}</div>
+        
+        <div class="carrossel-container">
+          ${slidesHTML}
+          ${mostraControles ? `
+            <button class="btn-prev" onclick="MudarSlide(this, -1)">❮</button>
+            <button class="btn-next" onclick="MudarSlide(this, 1)">❯</button>
+          ` : ''}
+        </div>
+
+        <div class="card-body">
+          <div class="card-descricao">${prod.descricao || ''}</div>
+          <div class="card-preco">R$ ${prod.preco || '0,00'}</div>
+          <a href="${prod.link}" target="_blank" class="btn-comprar">Comprar Arte</a>
+          
+          ${eAdmin ? `
+            <div class="acoes-admin">
+              <button class="btn-editar" onclick="prepararEdicao(${idx})">✏️ Editar</button>
+              <button class="btn-excluir" onclick="excluirCarrossel(${idx})">🗑️ Excluir</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      vitrine.appendChild(card);
+    });
+  }
+
+  function filtrarVitrine() {
+    const termo = document.getElementById('campoBusca').value.toLowerCase();
+    const cards = document.getElementsByClassName('card-carrossel');
+
+    for (let card of cards) {
+      const texto = card.innerText.toLowerCase();
+      card.style.display = texto.includes(termo) ? "flex" : "none";
+    }
+  }
+
+  // Inicializa a vitrine
+  renderizarVitrine();
+</script>
+
+</body>
+</html>
