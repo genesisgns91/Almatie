@@ -60,30 +60,51 @@
     <details class="secao-personalizacao">
       <summary>⚙️ Personalizar Identidade da Loja (Logo & Favicon)</summary>
       <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 16px;">
-        
         <div class="form-group">
-          <label>Logo da Loja (ao lado do título):</label>
+          <label>Logo da Loja:</label>
           <div class="upload-preview-container">
             <div class="preview-box">
-              <img id="previewLogo" src="" alt="Pré-visualização Logo" class="escondido">
-              <span id="textNoLogo" class="hint">Nenhum logo enviado</span>
+              <img id="previewLogo" src="" alt="Preview Logo" class="escondido">
+              <span id="textNoLogo" class="hint">Sem logo</span>
             </div>
-            <button type="button" id="btnUploadLogo" class="btn btn-secondary">📁 Fazer Upload do Logo</button>
+            <button type="button" id="btnUploadLogo" class="btn btn-secondary">📁 Upload Logo</button>
           </div>
         </div>
 
         <div class="form-group">
-          <label>Favicon (Ícone da aba do navegador):</label>
+          <label>Favicon:</label>
           <div class="upload-preview-container">
             <div class="preview-box preview-favicon">
-              <img id="previewFavicon" src="" alt="Pré-visualização Favicon" class="escondido">
-              <span id="textNoFavicon" class="hint">Nenhum favicon enviado</span>
+              <img id="previewFavicon" src="" alt="Preview Favicon" class="escondido">
+              <span id="textNoFavicon" class="hint">Sem favicon</span>
             </div>
-            <button type="button" id="btnUploadFavicon" class="btn btn-secondary">📁 Fazer Upload do Favicon</button>
+            <button type="button" id="btnUploadFavicon" class="btn btn-secondary">📁 Upload Favicon</button>
           </div>
         </div>
 
-        <button id="btnSalvarConfig" class="btn btn-primary" style="margin-top: 8px;">Salvar Identidade Visual</button>
+        <button id="btnSalvarConfig" class="btn btn-primary">Salvar Identidade Visual</button>
+      </div>
+    </details>
+
+    <details class="secao-personalizacao">
+      <summary>🏷️ Cadastrar Tipos / Categorias / Subcategorias</summary>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="novoTipo">Tipo:</label>
+            <input type="text" id="novoTipo" placeholder="Ex: Canecas, Almofadas">
+          </div>
+          <div class="form-group flex-1">
+            <label for="novaCategoria">Categoria:</label>
+            <input type="text" id="novaCategoria" placeholder="Ex: Datas Comemorativas">
+          </div>
+          <div class="form-group flex-1">
+            <label for="novaSubcategoria">Subcategoria:</label>
+            <input type="text" id="novaSubcategoria" placeholder="Ex: Dia das Mães">
+          </div>
+        </div>
+        <button id="btnCadastrarTaxonomia" class="btn btn-secondary">＋ Cadastrar Opção</button>
+        <div id="listaTaxonomias" class="tags-taxonomia-container"></div>
       </div>
     </details>
 
@@ -93,28 +114,40 @@
 
     <div class="form-group">
       <label for="titulo">Título do Carrossel:</label>
-      <input type="text" id="titulo" placeholder="Ex: Pacote Canecas de Páscoa">
+      <input type="text" id="titulo" placeholder="Ex: Pacote de Artes Canecas Kombi Vintage">
     </div>
 
     <div class="form-row">
       <div class="form-group flex-1">
-        <label for="categoria">Categoria:</label>
-        <input type="text" id="categoria" placeholder="Ex: Páscoa">
+        <label for="selectTipo">Tipo:</label>
+        <select id="selectTipo" class="select-custom"><option value="">Selecione...</option></select>
       </div>
       <div class="form-group flex-1">
-        <label for="classe">Classe / Subcategoria:</label>
-        <input type="text" id="classe" placeholder="Ex: Canecas">
+        <label for="selectCategoria">Categoria:</label>
+        <select id="selectCategoria" class="select-custom"><option value="">Selecione...</option></select>
+      </div>
+      <div class="form-group flex-1">
+        <label for="selectSubcategoria">Subcategoria / Classe:</label>
+        <select id="selectSubcategoria" class="select-custom"><option value="">Selecione...</option></select>
       </div>
     </div>
 
     <div class="form-group">
-      <label for="descricao">Descrição:</label>
-      <textarea id="descricao" rows="2" placeholder="Descrição do pacote..."></textarea>
+      <label>Descrição do Produto (com Formatação):</label>
+      <div class="editor-toolbar">
+        <button type="button" onclick="formatarTexto('bold')" title="Negrito"><b>B</b></button>
+        <button type="button" onclick="formatarTexto('italic')" title="Itálico"><i>I</i></button>
+        <button type="button" onclick="formatarTexto('underline')" title="Sublinhado"><u>U</u></button>
+        <button type="button" onclick="formatarTexto('insertUnorderedList')" title="Lista de Marcadores">• Lista</button>
+        <button type="button" onclick="formatarTexto('insertOrderedList')" title="Lista Numerada">1. Lista</button>
+        <input type="color" id="corTextoEditor" onchange="formatarCor(this.value)" title="Cor do Texto">
+      </div>
+      <div id="editorDescricao" class="editor-content" contenteditable="true" placeholder="Digite aqui a descrição detalhada..."></div>
     </div>
 
     <div class="form-group">
       <label for="preco">Valor (R$):</label>
-      <input type="text" id="preco" placeholder="Ex: 29,90">
+      <input type="text" id="preco" placeholder="Ex: 16,90">
     </div>
 
     <div class="form-group">
@@ -124,7 +157,6 @@
 
     <div class="form-group">
       <label>Imagens do Carrossel:</label>
-      
       <div class="grid-imagens-modal" id="gridImagens">
         <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
           <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
@@ -136,7 +168,6 @@
 
     <button id="btnSalvar" class="btn btn-primary" style="margin-top: 15px;">Publicar Carrossel</button>
     <button id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar Edição</button>
-    <div id="statusUpload" class="status-msg"></div>
   </div>
 
   <div class="area-filtros">
@@ -161,6 +192,7 @@
 
     let usuarioAtual = null;
     let produtosMemoria = [];
+    let taxonomiasMemoria = [];
     let listaImagensAtuais = [];
     let filtroCategoriaAtiva = 'TODOS';
 
@@ -177,33 +209,27 @@
       setTimeout(() => toast.remove(), 2600);
     }
 
-    // WIDGET DE UPLOAD DE LOGO
-    const widgetLogo = cloudinary.createUploadWidget({
-      cloudName: CLOUD_NAME,
-      uploadPreset: UPLOAD_PRESET,
-      multiple: false,
-      sources: ['local', 'url'],
-      clientAllowedFormats: ["png", "jpeg", "jpg", "webp", "svg"]
-    }, (error, result) => {
-      if (!error && result && result.event === "success") {
-        logoUrlTemp = result.info.secure_url;
+    // EDITOR DE TEXTO FORMATADO
+    window.formatarTexto = (comando) => {
+      document.execCommand(comando, false, null);
+    };
+
+    window.formatarCor = (cor) => {
+      document.execCommand('foreColor', false, cor);
+    };
+
+    // CLOUDINARY LOGO & FAVICON
+    const widgetLogo = cloudinary.createUploadWidget({ cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: false }, (err, res) => {
+      if (!err && res && res.event === "success") {
+        logoUrlTemp = res.info.secure_url;
         atualizarPreviewElemento('previewLogo', 'textNoLogo', logoUrlTemp);
-        mostrarToast("Logo enviado! Clique em Salvar.", "sucesso");
       }
     });
 
-    // WIDGET DE UPLOAD DE FAVICON
-    const widgetFavicon = cloudinary.createUploadWidget({
-      cloudName: CLOUD_NAME,
-      uploadPreset: UPLOAD_PRESET,
-      multiple: false,
-      sources: ['local', 'url'],
-      clientAllowedFormats: ["png", "jpeg", "jpg", "webp", "ico", "svg"]
-    }, (error, result) => {
-      if (!error && result && result.event === "success") {
-        faviconUrlTemp = result.info.secure_url;
+    const widgetFavicon = cloudinary.createUploadWidget({ cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: false }, (err, res) => {
+      if (!err && res && res.event === "success") {
+        faviconUrlTemp = res.info.secure_url;
         atualizarPreviewElemento('previewFavicon', 'textNoFavicon', faviconUrlTemp);
-        mostrarToast("Favicon enviado! Clique em Salvar.", "sucesso");
       }
     });
 
@@ -217,18 +243,85 @@
       }
     }
 
-    // CARREGAR E APLICAR CONFIGURAÇÕES VISUAIS DA LOJA
+    // TAXONOMIAS (TIPOS, CATEGORIAS, SUBCATEGORIAS)
+    async function carregarTaxonomias() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "taxonomias"));
+        taxonomiasMemoria = [];
+        querySnapshot.forEach((docSnap) => {
+          taxonomiasMemoria.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        preencherSelectsTaxonomia();
+        renderizarTagsTaxonomias();
+      } catch (e) {
+        console.error("Erro ao carregar categorias:", e);
+      }
+    }
+
+    async function cadastrarTaxonomia() {
+      const tipo = document.getElementById('novoTipo').value.trim();
+      const categoria = document.getElementById('novaCategoria').value.trim();
+      const subcategoria = document.getElementById('novaSubcategoria').value.trim();
+
+      if (!tipo && !categoria && !subcategoria) {
+        mostrarToast("Preencha ao menos um campo para cadastrar!", "erro");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "taxonomias"), { tipo, categoria, subcategoria });
+        document.getElementById('novoTipo').value = '';
+        document.getElementById('novaCategoria').value = '';
+        document.getElementById('novaSubcategoria').value = '';
+        mostrarToast("Opção cadastrada com sucesso!", "sucesso");
+        carregarTaxonomias();
+      } catch (e) {
+        mostrarToast("Erro ao cadastrar opção.", "erro");
+      }
+    }
+
+    function preencherSelectsTaxonomia() {
+      const selTipo = document.getElementById('selectTipo');
+      const selCat = document.getElementById('selectCategoria');
+      const selSub = document.getElementById('selectSubcategoria');
+
+      const tipos = [...new Set(taxonomiasMemoria.map(t => t.tipo).filter(Boolean))];
+      const categorias = [...new Set(taxonomiasMemoria.map(t => t.categoria).filter(Boolean))];
+      const subcategorias = [...new Set(taxonomiasMemoria.map(t => t.subcategoria).filter(Boolean))];
+
+      selTipo.innerHTML = '<option value="">Selecione o Tipo...</option>' + tipos.map(t => `<option value="${t}">${t}</option>`).join('');
+      selCat.innerHTML = '<option value="">Selecione a Categoria...</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+      selSub.innerHTML = '<option value="">Selecione a Subcategoria...</option>' + subcategorias.map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+
+    function renderizarTagsTaxonomias() {
+      const container = document.getElementById('listaTaxonomias');
+      container.innerHTML = '';
+      taxonomiasMemoria.forEach(item => {
+        const tag = document.createElement('span');
+        tag.className = 'badge-taxonomia';
+        tag.innerHTML = `${item.tipo || '—'} > ${item.categoria || '—'} > ${item.subcategoria || '—'} <button onclick="window.excluirTaxonomia('${item.id}')">✕</button>`;
+        container.appendChild(tag);
+      });
+    }
+
+    window.excluirTaxonomia = async (id) => {
+      if(confirm("Excluir esta categoria cadastrada?")) {
+        await deleteDoc(doc(db, "taxonomias", id));
+        carregarTaxonomias();
+      }
+    };
+
+    // FIRESTORE & PRODUTOS
     async function carregarConfiguracoesLoja() {
       try {
-        const docRef = doc(db, "configuracoes", "geral");
-        const docSnap = await getDoc(docRef);
+        const docSnap = await getDoc(doc(db, "configuracoes", "geral"));
         if (docSnap.exists()) {
           const config = docSnap.data();
           if (config.logoUrl) {
             logoUrlTemp = config.logoUrl;
-            const imgLogo = document.getElementById('siteLogo');
-            imgLogo.src = config.logoUrl;
-            imgLogo.classList.remove('escondido');
+            document.getElementById('siteLogo').src = config.logoUrl;
+            document.getElementById('siteLogo').classList.remove('escondido');
             atualizarPreviewElemento('previewLogo', 'textNoLogo', config.logoUrl);
           }
           if (config.faviconUrl) {
@@ -237,12 +330,9 @@
             atualizarPreviewElemento('previewFavicon', 'textNoFavicon', config.faviconUrl);
           }
         }
-      } catch (e) {
-        console.error("Erro ao carregar configurações:", e);
-      }
+      } catch (e) { console.error(e); }
     }
 
-    // SALVAR CONFIGURAÇÕES VISUAIS NO FIRESTORE
     async function salvarConfiguracoesLoja() {
       try {
         await setDoc(doc(db, "configuracoes", "geral"), {
@@ -250,22 +340,13 @@
           faviconUrl: faviconUrlTemp,
           atualizadoEm: new Date()
         }, { merge: true });
-
-        mostrarToast("Identidade visual salva com sucesso!", "sucesso");
+        mostrarToast("Identidade visual salva!", "sucesso");
         carregarConfiguracoesLoja();
-      } catch (e) {
-        mostrarToast("Erro ao salvar no banco de dados.", "erro");
-      }
+      } catch (e) { mostrarToast("Erro ao salvar.", "erro"); }
     }
 
-    // WIDGET CLOUDINARY PARA CARROSSEL
     const myWidget = cloudinary.createUploadWidget({
-        cloudName: CLOUD_NAME, 
-        uploadPreset: UPLOAD_PRESET,
-        multiple: true,
-        sources: ['local', 'url'],
-        maxFileSize: 15000000,
-        clientAllowedFormats: ["png", "jpeg", "jpg", "webp"]
+        cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: true, sources: ['local', 'url'], clientAllowedFormats: ["png", "jpeg", "jpg", "webp"]
       }, (error, result) => { 
         if (!error && result && result.event === "success") {
           let urlOtimizada = result.info.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_1200/');
@@ -275,9 +356,7 @@
       }
     );
 
-    document.getElementById("btnAbrirWidgetCloudinary").addEventListener("click", () => {
-      myWidget.open();
-    }, false);
+    document.getElementById("btnAbrirWidgetCloudinary").onclick = () => myWidget.open();
 
     function renderizarGridImagens() {
       const grid = document.getElementById('gridImagens');
@@ -287,32 +366,28 @@
           <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
         </div>
       `;
-
       document.getElementById("btnAbrirWidgetCloudinary").onclick = () => myWidget.open();
 
       listaImagensAtuais.forEach((url, index) => {
         const div = document.createElement('div');
         div.className = 'item-img-grid';
-        div.innerHTML = `
-          <img src="${url}">
-          <button type="button" class="btn-remover-img" onclick="window.removerImagemGrid(${index})">✕</button>
-        `;
+        div.innerHTML = `<img src="${url}"><button type="button" class="btn-remover-img" onclick="window.removerImagemGrid(${index})">✕</button>`;
         grid.appendChild(div);
       });
     }
 
-    window.removerImagemGrid = function(index) {
+    window.removerImagemGrid = (index) => {
       listaImagensAtuais.splice(index, 1);
       renderizarGridImagens();
     };
 
-    // SALVAR CARROSSEL
     async function salvarCarrossel() {
       const docId = document.getElementById('editDocId').value;
       const titulo = document.getElementById('titulo').value;
-      const categoria = document.getElementById('categoria').value.trim() || 'Geral';
-      const classe = document.getElementById('classe').value.trim() || 'Geral';
-      const descricao = document.getElementById('descricao').value;
+      const tipo = document.getElementById('selectTipo').value || 'Geral';
+      const categoria = document.getElementById('selectCategoria').value || 'Geral';
+      const subcategoria = document.getElementById('selectSubcategoria').value || 'Geral';
+      const descricao = document.getElementById('editorDescricao').innerHTML;
       const preco = document.getElementById('preco').value;
       const link = document.getElementById('linkCompra').value;
 
@@ -322,11 +397,11 @@
       }
 
       if (listaImagensAtuais.length === 0) {
-        mostrarToast("Adicione ao menos uma imagem ao carrossel!", "erro");
+        mostrarToast("Adicione ao menos uma imagem!", "erro");
         return;
       }
 
-      const dados = { titulo, categoria, classe, descricao, preco, link, imagens: listaImagensAtuais, criadoEm: new Date() };
+      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, link, imagens: listaImagensAtuais, criadoEm: new Date() };
 
       try {
         if (docId) {
@@ -334,13 +409,10 @@
         } else {
           await addDoc(collection(db, "produtos"), dados);
         }
-
         mostrarToast(docId ? "Carrossel atualizado!" : "Carrossel publicado!", "sucesso");
         cancelarEdicao();
         carregarProdutos();
-      } catch (e) {
-        mostrarToast("Erro ao salvar no banco de dados.", "erro");
-      }
+      } catch (e) { mostrarToast("Erro ao salvar.", "erro"); }
     }
 
     function prepararEdicao(id) {
@@ -349,16 +421,16 @@
 
       document.getElementById('editDocId').value = p.id;
       document.getElementById('titulo').value = p.titulo;
-      document.getElementById('categoria').value = p.categoria || '';
-      document.getElementById('classe').value = p.classe || '';
-      document.getElementById('descricao').value = p.descricao;
+      document.getElementById('selectTipo').value = p.tipo || '';
+      document.getElementById('selectCategoria').value = p.categoria || '';
+      document.getElementById('selectSubcategoria').value = p.classe || '';
+      document.getElementById('editorDescricao').innerHTML = p.descricao || '';
       document.getElementById('preco').value = p.preco;
       document.getElementById('linkCompra').value = p.link;
 
       listaImagensAtuais = [...(p.imagens || [])];
       renderizarGridImagens();
 
-      document.getElementById('tituloPainel').childNodes[0].nodeValue = "Editando Carrossel ";
       document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
       document.getElementById('btnCancelarEdit').classList.remove('escondido');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -367,20 +439,19 @@
     function cancelarEdicao() {
       document.getElementById('editDocId').value = '';
       document.getElementById('titulo').value = '';
-      document.getElementById('categoria').value = '';
-      document.getElementById('classe').value = '';
-      document.getElementById('descricao').value = '';
+      document.getElementById('selectTipo').value = '';
+      document.getElementById('selectCategoria').value = '';
+      document.getElementById('selectSubcategoria').value = '';
+      document.getElementById('editorDescricao').innerHTML = '';
       document.getElementById('preco').value = '';
       document.getElementById('linkCompra').value = '';
       listaImagensAtuais = [];
       renderizarGridImagens();
 
-      document.getElementById('tituloPainel').childNodes[0].nodeValue = "Painel de Gestão ";
       document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
       document.getElementById('btnCancelarEdit').classList.add('escondido');
     }
 
-    // INICIALIZAÇÃO E LISTENERS
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('btnLogin').addEventListener('click', () => {
         document.getElementById('boxLogin').classList.remove('escondido');
@@ -393,14 +464,14 @@
       document.getElementById('btnFazerLogout').addEventListener('click', () => signOut(auth));
       document.getElementById('btnSalvar').addEventListener('click', salvarCarrossel);
       document.getElementById('btnCancelarEdit').addEventListener('click', cancelarEdicao);
-      
       document.getElementById('btnUploadLogo').addEventListener('click', () => widgetLogo.open());
       document.getElementById('btnUploadFavicon').addEventListener('click', () => widgetFavicon.open());
       document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
-      
+      document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
       document.getElementById('campoBusca').addEventListener('keyup', filtrarVitrine);
 
       carregarConfiguracoesLoja();
+      carregarTaxonomias();
       carregarProdutos();
     });
 
@@ -415,18 +486,12 @@
       try {
         await signInWithEmailAndPassword(auth, email, senha);
         fecharModalLogin();
-      } catch (error) {
-        document.getElementById('msgErro').innerText = "Credenciais inválidas.";
-      }
+      } catch (error) { document.getElementById('msgErro').innerText = "Credenciais inválidas."; }
     }
 
     onAuthStateChanged(auth, (user) => {
       usuarioAtual = user;
-      if (user) {
-        document.getElementById('painelAdmin').classList.remove('escondido');
-      } else {
-        document.getElementById('painelAdmin').classList.add('escondido');
-      }
+      document.getElementById('painelAdmin').classList.toggle('escondido', !user);
       renderizarVitrine();
     });
 
@@ -434,19 +499,14 @@
       try {
         const querySnapshot = await getDocs(collection(db, "produtos"));
         produtosMemoria = [];
-        querySnapshot.forEach((doc) => {
-          produtosMemoria.push({ id: doc.id, ...doc.data() });
-        });
+        querySnapshot.forEach((docSnap) => produtosMemoria.push({ id: docSnap.id, ...docSnap.data() }));
         construirMenuFiltros();
         renderizarVitrine();
-      } catch (e) {
-        console.error("Erro ao carregar produtos:", e);
-      }
+      } catch (e) { console.error(e); }
     }
 
     function construirMenuFiltros() {
       const container = document.getElementById('containerFiltros');
-      container.innerHTML = '';
       const categorias = ['TODOS', ...new Set(produtosMemoria.map(p => p.categoria || 'Geral'))];
       let html = `<div class="grupo-filtro"><span>Categorias:</span>`;
       categorias.forEach(cat => {
@@ -476,8 +536,12 @@
         card.className = 'card-carrossel';
         card.innerHTML = `
           <div class="card-header">
-            <span>${prod.titulo}</span>
-            <small class="badge-cat">${prod.categoria || 'Geral'}</small>
+            <h3 class="card-titulo">${prod.titulo}</h3>
+            <div class="card-meta">
+              ${prod.tipo ? `<span class="badge-tag badge-tipo">${prod.tipo}</span>` : ''}
+              <span class="badge-tag badge-cat">${prod.categoria || 'Geral'}</span>
+              ${prod.classe ? `<span class="badge-tag badge-sub">${prod.classe}</span>` : ''}
+            </div>
           </div>
           <div class="carrossel-container">
             ${slidesHTML}
@@ -488,8 +552,13 @@
             ` : ''}
           </div>
           <div class="card-body">
-            <div class="card-descricao">${prod.descricao || ''}</div>
-            <div class="card-preco">${prod.preco || '0,00'}</div>
+            <div class="card-descricao-wrap">
+              <div class="card-descricao">${prod.descricao || ''}</div>
+            </div>
+            <div class="card-preco-box">
+              <span class="preco-label">Valor</span>
+              <div class="card-preco"><small>R$</small> ${prod.preco || '0,00'}</div>
+            </div>
             <a href="${prod.link}" target="_blank" class="btn-comprar">Comprar Arte</a>
             ${usuarioAtual ? `
               <div class="acoes-admin">
