@@ -894,12 +894,14 @@ input:focus, textarea:focus {
 
 /* Header e Título do Card */
 .card-header {
+  height: 122px;
   padding: 12px 16px 10px;
   display: flex;
   flex-direction: column;
   gap: 5px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
+  overflow: hidden;
 }
 
 .card-titulo {
@@ -912,12 +914,15 @@ input:focus, textarea:focus {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .card-meta {
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
+  align-content: flex-start;
+  overflow: hidden;
 }
 
 .badge-tag {
