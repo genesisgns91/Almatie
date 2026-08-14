@@ -225,10 +225,9 @@ p {
   justify-content: space-between;
   align-items: center;
   padding: 14px 24px;
-  background: linear-gradient(120deg, #2B0E22 0%, var(--primary) 52%, var(--secondary-accent) 130%);
-  background-size: 160% 160%;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: var(--shadow);
+  background: linear-gradient(90deg, #ffffff 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -245,9 +244,6 @@ p {
   width: auto;
   object-fit: contain;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.94);
-  padding: 5px 8px;
-  box-shadow: var(--shadow-sm);
 }
 
 .brand {
@@ -260,20 +256,22 @@ p {
   font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #ffffff;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
+  background: var(--gradient-ink);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .brand span {
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--text-muted);
   letter-spacing: 0.01em;
 }
 
 /* Botão de acesso admin */
 .btn-engrenagem {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  border: 1px solid transparent;
   font-size: 1.1rem;
   cursor: pointer;
   width: 40px;
@@ -282,20 +280,19 @@ p {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--text-muted);
   transition: var(--transition);
 }
 
 .btn-engrenagem:hover {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--bg-alt);
+  color: var(--primary);
   transform: rotate(20deg);
 }
 
 .btn-engrenagem:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
+  box-shadow: var(--focus-ring);
 }
 
 /* MODAL OVERLAY E LOGIN */
