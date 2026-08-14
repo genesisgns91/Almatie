@@ -21,7 +21,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Caveat:wght@600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
 
@@ -195,6 +195,13 @@
           </div>
           <span class="editor-toolbar-divisor"></span>
           <div class="editor-toolbar-grupo">
+            <select id="seletorFonteEditor" class="editor-select-tamanho" title="Fonte do texto">
+              <option value="">Fonte</option>
+              <option value="'Inter', sans-serif">Padrão</option>
+              <option value="'Fraunces', serif">Elegante</option>
+              <option value="'Caveat', cursive">Manuscrita</option>
+              <option value="'Courier Prime', monospace">Máquina</option>
+            </select>
             <select id="seletorTamanhoFonte" class="editor-select-tamanho" title="Tamanho da fonte">
               <option value="">Tamanho</option>
               <option value="12px">Pequeno</option>
@@ -466,6 +473,19 @@
       restaurarSelecaoEditor();
       document.execCommand('hiliteColor', false, cor);
       salvarSelecaoEditor();
+    };
+
+    window.formatarFonte = (fonte) => {
+      if (!fonte) return;
+      restaurarSelecaoEditor();
+      document.execCommand('fontName', false, 'almatie-fonte-temp');
+      const editor = obterEditor();
+      editor.querySelectorAll('font[face="almatie-fonte-temp"]').forEach((el) => {
+        el.removeAttribute('face');
+        el.style.fontFamily = fonte;
+      });
+      salvarSelecaoEditor();
+      document.getElementById('seletorFonteEditor').value = '';
     };
 
     window.formatarTamanho = (tamanho) => {
@@ -762,6 +782,7 @@
       document.getElementById('corTextoEditor').addEventListener('input', (e) => window.formatarCor(e.target.value));
       document.getElementById('corFundoEditor').addEventListener('input', (e) => window.formatarCorFundo(e.target.value));
       document.getElementById('seletorTamanhoFonte').addEventListener('change', (e) => window.formatarTamanho(e.target.value));
+      document.getElementById('seletorFonteEditor').addEventListener('change', (e) => window.formatarFonte(e.target.value));
 
       const editorDescricaoEl = document.getElementById('editorDescricao');
       editorDescricaoEl.addEventListener('mouseup', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });

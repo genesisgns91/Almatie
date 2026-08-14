@@ -242,7 +242,7 @@ p {
 }
 
 .logo-img {
-  max-height: 42px;
+  max-height: 68px;
   width: auto;
   object-fit: contain;
   border-radius: var(--radius-sm);
@@ -1453,8 +1453,14 @@ input:focus, textarea:focus {
     max-height: 60vh;
   }
 
+  .btn-fechar-galeria {
+    top: max(16px, env(safe-area-inset-top, 16px));
+  }
+
   .galeria-info {
     overflow-y: visible;
+    padding-top: 24px;
+    padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
   }
 }
 
