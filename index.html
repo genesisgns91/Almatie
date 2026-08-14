@@ -25,25 +25,21 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Detecta cedo se o site está rodando como app instalado (standalone),
-       para exibir a tela de abertura personalizada sem "piscar" a página. -->
-  <script>
-    (function () {
-      var rodandoComoApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      if (rodandoComoApp) {
-        document.documentElement.classList.add('pwa-modo-app');
-      }
-    })();
-  </script>
-
   <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
 </head>
 <body>
 
-  <!-- TELA DE ABERTURA (SPLASH) DO APP INSTALADO — só aparece quando o site
-       é aberto como aplicativo instalado no celular (modo standalone). -->
-  <div id="pwaSplash" class="pwa-splash" aria-hidden="true">
-    <img src="icons/splash-logo.png" alt="" class="pwa-splash-logo">
+  <!-- LOADER DE CARREGAMENTO — aparece assim que a página abre (no navegador
+       ou como app instalado) e some sozinho quando os dados da loja
+       (produtos, categorias, identidade visual) terminam de carregar. -->
+  <div id="pageLoader" class="page-loader" role="status" aria-live="polite" aria-label="Carregando a loja">
+    <div class="page-loader-conteudo">
+      <div class="page-loader-marca">
+        <span class="page-loader-anel"></span>
+        <img src="icons/splash-logo.png" alt="" class="page-loader-logo">
+      </div>
+      <p class="page-loader-texto">Carregando a loja<span class="page-loader-pontos"><span>.</span><span>.</span><span>.</span></span></p>
+    </div>
   </div>
 
   <div id="headerBanner" class="header-banner escondido">
@@ -798,9 +794,7 @@
         if (e.key === 'ArrowRight') mudarSlideGaleria(1);
       });
 
-      carregarConfiguracoesLoja();
-      carregarTaxonomias();
-      carregarProdutos();
+      carregarDadosIniciais();
     });
 
     function fecharModalLogin() {
@@ -938,6 +932,40 @@
       }
     }
 
+    // PWA — LOADER DE CARREGAMENTO E SERVICE WORKER
+    let pageLoaderEscondido = false;
+
+    function esconderPageLoader() {
+      if (pageLoaderEscondido) return;
+      pageLoaderEscondido = true;
+      const loader = document.getElementById('pageLoader');
+      if (!loader) return;
+      loader.classList.add('page-loader-esconder');
+      setTimeout(() => loader.remove(), 500);
+    }
+
+    // Carrega tudo que a vitrine precisa e só então esconde o loader —
+    // assim o ícone animado fica visível pelo tempo real de carregamento.
+    async function carregarDadosIniciais() {
+      const inicio = Date.now();
+      try {
+        await Promise.all([
+          carregarConfiguracoesLoja(),
+          carregarTaxonomias(),
+          carregarProdutos()
+        ]);
+      } catch (erro) {
+        console.error('Erro ao carregar dados iniciais da loja:', erro);
+      } finally {
+        // tempo mínimo de exibição para evitar um "piscar" em conexões muito rápidas
+        const decorrido = Date.now() - inicio;
+        setTimeout(esconderPageLoader, Math.max(0, 350 - decorrido));
+      }
+    }
+
+    // segurança: nunca deixa o visitante preso na tela de carregamento
+    setTimeout(esconderPageLoader, 9000);
+
     function filtrarVitrine() {
       const termo = document.getElementById('campoBusca').value.toLowerCase();
       const cards = document.getElementsByClassName('card-carrossel');
@@ -946,18 +974,7 @@
       }
     }
 
-    // PWA — TELA DE ABERTURA (SPLASH) E SERVICE WORKER
-    function esconderSplashApp() {
-      const splash = document.getElementById('pwaSplash');
-      if (!splash) return;
-      setTimeout(() => {
-        splash.classList.add('pwa-splash-esconder');
-        setTimeout(() => splash.remove(), 500);
-      }, 700);
-    }
-
     window.addEventListener('load', () => {
-      esconderSplashApp();
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch((erro) => {
           console.error('Erro ao registrar o Service Worker:', erro);
