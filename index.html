@@ -5,17 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Almatiê Art</title>
 
+  <!-- O favicon do navegador continua 100% dinâmico (escolhido pelo admin na loja) -->
   <link id="dynamicFavicon" rel="icon" type="image/x-icon" href="">
+
+  <!-- PWA: instalabilidade no celular -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#D6336C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Almatiê Art">
+  <!-- Ícone do app (tela inicial do celular). Diferente do favicon do navegador,
+       que continua escolhido pelo admin — este é fixo, definido pela marca. -->
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
-  
+
+  <!-- Detecta cedo se o site está rodando como app instalado (standalone),
+       para exibir a tela de abertura personalizada sem "piscar" a página. -->
+  <script>
+    (function () {
+      var rodandoComoApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (rodandoComoApp) {
+        document.documentElement.classList.add('pwa-modo-app');
+      }
+    })();
+  </script>
+
   <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
 </head>
 <body>
+
+  <!-- TELA DE ABERTURA (SPLASH) DO APP INSTALADO — só aparece quando o site
+       é aberto como aplicativo instalado no celular (modo standalone). -->
+  <div id="pwaSplash" class="pwa-splash" aria-hidden="true">
+    <img src="icons/splash-logo.png" alt="" class="pwa-splash-logo">
+  </div>
 
   <div id="headerBanner" class="header-banner escondido">
     <img id="headerBannerImg" src="" alt="Cabeçalho">
@@ -134,31 +163,74 @@
 
     <div class="form-group">
       <label>Descrição do Produto (com Formatação):</label>
-      <div class="editor-toolbar">
-        <div class="editor-toolbar-grupo">
-          <button type="button" onclick="formatarTexto('bold')" title="Negrito"><b>B</b></button>
-          <button type="button" onclick="formatarTexto('italic')" title="Itálico"><i>I</i></button>
-          <button type="button" onclick="formatarTexto('underline')" title="Sublinhado"><u>S</u></button>
+      <div id="editorDescricaoWrap" class="editor-wrap">
+        <div class="editor-toolbar" id="editorToolbar">
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" data-cmd="undo" title="Desfazer (Ctrl+Z)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon" data-cmd="redo" title="Refazer (Ctrl+Y)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
+            </button>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" data-cmd="bold" title="Negrito (Ctrl+B)"><b>B</b></button>
+            <button type="button" class="btn-editor-icon" data-cmd="italic" title="Itálico (Ctrl+I)"><i>I</i></button>
+            <button type="button" class="btn-editor-icon" data-cmd="underline" title="Sublinhado (Ctrl+U)"><u>U</u></button>
+            <button type="button" class="btn-editor-icon" data-cmd="strikeThrough" title="Tachado"><s>T</s></button>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" data-cmd="justifyLeft" title="Alinhar à esquerda">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="17" y2="18"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon" data-cmd="justifyCenter" title="Centralizar">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="6" y1="18" x2="18" y2="18"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon" data-cmd="justifyRight" title="Alinhar à direita">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="7" y1="18" x2="20" y2="18"/></svg>
+            </button>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" data-cmd="insertUnorderedList" title="Lista de marcadores">• Lista</button>
+            <button type="button" class="btn-editor-icon" data-cmd="insertOrderedList" title="Lista numerada">1. Lista</button>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <select id="seletorTamanhoFonte" class="editor-select-tamanho" title="Tamanho da fonte">
+              <option value="">Tamanho</option>
+              <option value="12px">Pequeno</option>
+              <option value="16px">Normal</option>
+              <option value="19px">Médio</option>
+              <option value="23px">Grande</option>
+              <option value="28px">Título</option>
+            </select>
+            <label class="editor-cor-label" title="Cor do texto">
+              <span class="editor-cor-icone">A</span>
+              <input type="color" id="corTextoEditor" value="#1B1230">
+            </label>
+            <label class="editor-cor-label" title="Cor de destaque (marca-texto)">
+              <span class="editor-cor-icone editor-cor-icone-marcador">🖊</span>
+              <input type="color" id="corFundoEditor" value="#FBE4ED">
+            </label>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" id="btnInserirLink" title="Inserir link">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15 15 9"/><path d="M10.5 6.5 12 5a3.5 3.5 0 0 1 5 5l-1.5 1.5"/><path d="M13.5 17.5 12 19a3.5 3.5 0 0 1-5-5l1.5-1.5"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon" id="btnRemoverLink" title="Remover link">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15 15 9"/><path d="M10.5 6.5 12 5a3.5 3.5 0 0 1 5 5l-1.5 1.5"/><path d="M13.5 17.5 12 19a3.5 3.5 0 0 1-5-5l1.5-1.5"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon btn-editor-texto" id="btnLimparFormatacao" title="Limpar formatação">✕ Limpar</button>
+          </div>
+          <button type="button" class="btn-editor-expandir" id="btnExpandirEditor" title="Expandir área de edição">⤢ Expandir</button>
         </div>
-        <span class="editor-toolbar-divisor"></span>
-        <div class="editor-toolbar-grupo">
-          <button type="button" onclick="formatarTexto('insertUnorderedList')" title="Lista de marcadores">• Lista</button>
-          <button type="button" onclick="formatarTexto('insertOrderedList')" title="Lista numerada">1. Lista</button>
-        </div>
-        <span class="editor-toolbar-divisor"></span>
-        <div class="editor-toolbar-grupo">
-          <select id="seletorTamanhoFonte" class="editor-select-tamanho" onchange="formatarTamanho(this.value)" title="Tamanho da fonte">
-            <option value="">Tamanho</option>
-            <option value="12px">Pequeno</option>
-            <option value="16px">Normal</option>
-            <option value="19px">Médio</option>
-            <option value="23px">Grande</option>
-            <option value="28px">Título</option>
-          </select>
-          <input type="color" id="corTextoEditor" onchange="formatarCor(this.value)" title="Cor do texto">
-        </div>
+        <div id="editorDescricao" class="editor-content" contenteditable="true" data-placeholder="Digite aqui a descrição detalhada..."></div>
+        <span class="hint editor-hint">Selecione um trecho do texto e use os botões acima para formatar. Atalhos: Ctrl+B (negrito), Ctrl+I (itálico), Ctrl+U (sublinhado).</span>
       </div>
-      <div id="editorDescricao" class="editor-content" contenteditable="true" placeholder="Digite aqui a descrição detalhada..."></div>
     </div>
 
     <div class="form-row">
@@ -310,8 +382,12 @@
     // EDITOR DE TEXTO FORMATADO
     let selecaoEditorSalva = null;
 
+    function obterEditor() {
+      return document.getElementById('editorDescricao');
+    }
+
     function salvarSelecaoEditor() {
-      const editor = document.getElementById('editorDescricao');
+      const editor = obterEditor();
       const sel = window.getSelection();
       if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
         selecaoEditorSalva = sel.getRangeAt(0).cloneRange();
@@ -319,7 +395,7 @@
     }
 
     function restaurarSelecaoEditor() {
-      const editor = document.getElementById('editorDescricao');
+      const editor = obterEditor();
       editor.focus();
       if (selecaoEditorSalva) {
         const sel = window.getSelection();
@@ -328,11 +404,61 @@
       }
     }
 
-    window.formatarTexto = (comando) => {
+    function executarComandoEditor(comando, valor = null) {
       restaurarSelecaoEditor();
-      document.execCommand(comando, false, null);
+      document.execCommand(comando, false, valor);
       salvarSelecaoEditor();
-    };
+      atualizarEstadoBotoesEditor();
+      atualizarPlaceholderEditor();
+    }
+
+    function atualizarEstadoBotoesEditor() {
+      document.querySelectorAll('#editorToolbar [data-cmd]').forEach((btn) => {
+        try {
+          btn.classList.toggle('ativo', document.queryCommandState(btn.dataset.cmd));
+        } catch (e) { /* comando não suportado neste navegador */ }
+      });
+    }
+
+    function atualizarPlaceholderEditor() {
+      const editor = obterEditor();
+      const vazio = editor.textContent.trim().length === 0 && !editor.querySelector('img');
+      editor.classList.toggle('vazio', vazio);
+    }
+
+    function inserirLinkEditor() {
+      restaurarSelecaoEditor();
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed) {
+        mostrarToast('Selecione um trecho de texto para transformar em link.', 'erro');
+        return;
+      }
+      const url = prompt('Cole o endereço do link (ex: https://seu-link.com):');
+      if (!url) return;
+      document.execCommand('createLink', false, url);
+      salvarSelecaoEditor();
+    }
+
+    function removerLinkEditor() {
+      restaurarSelecaoEditor();
+      document.execCommand('unlink', false, null);
+      salvarSelecaoEditor();
+    }
+
+    function limparFormatacaoEditor() {
+      restaurarSelecaoEditor();
+      document.execCommand('removeFormat', false, null);
+      document.execCommand('unlink', false, null);
+      salvarSelecaoEditor();
+      atualizarEstadoBotoesEditor();
+    }
+
+    function alternarExpandirEditor() {
+      const wrap = document.getElementById('editorDescricaoWrap');
+      const btn = document.getElementById('btnExpandirEditor');
+      const expandido = wrap.classList.toggle('editor-expandido');
+      btn.innerHTML = expandido ? '⤡ Recolher' : '⤢ Expandir';
+    }
 
     window.formatarCor = (cor) => {
       restaurarSelecaoEditor();
@@ -340,11 +466,17 @@
       salvarSelecaoEditor();
     };
 
+    window.formatarCorFundo = (cor) => {
+      restaurarSelecaoEditor();
+      document.execCommand('hiliteColor', false, cor);
+      salvarSelecaoEditor();
+    };
+
     window.formatarTamanho = (tamanho) => {
       if (!tamanho) return;
       restaurarSelecaoEditor();
       document.execCommand('fontSize', false, '7');
-      const editor = document.getElementById('editorDescricao');
+      const editor = obterEditor();
       editor.querySelectorAll('font[size="7"]').forEach((el) => {
         el.removeAttribute('size');
         el.style.fontSize = tamanho;
@@ -581,6 +713,7 @@
 
       listaImagensAtuais = [...(p.imagens || [])];
       renderizarGridImagens();
+      atualizarPlaceholderEditor();
 
       document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
       document.getElementById('btnCancelarEdit').classList.remove('escondido');
@@ -598,6 +731,7 @@
       document.getElementById('linkCompra').value = '';
       listaImagensAtuais = [];
       renderizarGridImagens();
+      atualizarPlaceholderEditor();
 
       document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
       document.getElementById('btnCancelarEdit').classList.add('escondido');
@@ -621,8 +755,33 @@
       document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
       document.getElementById('campoBusca').addEventListener('keyup', filtrarVitrine);
 
-      document.getElementById('editorDescricao').addEventListener('mouseup', salvarSelecaoEditor);
-      document.getElementById('editorDescricao').addEventListener('keyup', salvarSelecaoEditor);
+      // TOOLBAR DO EDITOR — delega os botões com data-cmd para execCommand
+      document.querySelectorAll('#editorToolbar [data-cmd]').forEach((btn) => {
+        btn.addEventListener('click', () => executarComandoEditor(btn.dataset.cmd));
+      });
+      document.getElementById('btnInserirLink').addEventListener('click', inserirLinkEditor);
+      document.getElementById('btnRemoverLink').addEventListener('click', removerLinkEditor);
+      document.getElementById('btnLimparFormatacao').addEventListener('click', limparFormatacaoEditor);
+      document.getElementById('btnExpandirEditor').addEventListener('click', alternarExpandirEditor);
+      document.getElementById('corTextoEditor').addEventListener('input', (e) => window.formatarCor(e.target.value));
+      document.getElementById('corFundoEditor').addEventListener('input', (e) => window.formatarCorFundo(e.target.value));
+      document.getElementById('seletorTamanhoFonte').addEventListener('change', (e) => window.formatarTamanho(e.target.value));
+
+      const editorDescricaoEl = document.getElementById('editorDescricao');
+      editorDescricaoEl.addEventListener('mouseup', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });
+      editorDescricaoEl.addEventListener('keyup', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });
+      editorDescricaoEl.addEventListener('focus', atualizarEstadoBotoesEditor);
+      editorDescricaoEl.addEventListener('input', atualizarPlaceholderEditor);
+      editorDescricaoEl.addEventListener('keydown', (e) => {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        const atalhos = { b: 'bold', i: 'italic', u: 'underline' };
+        const comando = atalhos[e.key.toLowerCase()];
+        if (comando) {
+          e.preventDefault();
+          executarComandoEditor(comando);
+        }
+      });
+      atualizarPlaceholderEditor();
 
       aplicarMascaraMoeda(document.getElementById('preco'));
 
@@ -786,6 +945,25 @@
         card.style.display = card.innerText.toLowerCase().includes(termo) ? "flex" : "none";
       }
     }
+
+    // PWA — TELA DE ABERTURA (SPLASH) E SERVICE WORKER
+    function esconderSplashApp() {
+      const splash = document.getElementById('pwaSplash');
+      if (!splash) return;
+      setTimeout(() => {
+        splash.classList.add('pwa-splash-esconder');
+        setTimeout(() => splash.remove(), 500);
+      }, 700);
+    }
+
+    window.addEventListener('load', () => {
+      esconderSplashApp();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch((erro) => {
+          console.error('Erro ao registrar o Service Worker:', erro);
+        });
+      }
+    });
   </script>
 </body>
 </html>
