@@ -225,11 +225,10 @@ p {
   justify-content: space-between;
   align-items: center;
   padding: 14px 24px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(120deg, #2B0E22 0%, var(--primary) 52%, var(--secondary-accent) 130%);
+  background-size: 160% 160%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -238,7 +237,7 @@ p {
 .brand-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .logo-img {
@@ -246,6 +245,9 @@ p {
   width: auto;
   object-fit: contain;
   border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.94);
+  padding: 5px 8px;
+  box-shadow: var(--shadow-sm);
 }
 
 .brand {
@@ -257,22 +259,21 @@ p {
 .brand h1 {
   font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  background: var(--gradient-ink);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
 }
 
 .brand span {
   font-size: 0.78rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.78);
+  letter-spacing: 0.01em;
 }
 
 /* Botão de acesso admin */
 .btn-engrenagem {
-  background: transparent;
-  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   font-size: 1.1rem;
   cursor: pointer;
   width: 40px;
@@ -281,19 +282,20 @@ p {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.92);
   transition: var(--transition);
 }
 
 .btn-engrenagem:hover {
-  background: var(--bg-alt);
-  color: var(--primary);
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
   transform: rotate(20deg);
 }
 
 .btn-engrenagem:focus-visible {
   outline: none;
-  box-shadow: var(--focus-ring);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
 }
 
 /* MODAL OVERLAY E LOGIN */
@@ -1454,13 +1456,13 @@ input:focus, textarea:focus {
   }
 
   .btn-fechar-galeria {
-    top: max(16px, env(safe-area-inset-top, 16px));
+    top: calc(34px + env(safe-area-inset-top, 0px));
   }
 
   .galeria-info {
     overflow-y: visible;
-    padding-top: 24px;
-    padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
+    padding-top: 51px;
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
   }
 }
 
