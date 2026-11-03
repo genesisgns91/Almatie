@@ -822,7 +822,55 @@
       document.getElementById('boxLogin').classList.add('escondido');
       document.getElementById('modalOverlay').classList.add('escondido');
     }
+function fecharGaleria() {
+      document.getElementById('modalGaleria').classList.add('escondido');
+      document.body.style.overflow = '';
+    }
 
+    // --- COLE AQUI A NOVA FUNÇÃO DE CHECKOUT ---
+    window.iniciarCheckout = async function(produtoId, tituloEncoded, precoStr) {
+      const titulo = decodeURIComponent(tituloEncoded);
+      
+      // Limpa o formato do preço para número decimal puro
+      const precoLimpo = parseFloat(precoStr.replace(/\./g, '').replace(',', '.'));
+
+      if (!precoLimpo || precoLimpo <= 0) {
+        mostrarToast("Preço do produto inválido para compra.", "erro");
+        return;
+      }
+
+      mostrarToast("Gerando link de pagamento seguro...", "padrao");
+
+      try {
+        const resposta = await fetch("https://almatie-pagamentos.almatie-stock.workers.dev/criar-pagamento", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            produtoId: produtoId,
+            titulo: titulo,
+            preco: precoLimpo,
+            emailCliente: "cliente@almatie.com"
+          })
+        });
+
+        const dados = await resposta.json();
+
+        if (dados.init_point) {
+          window.location.href = dados.init_point;
+        } else {
+          mostrarToast("Erro ao gerar link de pagamento.", "erro");
+          console.error(dados);
+        }
+      } catch (e) {
+        console.error("Erro na requisição:", e);
+        mostrarToast("Falha de conexão com o servidor de pagamentos.", "erro");
+      }
+    };
+    // -------------------------------------------
+
+    async function fazerLogin() {
+      const email = document.getElementById('emailInput').value;
+      const senha = document.getElementById('senhaInput').value;
     async function fazerLogin() {
       const email = document.getElementById('emailInput').value;
       const senha = document.getElementById('senhaInput').value;
@@ -903,7 +951,8 @@
               <span class="preco-label">--</span>
               <div class="card-preco"><small>R$</small> ${prod.preco || '0,00'}</div>
             </div>
-            <a href="${prod.link}" target="_blank" class="btn-comprar">Comprar Arte</a>
+
+            <button type="button" class="btn-comprar" onclick="window.iniciarCheckout('${prod.id}', '${encodeURIComponent(prod.titulo)}', '${prod.preco}')">Comprar Arte</button>
             ${usuarioAtual ? `
               <div class="acoes-admin">
                 <button class="btn-editar">Editar</button>
