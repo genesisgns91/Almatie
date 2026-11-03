@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Almatiê Art</title>
+
+  <!-- O favicon do navegador continua 100% dinâmico (escolhido pelo admin na loja) -->
+  <link id="dynamicFavicon" rel="icon" type="image/x-icon" href="">
+
+  <!-- PWA: instalabilidade no celular -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#D6336C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Almatiê Art">
+  <!-- Ícone do app (tela inicial do celular). Diferente do favicon do navegador,
+       que continua escolhido pelo admin — este é fixo, definido pela marca. -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Caveat:wght@600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- VITRINE v2: busca, filtros em menu sanduíche, chips e paginação (estilos próprios, prefixo sf-) -->
+  <style id="sf-estilos">
+    :root{--sf-ink:var(--text);--sf-mut:var(--text-muted);--sf-brand:var(--primary);--sf-brand-d:var(--primary-hover);--sf-tint:var(--primary-soft);--sf-wash:var(--bg-alt);--sf-line:var(--border);--sf-ease:cubic-bezier(.22,.8,.3,1)}
+    html{scrollbar-gutter:stable}
+    body.sf-trava{overflow:hidden}
+    .sf-area,.sf-area *,.sf-painel,.sf-painel *{box-sizing:border-box}
+    .sf-area{font-family:var(--font-body);color:var(--sf-ink)}
+    .sf-area button,.sf-painel button{font-family:inherit}
+    .sf-area :focus-visible,.sf-painel :focus-visible{outline:3px solid rgba(214,51,108,.4);outline-offset:2px}
+
+    /* Mensagem inicial discreta: mesmo banner da marca, porém compacto e com texto suave */
+    .hero-loja.sf-hero{max-width:calc(min(1800px,94vw) - 32px);padding:14px 22px 15px;margin-top:16px;border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+    .hero-loja.sf-hero::before{width:150px;height:150px;right:-30px;top:-70px}
+    .hero-loja.sf-hero::after{display:none}
+    .hero-loja.sf-hero h2{font-family:var(--font-body);font-size:.95rem;font-weight:600;letter-spacing:0;line-height:1.4}
+    .hero-loja.sf-hero p{margin-top:2px;max-width:none;text-wrap:pretty;font-size:.8125rem;font-weight:400;line-height:1.5;color:rgba(255,255,255,.86)}
+
+    /* Barra: botão sanduíche + busca */
+    .sf-barra{display:flex;gap:10px;scroll-margin-top:12px}
+    .sf-btn-filtros{flex:none;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 18px 0 16px;border:1px solid var(--sf-line);border-radius:var(--radius-full);background:var(--surface);box-shadow:var(--shadow-sm);color:var(--sf-ink);font-size:.9rem;font-weight:600;cursor:pointer;transition:border-color .2s,background-color .2s,transform .12s var(--sf-ease)}
+    .sf-btn-filtros:hover{border-color:var(--sf-brand)}
+    .sf-btn-filtros:active{transform:scale(.97)}
+    .sf-btn-filtros.tem-filtros{background:var(--sf-tint);border-color:var(--sf-brand)}
+    .sf-sanduiche{position:relative;display:block;width:18px;height:14px}
+    .sf-sanduiche i{position:absolute;left:0;width:100%;height:2px;border-radius:2px;background:currentColor;transition:transform .3s var(--sf-ease),opacity .2s,width .25s var(--sf-ease)}
+    .sf-sanduiche i:nth-child(1){top:0}
+    .sf-sanduiche i:nth-child(2){top:6px;width:68%}
+    .sf-sanduiche i:nth-child(3){top:12px}
+    .sf-btn-filtros:hover .sf-sanduiche i:nth-child(2){width:100%}
+    .sf-btn-filtros[aria-expanded="true"] .sf-sanduiche i:nth-child(1){transform:translateY(6px) rotate(45deg)}
+    .sf-btn-filtros[aria-expanded="true"] .sf-sanduiche i:nth-child(2){opacity:0}
+    .sf-btn-filtros[aria-expanded="true"] .sf-sanduiche i:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .sf-badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--sf-brand);color:#fff;font-size:.72rem;font-weight:700;line-height:1}
+    .sf-badge.pop{animation:sf-pop .28s var(--sf-ease)}
+
+    .sf-busca{position:relative;flex:1;min-width:0}
+    .sf-busca-icone{position:absolute;left:15px;top:50%;translate:0 -50%;color:var(--sf-mut);pointer-events:none;transition:color .2s}
+    .sf-busca:focus-within .sf-busca-icone{color:var(--sf-brand)}
+    .sf-area .sf-busca .sf-campo{display:block;width:100%;height:48px;margin:0;padding:0 44px 0 44px;border:1px solid var(--sf-line);border-radius:var(--radius-full);background:#fff;color:var(--sf-ink);font:500 .9375rem 'Inter',system-ui,sans-serif;outline:none;box-shadow:var(--shadow-sm);transition:var(--transition)}
+    .sf-area .sf-busca .sf-campo::placeholder{color:#8F88A3}
+    .sf-area .sf-busca .sf-campo:focus{border-color:var(--sf-brand);box-shadow:var(--focus-ring)}
+    .sf-busca-limpar{position:absolute;right:8px;top:50%;translate:0 -50%;display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--sf-mut);cursor:pointer;opacity:0;scale:.8;pointer-events:none;transition:opacity .15s,scale .15s var(--sf-ease),background-color .15s}
+    .sf-busca-limpar:hover{background:var(--sf-wash);color:var(--sf-ink)}
+    .sf-busca.tem-texto .sf-busca-limpar{opacity:1;scale:1;pointer-events:auto}
+
+    /* Chips dos filtros ativos */
+    .sf-ativos{display:flex;flex-wrap:wrap;gap:8px}
+    .sf-ativos:empty{display:none}
+    .sf-chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 8px 0 12px;border:1px solid transparent;border-radius:999px;background:var(--sf-tint);color:var(--sf-brand-d);font-size:.8125rem;font-weight:600;cursor:pointer;animation:sf-pop .22s var(--sf-ease);transition:background-color .15s}
+    .sf-chip:hover{border-color:var(--sf-brand)}
+
+    /* Painel sanduíche */
+    .sf-overlay{position:fixed;inset:0;z-index:900;background:rgba(27,18,48,.45);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+    .sf-overlay.aberto{opacity:1;visibility:visible;transition-delay:0s}
+    .sf-painel{position:fixed;inset:0 auto 0 0;z-index:901;display:flex;flex-direction:column;width:min(400px,90vw);background:#fff;color:var(--sf-ink);font-family:'Inter',system-ui,sans-serif;border-radius:0 var(--radius-lg) var(--radius-lg) 0;box-shadow:var(--shadow-lg);transform:translateX(-104%);visibility:hidden;transition:transform .38s var(--sf-ease),visibility 0s .38s}
+    .sf-painel.aberto{transform:none;visibility:visible;transition-delay:0s}
+    .sf-painel-topo{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--sf-line)}
+    .sf-painel-topo h2{margin:0;font:600 1.25rem/1.2 'Fraunces',Georgia,serif;letter-spacing:-.01em}
+    .sf-icone-btn{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:var(--sf-ink);cursor:pointer;transition:background-color .15s,transform .12s}
+    .sf-icone-btn:hover{background:var(--sf-wash)}
+    .sf-icone-btn:active{transform:scale(.92)}
+    .sf-painel-corpo{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 14px 20px}
+    .sf-grupo{margin:0;padding:12px 0 8px;border:0;border-bottom:1px solid var(--sf-line)}
+    .sf-grupo:last-child{border-bottom:0}
+    .sf-grupo legend{float:left;width:100%;margin:0 0 6px;padding:0 6px;font-size:.9375rem;font-weight:700}
+    .sf-grupo legend+*{clear:both}
+    .sf-opcao{position:relative;display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border-radius:10px;cursor:pointer;transition:background-color .15s}
+    .sf-opcao:hover{background:var(--sf-wash)}
+    .sf-opcao.ativa{background:var(--sf-tint)}
+    .sf-opcao.vazia{opacity:.45;cursor:not-allowed}
+    .sf-opcao input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:inherit}
+    .sf-marca{flex:none;display:grid;place-items:center;width:18px;height:18px;border:2px solid rgba(27,18,48,.28);border-radius:50%;background:#fff;transition:background-color .2s,border-color .2s,box-shadow .2s}
+    .sf-marca::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff;transform:scale(0);transition:transform .22s var(--sf-ease)}
+    .sf-opcao input:checked~.sf-marca{background:var(--sf-brand);border-color:var(--sf-brand)}
+    .sf-opcao input:checked~.sf-marca::after{transform:scale(1)}
+    .sf-opcao input:focus-visible~.sf-marca{box-shadow:0 0 0 4px rgba(214,51,108,.25)}
+    .sf-opcao-texto{flex:1;font-size:.9375rem;font-weight:500;overflow-wrap:anywhere}
+    .sf-opcao input:checked~.sf-opcao-texto{font-weight:700}
+    .sf-opcao em{min-width:22px;font-style:normal;font-size:.8125rem;text-align:right;color:var(--sf-mut);font-variant-numeric:tabular-nums}
+    .sf-dica{margin:0;padding:2px 6px 8px;font-size:.8125rem;line-height:1.5;color:var(--sf-mut)}
+    .sf-painel-rodape{display:flex;gap:10px;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--sf-line);background:#fff}
+    .sf-btn{height:46px;padding:0 20px;border-radius:var(--radius-full);font-size:.9rem;font-weight:700;cursor:pointer;transition:background-color .2s,transform .12s var(--sf-ease),opacity .2s}
+    .sf-btn:active:not(:disabled){transform:scale(.97)}
+    .sf-btn:disabled{opacity:.4;cursor:default}
+    .sf-btn-sec{border:1px solid var(--sf-line);background:#fff;color:var(--sf-ink)}
+    .sf-btn-sec:hover:not(:disabled){background:var(--sf-wash)}
+    .sf-btn-pri{flex:1;border:0;background:var(--gradient-ink);color:#fff;box-shadow:var(--shadow-sm)}
+    .sf-btn-pri:hover:not(:disabled){filter:brightness(1.06);box-shadow:var(--shadow)}
+    .sf-btn-pri.bump{animation:sf-pop .28s var(--sf-ease)}
+
+    /* Paginação */
+    .sf-pag{display:flex;flex-direction:column;align-items:center;gap:12px;margin:12px 0 0}
+    .sf-pag-linha{display:flex;align-items:center;gap:6px}
+    .sf-pag-lista{display:flex;align-items:center;gap:4px;margin:0;padding:0;list-style:none}
+    .sf-pag-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;padding:0 12px;border:1px solid transparent;border-radius:var(--radius-full);background:transparent;color:var(--sf-ink);font-size:.9rem;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer;transition:background-color .15s,color .15s,transform .12s}
+    .sf-pag-btn:hover:not(:disabled):not(.atual){background:var(--sf-wash);color:var(--sf-ink)}
+    .sf-pag-btn:active:not(:disabled){transform:scale(.95)}
+    .sf-pag-btn.atual{background:var(--gradient-ink);color:#fff;cursor:default;box-shadow:var(--shadow-sm)}
+    .sf-pag-btn:disabled{opacity:.35;cursor:default}
+    .sf-pag-nav{border-color:var(--sf-line);background:#fff}
+    .sf-pag-reticencias{width:26px;text-align:center;color:var(--sf-mut)}
+    .sf-pag-compacta{display:none;min-width:104px;text-align:center;font-size:.875rem;font-weight:600;color:var(--sf-ink)}
+    .sf-pag-info{margin:0;font-size:.8125rem;color:var(--sf-mut)}
+    @media (max-width:560px){.sf-pag-lista{display:none}.sf-pag-compacta{display:block}}
+
+    /* Troca de página/filtro: entrada curta dos cards */
+    .vitrine.sf-troca>.card-carrossel{animation:sf-entra .36s var(--sf-ease) backwards}
+    .vitrine.sf-troca>.card-carrossel:nth-child(2){animation-delay:.03s}.vitrine.sf-troca>.card-carrossel:nth-child(3){animation-delay:.06s}.vitrine.sf-troca>.card-carrossel:nth-child(4){animation-delay:.09s}.vitrine.sf-troca>.card-carrossel:nth-child(n+5){animation-delay:.12s}
+    @keyframes sf-entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    @keyframes sf-pop{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+    @media (prefers-reduced-motion:reduce){.sf-area *,.sf-painel,.sf-overlay,.vitrine.sf-troca>.card-carrossel{animation:none!important;transition-duration:.01ms!important}}
+  </style>
+
+  <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+</head>
+<body>
+
+  <!-- LOADER DE CARREGAMENTO — aparece assim que a página abre (no navegador
+       ou como app instalado) e some sozinho quando os dados da loja
+       (produtos, categorias, identidade visual) terminam de carregar. -->
+  <div id="pageLoader" class="page-loader" role="status" aria-live="polite" aria-label="Carregando a loja">
+    <div class="page-loader-conteudo">
+      <div class="page-loader-marca">
+        <span class="page-loader-anel"></span>
+        <img src="splash-logo.png" alt="" class="page-loader-logo">
+      </div>
+      <p class="page-loader-texto">.<span class="page-loader-pontos"><span>.</span><span>.</span><span>.</span></span></p>
+    </div>
+  </div>
+
+  <div id="headerBanner" class="header-banner escondido">
+    <img id="headerBannerImg" src="" alt="Cabeçalho">
+  </div>
+
+  <header class="site-header">
+    <div class="brand-container">
+      <img id="siteLogo" class="logo-img escondido" src="" alt="Logo">
+      <div class="brand">
+        <h1>Almatiê Art</h1>
+        <span>Artes digitais para sublimação</span>
+      </div>
+    </div>
+    <button id="btnLogin" class="btn-engrenagem" title="Área Administrativa">⚙️</button>
+  </header>
+
+  <div id="modalOverlay" class="modal-overlay escondido"></div>
+
+  <div id="boxLogin" class="modal-login escondido" role="dialog" aria-modal="true">
+    <div class="modal-login-header">
+      <h3>Acesso Restrito</h3>
+      <button id="btnFecharModal" class="btn-fechar-modal">✕</button>
+    </div>
+    <div class="form-group">
+      <label for="emailInput">E-mail do Admin:</label>
+      <input type="email" id="emailInput" placeholder="admin@email.com">
+    </div>
+    <div class="form-group">
+      <label for="senhaInput">Senha:</label>
+      <input type="password" id="senhaInput" placeholder="••••••••">
+    </div>
+    <button id="btnFazerLogin" class="btn btn-primary">Entrar</button>
+    <div id="msgErro" class="status-msg" style="color: var(--danger);"></div>
+  </div>
+
+  <div id="painelAdmin" class="painel-admin escondido">
+    <h3 id="tituloPainel">
+      Painel de Gestão
+      <button id="btnFazerLogout" class="btn-link" style="color: var(--danger);">Sair</button>
+    </h3>
+
+    <details class="secao-personalizacao">
+      <summary>⚙️ Personalizar Identidade da Loja (Logo & Favicon)</summary>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 16px;">
+        <div class="form-group">
+          <label>Logo da Loja:</label>
+          <div class="upload-preview-container">
+            <div class="preview-box">
+              <img id="previewLogo" src="" alt="Preview Logo" class="escondido">
+              <span id="textNoLogo" class="hint">Sem logo</span>
+            </div>
+            <button type="button" id="btnUploadLogo" class="btn btn-secondary">📁 Upload Logo</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Favicon:</label>
+          <div class="upload-preview-container">
+            <div class="preview-box preview-favicon">
+              <img id="previewFavicon" src="" alt="Preview Favicon" class="escondido">
+              <span id="textNoFavicon" class="hint">Sem favicon</span>
+            </div>
+            <button type="button" id="btnUploadFavicon" class="btn btn-secondary">📁 Upload Favicon</button>
+          </div>
+        </div>
+
+        <button id="btnSalvarConfig" class="btn btn-primary">Salvar Identidade Visual</button>
+      </div>
+    </details>
+
+    <details class="secao-personalizacao">
+      <summary>🏷️ Cadastrar Tipos / Categorias / Subcategorias</summary>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="novoTipo">Tipo:</label>
+            <input type="text" id="novoTipo" placeholder="Ex: Canecas, Almofadas">
+          </div>
+          <div class="form-group flex-1">
+            <label for="novaCategoria">Categoria:</label>
+            <input type="text" id="novaCategoria" placeholder="Ex: Datas Comemorativas">
+          </div>
+          <div class="form-group flex-1">
+            <label for="novaSubcategoria">Subcategoria:</label>
+            <input type="text" id="novaSubcategoria" placeholder="Ex: Dia das Mães">
+          </div>
+        </div>
+        <button id="btnCadastrarTaxonomia" class="btn btn-secondary">＋ Cadastrar Opção</button>
+        <div id="listaTaxonomias" class="tags-taxonomia-container"></div>
+      </div>
+    </details>
+
+    <hr class="form-divider">
+
+    <input type="hidden" id="editDocId" value="">
+
+    <div class="form-group">
+      <label for="titulo">Título do Carrossel:</label>
+      <input type="text" id="titulo" placeholder="Ex: Pacote de Artes Canecas Kombi Vintage">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group flex-1">
+        <label for="selectTipo">Tipo:</label>
+        <select id="selectTipo" class="select-custom"><option value="">Selecione...</option></select>
+      </div>
+      <div class="form-group flex-1">
+        <label for="selectCategoria">Categoria:</label>
+        <select id="selectCategoria" class="select-custom"><option value="">Selecione...</option></select>
+      </div>
+      <div class="form-group flex-1">
+        <label for="selectSubcategoria">Subcategoria / Classe:</label>
+        <select id="selectSubcategoria" class="select-custom"><option value="">Selecione...</option></select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Descrição do Produto (com Formatação):</label>
+      <div id="editorDescricaoWrap" class="editor-wrap">
+        <div class="editor-toolbar" id="editorToolbar">
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" data-cmd="undo" title="Desfazer (Ctrl+Z)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon" data-cmd="redo" title="Refazer (Ctrl+Y)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
+            </button>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" data-cmd="bold" title="Negrito (Ctrl+B)"><b>B</b></button>
+            <button type="button" class="btn-editor-icon" data-cmd="italic" title="Itálico (Ctrl+I)"><i>I</i></button>
+            <button type="button" class="btn-editor-icon" data-cmd="underline" title="Sublinhado (Ctrl+U)"><u>U</u></button>
+            <button type="button" class="btn-editor-icon" data-cmd="strikeThrough" title="Tachado"><s>T</s></button>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" data-cmd="justifyLeft" title="Alinhar à esquerda">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="17" y2="18"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon" data-cmd="justifyCenter" title="Centralizar">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="6" y1="18" x2="18" y2="18"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon" data-cmd="justifyRight" title="Alinhar à direita">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="7" y1="18" x2="20" y2="18"/></svg>
+            </button>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" data-cmd="insertUnorderedList" title="Lista de marcadores">• Lista</button>
+            <button type="button" class="btn-editor-icon" data-cmd="insertOrderedList" title="Lista numerada">1. Lista</button>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <select id="seletorFonteEditor" class="editor-select-tamanho" title="Fonte do texto">
+              <option value="">Fonte</option>
+              <option value="'Inter', sans-serif">Padrão</option>
+              <option value="'Fraunces', serif">Elegante</option>
+              <option value="'Caveat', cursive">Manuscrita</option>
+              <option value="'Courier Prime', monospace">Máquina</option>
+            </select>
+            <select id="seletorTamanhoFonte" class="editor-select-tamanho" title="Tamanho da fonte">
+              <option value="">Tamanho</option>
+              <option value="12px">Pequeno</option>
+              <option value="16px">Normal</option>
+              <option value="19px">Médio</option>
+              <option value="23px">Grande</option>
+              <option value="28px">Título</option>
+            </select>
+            <label class="editor-cor-label" title="Cor do texto">
+              <span class="editor-cor-icone">A</span>
+              <input type="color" id="corTextoEditor" value="#1B1230">
+            </label>
+            <label class="editor-cor-label" title="Cor de destaque (marca-texto)">
+              <span class="editor-cor-icone editor-cor-icone-marcador">🖊</span>
+              <input type="color" id="corFundoEditor" value="#FBE4ED">
+            </label>
+          </div>
+          <span class="editor-toolbar-divisor"></span>
+          <div class="editor-toolbar-grupo">
+            <button type="button" class="btn-editor-icon" id="btnInserirLink" title="Inserir link">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15 15 9"/><path d="M10.5 6.5 12 5a3.5 3.5 0 0 1 5 5l-1.5 1.5"/><path d="M13.5 17.5 12 19a3.5 3.5 0 0 1-5-5l1.5-1.5"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon" id="btnRemoverLink" title="Remover link">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15 15 9"/><path d="M10.5 6.5 12 5a3.5 3.5 0 0 1 5 5l-1.5 1.5"/><path d="M13.5 17.5 12 19a3.5 3.5 0 0 1-5-5l1.5-1.5"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+            </button>
+            <button type="button" class="btn-editor-icon btn-editor-texto" id="btnLimparFormatacao" title="Limpar formatação">✕ Limpar</button>
+          </div>
+          <button type="button" class="btn-editor-expandir" id="btnExpandirEditor" title="Expandir área de edição">⤢ Expandir</button>
+        </div>
+        <div id="editorDescricao" class="editor-content" contenteditable="true" data-placeholder="Digite aqui a descrição detalhada..."></div>
+        <span class="hint editor-hint">Selecione um trecho do texto e use os botões acima para formatar. Atalhos: Ctrl+B (negrito), Ctrl+I (itálico), Ctrl+U (sublinhado).</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group campo-valor-group">
+        <label for="preco">Valor:</label>
+        <div class="campo-moeda-wrap">
+          <span class="prefixo-moeda">R$</span>
+          <input type="text" id="preco" inputmode="numeric" placeholder="0,00">
+        </div>
+      </div>
+      <div class="form-group flex-1">
+        <label for="linkCompra">Link de Destino / Checkout:</label>
+        <input type="url" id="linkCompra" placeholder="https://seu-link.com">
+      </div>
+    </div>
+
+
+    <div class="form-group">
+      <label class="check-destaque" for="chkDestaque">
+        <input type="checkbox" id="chkDestaque"> ⭐ Destacar este anúncio no topo da loja
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>Imagens do Carrossel:</label>
+      <div class="grid-imagens-modal" id="gridImagens">
+        <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
+          <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
+        </div>
+      </div>
+      <span class="hint">Adicione ou remova fotos para montar a sequência do carrossel.</span>
+    </div>
+
+    <button id="btnSalvar" class="btn btn-primary" style="margin-top: 15px;">Publicar Carrossel</button>
+    <button id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar Edição</button>
+  </div>
+
+  <section class="hero-loja sf-hero">
+    <h2>Artes prontas para sublimar</h2>
+    <p>Estampas exclusivas para canecas, camisetas, DTF e muito mais. Pagou no Pix, a arte é liberada na hora.</p>
+  </section>
+
+  <div class="area-filtros sf-area">
+    <div class="sf-barra" id="barraFiltros">
+      <button type="button" id="btnFiltros" class="sf-btn-filtros" aria-expanded="false" aria-controls="painelFiltros" aria-haspopup="dialog">
+        <span class="sf-sanduiche" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Filtros</span>
+        <span id="filtrosBadge" class="sf-badge escondido" aria-hidden="true">0</span>
+      </button>
+      <div class="sf-busca" id="blocoBusca" role="search">
+        <svg class="sf-busca-icone" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="text" id="campoBusca" class="sf-campo" placeholder="Buscar artes" autocomplete="off" enterkeyhint="search" aria-label="Buscar artes">
+        <button type="button" id="btnLimparBusca" class="sf-busca-limpar" aria-label="Limpar busca" tabindex="-1">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="filtrosAtivos" class="sf-ativos" aria-label="Filtros ativos"></div>
+  </div>
+
+  <section id="secaoDestaques" class="secao-destaques escondido" aria-label="Anúncios em destaque">
+    <div class="destaques-cabecalho">
+      <h2>⭐ Em destaque</h2>
+      <div class="destaques-nav">
+        <button type="button" id="destaquesPrev" aria-label="Anterior">❮</button>
+        <button type="button" id="destaquesNext" aria-label="Próximo">❯</button>
+      </div>
+    </div>
+    <div class="destaques-trilho" id="destaquesTrilho"></div>
+  </section>
+
+  <div class="vitrine-cabecalho">
+    <h2 id="tituloVitrine">Todas as artes</h2>
+    <span id="contadorResultados" class="contador-resultados"></span>
+    <button type="button" id="btnLimparFiltros" class="btn-link escondido">Limpar filtros</button>
+  </div>
+
+  <div class="vitrine" id="vitrineProdutos"></div>
+
+  <div class="area-filtros sf-area">
+    <nav id="paginacao" class="sf-pag escondido" aria-label="Paginação das artes"></nav>
+  </div>
+
+  <div id="filtrosOverlay" class="sf-overlay"></div>
+  <aside id="painelFiltros" class="sf-painel" role="dialog" aria-modal="true" aria-labelledby="filtrosTitulo">
+    <div class="sf-painel-topo">
+      <h2 id="filtrosTitulo">Filtrar artes</h2>
+      <button type="button" id="btnFecharFiltros" class="sf-icone-btn" aria-label="Fechar filtros">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div id="containerFiltros" class="sf-painel-corpo"></div>
+    <div class="sf-painel-rodape">
+      <button type="button" id="btnLimparPainel" class="sf-btn sf-btn-sec">Limpar</button>
+      <button type="button" id="btnAplicarFiltros" class="sf-btn sf-btn-pri">Ver artes</button>
+    </div>
+  </aside>
+
+  <div id="modalGaleria" class="modal-galeria-overlay escondido">
+    <div class="modal-galeria-container">
+      <button id="btnFecharGaleria" class="btn-fechar-galeria" title="Fechar">✕</button>
+
+      <div class="galeria-carrossel-wrap">
+        <div class="galeria-carrossel" id="galeriaCarrosselImgs"></div>
+        <button class="btn-nav-galeria btn-prev-galeria" id="btnPrevGaleria">❮</button>
+        <button class="btn-nav-galeria btn-next-galeria" id="btnNextGaleria">❯</button>
+        <div class="galeria-dots" id="galeriaDots"></div>
+      </div>
+
+      <div class="galeria-info">
+        <h2 id="galeriaTitulo" class="galeria-titulo"></h2>
+        <div class="galeria-meta card-meta" id="galeriaMeta"></div>
+        <div class="galeria-descricao" id="galeriaDescricao"></div>
+        <div class="galeria-preco-box">
+          <span class="preco-label">--</span>
+          <div class="card-preco"><small>R$</small> <span id="galeriaPrecoValor">0,00</span></div>
+        </div>
+        <button type="button" id="galeriaBtnComprar" class="btn-comprar btn-comprar-galeria">Comprar Arte</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db, auth } from './firebase-config.js';
+    import { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const CLOUD_NAME = "zxi2bufg"; 
+    const UPLOAD_PRESET = "almatie";
+
+    let usuarioAtual = null;
+    let produtosMemoria = [];
+    let taxonomiasMemoria = [];
+    let listaImagensAtuais = [];
+    let filtroCategoriaAtiva = 'TODOS';
+    let filtroTipoAtivo = 'TODOS';
+    let filtroSubAtiva = 'TODOS';
+    let termoBusca = '';
+    let produtosCarregados = false;
+
+    let logoUrlTemp = "";
+    let faviconUrlTemp = "";
+
+    let galeriaImagens = [];
+    let galeriaIndexAtual = 0;
+
+    // GALERIA EXPANDIDA (LIGHTBOX)
+    function abrirGaleria(prod) {
+      galeriaImagens = prod.imagens || [];
+      galeriaIndexAtual = 0;
+
+      document.getElementById('galeriaTitulo').innerText = prod.titulo || '';
+
+      let metaHTML = '';
+      if (prod.tipo) metaHTML += `<span class="badge-tag badge-tipo">${prod.tipo}</span>`;
+      metaHTML += `<span class="badge-tag badge-cat">${prod.categoria || 'Geral'}</span>`;
+      if (prod.classe) metaHTML += `<span class="badge-tag badge-sub">${prod.classe}</span>`;
+      document.getElementById('galeriaMeta').innerHTML = metaHTML;
+
+      document.getElementById('galeriaDescricao').innerHTML = prod.descricao || '';
+      document.getElementById('galeriaPrecoValor').innerText = prod.preco || '0,00';
+      document.getElementById('galeriaBtnComprar').onclick = () => window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), prod.preco);
+
+      renderizarGaleriaImagens();
+
+      document.getElementById('modalGaleria').classList.remove('escondido');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function renderizarGaleriaImagens() {
+      const container = document.getElementById('galeriaCarrosselImgs');
+      const dotsContainer = document.getElementById('galeriaDots');
+      let slidesHTML = '';
+      let dotsHTML = '';
+      galeriaImagens.forEach((url, idx) => {
+        slidesHTML += `<div class="galeria-slide ${idx === galeriaIndexAtual ? 'ativo' : ''}"><img src="${url}"></div>`;
+        dotsHTML += `<div class="dot ${idx === galeriaIndexAtual ? 'ativo' : ''}"></div>`;
+      });
+      container.innerHTML = slidesHTML;
+      const temVarias = galeriaImagens.length > 1;
+      dotsContainer.innerHTML = temVarias ? dotsHTML : '';
+      document.getElementById('btnPrevGaleria').style.display = temVarias ? 'flex' : 'none';
+      document.getElementById('btnNextGaleria').style.display = temVarias ? 'flex' : 'none';
+    }
+
+    function mudarSlideGaleria(dir) {
+      if (!galeriaImagens.length) return;
+      galeriaIndexAtual = (galeriaIndexAtual + dir + galeriaImagens.length) % galeriaImagens.length;
+      renderizarGaleriaImagens();
+    }
+
+    function fecharGaleria() {
+      document.getElementById('modalGaleria').classList.add('escondido');
+      document.body.style.overflow = '';
+    }
+
+    function mostrarToast(texto, tipo = 'padrao') {
+      const anterior = document.querySelector('.toast');
+      if (anterior) anterior.remove();
+      const toast = document.createElement('div');
+      toast.className = `toast ${tipo === 'erro' ? 'toast-erro' : tipo === 'sucesso' ? 'toast-sucesso' : ''}`;
+      toast.innerText = texto;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2600);
+    }
+
+    // EDITOR DE TEXTO FORMATADO
+    let selecaoEditorSalva = null;
+
+    function obterEditor() {
+      return document.getElementById('editorDescricao');
+    }
+
+    function salvarSelecaoEditor() {
+      const editor = obterEditor();
+      const sel = window.getSelection();
+      if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
+        selecaoEditorSalva = sel.getRangeAt(0).cloneRange();
+      }
+    }
+
+    function restaurarSelecaoEditor() {
+      const editor = obterEditor();
+      editor.focus();
+      if (selecaoEditorSalva) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(selecaoEditorSalva);
+      }
+    }
+
+    function executarComandoEditor(comando, valor = null) {
+      restaurarSelecaoEditor();
+      document.execCommand(comando, false, valor);
+      salvarSelecaoEditor();
+      atualizarEstadoBotoesEditor();
+      atualizarPlaceholderEditor();
+    }
+
+    function atualizarEstadoBotoesEditor() {
+      document.querySelectorAll('#editorToolbar [data-cmd]').forEach((btn) => {
+        try {
+          btn.classList.toggle('ativo', document.queryCommandState(btn.dataset.cmd));
+        } catch (e) { /* comando não suportado neste navegador */ }
+      });
+    }
+
+    function atualizarPlaceholderEditor() {
+      const editor = obterEditor();
+      const vazio = editor.textContent.trim().length === 0 && !editor.querySelector('img');
+      editor.classList.toggle('vazio', vazio);
+    }
+
+    function inserirLinkEditor() {
+      restaurarSelecaoEditor();
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed) {
+        mostrarToast('Selecione um trecho de texto para transformar em link.', 'erro');
+        return;
+      }
+      const url = prompt('Cole o endereço do link (ex: https://seu-link.com):');
+      if (!url) return;
+      document.execCommand('createLink', false, url);
+      salvarSelecaoEditor();
+    }
+
+    function removerLinkEditor() {
+      restaurarSelecaoEditor();
+      document.execCommand('unlink', false, null);
+      salvarSelecaoEditor();
+    }
+
+    function limparFormatacaoEditor() {
+      restaurarSelecaoEditor();
+      document.execCommand('removeFormat', false, null);
+      document.execCommand('unlink', false, null);
+      salvarSelecaoEditor();
+      atualizarEstadoBotoesEditor();
+    }
+
+    function alternarExpandirEditor() {
+      const wrap = document.getElementById('editorDescricaoWrap');
+      const btn = document.getElementById('btnExpandirEditor');
+      const expandido = wrap.classList.toggle('editor-expandido');
+      btn.innerHTML = expandido ? '⤡ Recolher' : '⤢ Expandir';
+    }
+
+    window.formatarCor = (cor) => {
+      restaurarSelecaoEditor();
+      document.execCommand('foreColor', false, cor);
+      salvarSelecaoEditor();
+    };
+
+    window.formatarCorFundo = (cor) => {
+      restaurarSelecaoEditor();
+      document.execCommand('hiliteColor', false, cor);
+      salvarSelecaoEditor();
+    };
+
+    window.formatarFonte = (fonte) => {
+      if (!fonte) return;
+      restaurarSelecaoEditor();
+      document.execCommand('fontName', false, 'almatie-fonte-temp');
+      const editor = obterEditor();
+      editor.querySelectorAll('font[face="almatie-fonte-temp"]').forEach((el) => {
+        el.removeAttribute('face');
+        el.style.fontFamily = fonte;
+      });
+      salvarSelecaoEditor();
+      document.getElementById('seletorFonteEditor').value = '';
+    };
+
+    window.formatarTamanho = (tamanho) => {
+      if (!tamanho) return;
+      restaurarSelecaoEditor();
+      document.execCommand('fontSize', false, '7');
+      const editor = obterEditor();
+      editor.querySelectorAll('font[size="7"]').forEach((el) => {
+        el.removeAttribute('size');
+        el.style.fontSize = tamanho;
+      });
+      salvarSelecaoEditor();
+      document.getElementById('seletorTamanhoFonte').value = '';
+    };
+
+    // MÁSCARA DE MOEDA (R$ 0,00)
+    function aplicarMascaraMoeda(input) {
+      input.addEventListener('input', () => {
+        let digitos = input.value.replace(/\D/g, '');
+        if (!digitos) {
+          input.value = '';
+          return;
+        }
+        while (digitos.length < 3) digitos = '0' + digitos;
+        const centavos = digitos.slice(-2);
+        let inteiro = digitos.slice(0, -2).replace(/^0+(?=\d)/, '');
+        inteiro = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        input.value = `${inteiro},${centavos}`;
+      });
+    }
+
+    // CLOUDINARY LOGO & FAVICON
+    const widgetLogo = cloudinary.createUploadWidget({ cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: false }, (err, res) => {
+      if (!err && res && res.event === "success") {
+        logoUrlTemp = res.info.secure_url;
+        atualizarPreviewElemento('previewLogo', 'textNoLogo', logoUrlTemp);
+      }
+    });
+
+    const widgetFavicon = cloudinary.createUploadWidget({ cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: false }, (err, res) => {
+      if (!err && res && res.event === "success") {
+        faviconUrlTemp = res.info.secure_url;
+        atualizarPreviewElemento('previewFavicon', 'textNoFavicon', faviconUrlTemp);
+      }
+    });
+
+    function atualizarPreviewElemento(imgId, textId, url) {
+      const img = document.getElementById(imgId);
+      const txt = document.getElementById(textId);
+      if (url) {
+        img.src = url;
+        img.classList.remove('escondido');
+        if (txt) txt.classList.add('escondido');
+      }
+    }
+
+    // TAXONOMIAS (TIPOS, CATEGORIAS, SUBCATEGORIAS)
+    async function carregarTaxonomias() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "taxonomias"));
+        taxonomiasMemoria = [];
+        querySnapshot.forEach((docSnap) => {
+          taxonomiasMemoria.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        preencherSelectsTaxonomia();
+        renderizarTagsTaxonomias();
+      } catch (e) {
+        console.error("Erro ao carregar categorias:", e);
+      }
+    }
+
+    async function cadastrarTaxonomia() {
+      const tipo = document.getElementById('novoTipo').value.trim();
+      const categoria = document.getElementById('novaCategoria').value.trim();
+      const subcategoria = document.getElementById('novaSubcategoria').value.trim();
+
+      if (!tipo && !categoria && !subcategoria) {
+        mostrarToast("Preencha ao menos um campo para cadastrar!", "erro");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "taxonomias"), { tipo, categoria, subcategoria });
+        document.getElementById('novoTipo').value = '';
+        document.getElementById('novaCategoria').value = '';
+        document.getElementById('novaSubcategoria').value = '';
+        mostrarToast("Opção cadastrada com sucesso!", "sucesso");
+        carregarTaxonomias();
+      } catch (e) {
+        mostrarToast("Erro ao cadastrar opção.", "erro");
+      }
+    }
+
+    function preencherSelectsTaxonomia() {
+      const selTipo = document.getElementById('selectTipo');
+      const selCat = document.getElementById('selectCategoria');
+      const selSub = document.getElementById('selectSubcategoria');
+
+      const tipos = [...new Set(taxonomiasMemoria.map(t => t.tipo).filter(Boolean))];
+      const categorias = [...new Set(taxonomiasMemoria.map(t => t.categoria).filter(Boolean))];
+      const subcategorias = [...new Set(taxonomiasMemoria.map(t => t.subcategoria).filter(Boolean))];
+
+      selTipo.innerHTML = '<option value="">Selecione o Tipo...</option>' + tipos.map(t => `<option value="${t}">${t}</option>`).join('');
+      selCat.innerHTML = '<option value="">Selecione a Categoria...</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+      selSub.innerHTML = '<option value="">Selecione a Subcategoria...</option>' + subcategorias.map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+
+    function renderizarTagsTaxonomias() {
+      const container = document.getElementById('listaTaxonomias');
+      container.innerHTML = '';
+      taxonomiasMemoria.forEach(item => {
+        const tag = document.createElement('span');
+        tag.className = 'badge-taxonomia';
+        tag.innerHTML = `${item.tipo || '—'} > ${item.categoria || '—'} > ${item.subcategoria || '—'} <button onclick="window.excluirTaxonomia('${item.id}')">✕</button>`;
+        container.appendChild(tag);
+      });
+    }
+
+    window.excluirTaxonomia = async (id) => {
+      if(confirm("Excluir esta categoria cadastrada?")) {
+        await deleteDoc(doc(db, "taxonomias", id));
+        carregarTaxonomias();
+      }
+    };
+
+    // FIRESTORE & PRODUTOS
+    async function carregarConfiguracoesLoja() {
+      try {
+        const docSnap = await getDoc(doc(db, "configuracoes", "geral"));
+        if (docSnap.exists()) {
+          const config = docSnap.data();
+          if (config.logoUrl) {
+            logoUrlTemp = config.logoUrl;
+            document.getElementById('siteLogo').src = config.logoUrl;
+            document.getElementById('siteLogo').classList.remove('escondido');
+            atualizarPreviewElemento('previewLogo', 'textNoLogo', config.logoUrl);
+          }
+          if (config.faviconUrl) {
+            faviconUrlTemp = config.faviconUrl;
+            document.getElementById('dynamicFavicon').href = config.faviconUrl;
+            atualizarPreviewElemento('previewFavicon', 'textNoFavicon', config.faviconUrl);
+          }
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function salvarConfiguracoesLoja() {
+      try {
+        await setDoc(doc(db, "configuracoes", "geral"), {
+          logoUrl: logoUrlTemp,
+          faviconUrl: faviconUrlTemp,
+          atualizadoEm: new Date()
+        }, { merge: true });
+        mostrarToast("Identidade visual salva!", "sucesso");
+        carregarConfiguracoesLoja();
+      } catch (e) { mostrarToast("Erro ao salvar.", "erro"); }
+    }
+
+    const myWidget = cloudinary.createUploadWidget({
+        cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: true, sources: ['local', 'url'], clientAllowedFormats: ["png", "jpeg", "jpg", "webp"]
+      }, (error, result) => { 
+        if (!error && result && result.event === "success") {
+          let urlOtimizada = result.info.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_1200/');
+          listaImagensAtuais.push(urlOtimizada);
+          renderizarGridImagens();
+        }
+      }
+    );
+
+    document.getElementById("btnAbrirWidgetCloudinary").onclick = () => myWidget.open();
+
+    function renderizarGridImagens() {
+      const grid = document.getElementById('gridImagens');
+      grid.innerHTML = `
+        <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
+          <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
+        </div>
+      `;
+      document.getElementById("btnAbrirWidgetCloudinary").onclick = () => myWidget.open();
+
+      listaImagensAtuais.forEach((url, index) => {
+        const div = document.createElement('div');
+        div.className = 'item-img-grid';
+        div.innerHTML = `<img src="${url}"><button type="button" class="btn-remover-img" onclick="window.removerImagemGrid(${index})">✕</button>`;
+        grid.appendChild(div);
+      });
+    }
+
+    window.removerImagemGrid = (index) => {
+      listaImagensAtuais.splice(index, 1);
+      renderizarGridImagens();
+    };
+
+    async function salvarCarrossel() {
+      const docId = document.getElementById('editDocId').value;
+      const titulo = document.getElementById('titulo').value;
+      const tipo = document.getElementById('selectTipo').value || 'Geral';
+      const categoria = document.getElementById('selectCategoria').value || 'Geral';
+      const subcategoria = document.getElementById('selectSubcategoria').value || 'Geral';
+      const descricao = document.getElementById('editorDescricao').innerHTML;
+      const preco = document.getElementById('preco').value;
+      const link = document.getElementById('linkCompra').value;
+
+      if (!titulo || !link) {
+        mostrarToast("Preencha ao menos o Título e o Link!", "erro");
+        return;
+      }
+
+      if (listaImagensAtuais.length === 0) {
+        mostrarToast("Adicione ao menos uma imagem!", "erro");
+        return;
+      }
+
+      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, link, imagens: listaImagensAtuais, destaque: document.getElementById('chkDestaque').checked, criadoEm: new Date() };
+
+      try {
+        if (docId) {
+          await updateDoc(doc(db, "produtos", docId), dados);
+        } else {
+          await addDoc(collection(db, "produtos"), dados);
+        }
+        mostrarToast(docId ? "Carrossel atualizado!" : "Carrossel publicado!", "sucesso");
+        cancelarEdicao();
+        carregarProdutos();
+      } catch (e) { mostrarToast("Erro ao salvar.", "erro"); }
+    }
+
+    function prepararEdicao(id) {
+      const p = produtosMemoria.find(item => item.id === id);
+      if (!p) return;
+
+      document.getElementById('editDocId').value = p.id;
+      document.getElementById('titulo').value = p.titulo;
+      document.getElementById('selectTipo').value = p.tipo || '';
+      document.getElementById('selectCategoria').value = p.categoria || '';
+      document.getElementById('selectSubcategoria').value = p.classe || '';
+      document.getElementById('editorDescricao').innerHTML = p.descricao || '';
+      document.getElementById('preco').value = p.preco;
+      document.getElementById('linkCompra').value = p.link;
+      document.getElementById('chkDestaque').checked = !!p.destaque;
+
+      listaImagensAtuais = [...(p.imagens || [])];
+      renderizarGridImagens();
+      atualizarPlaceholderEditor();
+
+      document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
+      document.getElementById('btnCancelarEdit').classList.remove('escondido');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelarEdicao() {
+      document.getElementById('editDocId').value = '';
+      document.getElementById('titulo').value = '';
+      document.getElementById('selectTipo').value = '';
+      document.getElementById('selectCategoria').value = '';
+      document.getElementById('selectSubcategoria').value = '';
+      document.getElementById('editorDescricao').innerHTML = '';
+      document.getElementById('preco').value = '';
+      document.getElementById('linkCompra').value = '';
+      document.getElementById('chkDestaque').checked = false;
+      listaImagensAtuais = [];
+      renderizarGridImagens();
+      atualizarPlaceholderEditor();
+
+      document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
+      document.getElementById('btnCancelarEdit').classList.add('escondido');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById('btnLogin').addEventListener('click', () => {
+        document.getElementById('boxLogin').classList.remove('escondido');
+        document.getElementById('modalOverlay').classList.remove('escondido');
+      });
+
+      document.getElementById('btnFecharModal').addEventListener('click', fecharModalLogin);
+      document.getElementById('modalOverlay').addEventListener('click', fecharModalLogin);
+      document.getElementById('btnFazerLogin').addEventListener('click', fazerLogin);
+      document.getElementById('btnFazerLogout').addEventListener('click', () => signOut(auth));
+      document.getElementById('btnSalvar').addEventListener('click', salvarCarrossel);
+      document.getElementById('btnCancelarEdit').addEventListener('click', cancelarEdicao);
+      document.getElementById('btnUploadLogo').addEventListener('click', () => widgetLogo.open());
+      document.getElementById('btnUploadFavicon').addEventListener('click', () => widgetFavicon.open());
+      document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
+      document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
+      iniciarInterfaceVitrine();
+      document.getElementById('destaquesPrev').addEventListener('click', () => rolarDestaques(-1));
+      document.getElementById('destaquesNext').addEventListener('click', () => rolarDestaques(1));
+
+      // TOOLBAR DO EDITOR — delega os botões com data-cmd para execCommand
+      document.querySelectorAll('#editorToolbar [data-cmd]').forEach((btn) => {
+        btn.addEventListener('click', () => executarComandoEditor(btn.dataset.cmd));
+      });
+      document.getElementById('btnInserirLink').addEventListener('click', inserirLinkEditor);
+      document.getElementById('btnRemoverLink').addEventListener('click', removerLinkEditor);
+      document.getElementById('btnLimparFormatacao').addEventListener('click', limparFormatacaoEditor);
+      document.getElementById('btnExpandirEditor').addEventListener('click', alternarExpandirEditor);
+      document.getElementById('corTextoEditor').addEventListener('input', (e) => window.formatarCor(e.target.value));
+      document.getElementById('corFundoEditor').addEventListener('input', (e) => window.formatarCorFundo(e.target.value));
+      document.getElementById('seletorTamanhoFonte').addEventListener('change', (e) => window.formatarTamanho(e.target.value));
+      document.getElementById('seletorFonteEditor').addEventListener('change', (e) => window.formatarFonte(e.target.value));
+
+      const editorDescricaoEl = document.getElementById('editorDescricao');
+      editorDescricaoEl.addEventListener('mouseup', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });
+      editorDescricaoEl.addEventListener('keyup', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });
+      editorDescricaoEl.addEventListener('focus', atualizarEstadoBotoesEditor);
+      editorDescricaoEl.addEventListener('input', atualizarPlaceholderEditor);
+      editorDescricaoEl.addEventListener('keydown', (e) => {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        const atalhos = { b: 'bold', i: 'italic', u: 'underline' };
+        const comando = atalhos[e.key.toLowerCase()];
+        if (comando) {
+          e.preventDefault();
+          executarComandoEditor(comando);
+        }
+      });
+      atualizarPlaceholderEditor();
+
+      aplicarMascaraMoeda(document.getElementById('preco'));
+
+      document.getElementById('btnFecharGaleria').addEventListener('click', fecharGaleria);
+      document.getElementById('modalGaleria').addEventListener('click', (e) => {
+        if (e.target.id === 'modalGaleria') fecharGaleria();
+      });
+      document.getElementById('btnPrevGaleria').addEventListener('click', () => mudarSlideGaleria(-1));
+      document.getElementById('btnNextGaleria').addEventListener('click', () => mudarSlideGaleria(1));
+      document.addEventListener('keydown', (e) => {
+        if (document.getElementById('modalGaleria').classList.contains('escondido')) return;
+        if (e.key === 'Escape') fecharGaleria();
+        if (e.key === 'ArrowLeft') mudarSlideGaleria(-1);
+        if (e.key === 'ArrowRight') mudarSlideGaleria(1);
+      });
+
+      carregarDadosIniciais();
+    });
+
+    function fecharModalLogin() {
+      document.getElementById('boxLogin').classList.add('escondido');
+      document.getElementById('modalOverlay').classList.add('escondido');
+    }
+
+    // Checkout (Pix transparente) agora vive em pix-checkout.js
+
+    async function fazerLogin() {
+      const email = document.getElementById('emailInput').value;
+      const senha = document.getElementById('senhaInput').value;
+      try {
+        await signInWithEmailAndPassword(auth, email, senha);
+        fecharModalLogin();
+      } catch (error) { document.getElementById('msgErro').innerText = "Credenciais inválidas."; }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      usuarioAtual = user;
+      document.getElementById('painelAdmin').classList.toggle('escondido', !user);
+      renderizarVitrine();
+    });
+
+    // =========================================================
+    // VITRINE: BUSCA, FILTROS (PRODUTO > CATEGORIA > TEMA) E DESTAQUES
+    // =========================================================
+    function normalizarTexto(t) {
+      return (t || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+    }
+
+    function htmlParaTexto(html) {
+      try { return new DOMParser().parseFromString(html || '', 'text/html').body.textContent || ''; }
+      catch (e) { return ''; }
+    }
+
+    function dataDoProduto(p) {
+      const c = p.criadoEm;
+      if (c && typeof c.toMillis === 'function') return c.toMillis();
+      if (c && c.seconds) return c.seconds * 1000;
+      return 0;
+    }
+
+    const valorDe = (p, campo) => p[campo] || 'Geral';
+
+    async function carregarProdutos() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "produtos"));
+        produtosMemoria = [];
+        querySnapshot.forEach((docSnap) => {
+          const p = { id: docSnap.id, ...docSnap.data() };
+          p._busca = normalizarTexto([p.titulo, p.tipo, p.categoria, p.classe, htmlParaTexto(p.descricao)].join(' '));
+          produtosMemoria.push(p);
+        });
+        produtosMemoria.sort((a, b) => dataDoProduto(b) - dataDoProduto(a)); // mais novos primeiro
+        produtosCarregados = true;
+        construirMenuFiltros();
+        renderizarVitrine();
+      } catch (e) { console.error(e); }
+    }
+
+    // ----- Utilidades da vitrine -----
+    const ITENS_POR_PAGINA = 12;
+    let paginaAtual = 1;
+    let filtrouNoPainel = false;
+    let timerBusca = null;
+    let timerTroca = null;
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // Cards usam versão menor da imagem (Cloudinary); a galeria continua com a original
+    function miniatura(url, largura = 720) {
+      if (!url || typeof url !== 'string') return url || '';
+      if (url.includes('/upload/f_auto,q_auto,w_1200/')) return url.replace('w_1200', `w_${largura}`);
+      if (/res\.cloudinary\.com\/[^/]+\/image\/upload\/v\d+\//.test(url)) return url.replace('/upload/', `/upload/f_auto,q_auto,w_${largura}/`);
+      return url;
+    }
+
+    // Só a 1ª foto de cada card carrega de cara; as demais entram quando o slide é usado
+    function carregarSlide(slide) {
+      const img = slide && slide.querySelector('img[data-src]');
+      if (img) { img.src = img.dataset.src; img.removeAttribute('data-src'); }
+    }
+
+    function contarPor(lista, campo) {
+      const mapa = new Map();
+      lista.forEach((p) => {
+        const k = valorDe(p, campo);
+        mapa.set(k, (mapa.get(k) || 0) + 1);
+      });
+      return mapa;
+    }
+
+    const combinaTipo = (p) => filtroTipoAtivo === 'TODOS' || valorDe(p, 'tipo') === filtroTipoAtivo;
+    const combinaCategoria = (p) => filtroCategoriaAtiva === 'TODOS' || valorDe(p, 'categoria') === filtroCategoriaAtiva;
+    const filtrosAtivosTotal = () => [filtroTipoAtivo, filtroCategoriaAtiva, filtroSubAtiva].filter((v) => v !== 'TODOS').length;
+    const painelAberto = () => document.getElementById('painelFiltros').classList.contains('aberto');
+
+    function selecionarFiltro(nivel, valor) {
+      if (nivel === 'tipo') { filtroTipoAtivo = valor; filtroCategoriaAtiva = 'TODOS'; filtroSubAtiva = 'TODOS'; }
+      else if (nivel === 'cat') { filtroCategoriaAtiva = valor; filtroSubAtiva = 'TODOS'; }
+      else { filtroSubAtiva = valor; }
+      filtrouNoPainel = true;
+      paginaAtual = 1;
+      construirMenuFiltros();
+      renderizarVitrine();
+      animarTroca();
+    }
+
+    function animarTroca() {
+      const v = document.getElementById('vitrineProdutos');
+      v.classList.add('sf-troca');
+      clearTimeout(timerTroca);
+      timerTroca = setTimeout(() => v.classList.remove('sf-troca'), 700);
+    }
+
+    // Monta o conteúdo do menu sanduíche (Produto > Categoria > Tema), os chips e os contadores
+    function construirMenuFiltros() {
+      const container = document.getElementById('containerFiltros');
+      const foco = document.activeElement;
+      const chaveFoco = foco && foco.dataset && foco.dataset.nivel && container.contains(foco) ? [foco.dataset.nivel, foco.value] : null;
+
+      // Valida a seleção atual contra o catálogo completo
+      const tipos = contarPor(produtosMemoria, 'tipo');
+      if (filtroTipoAtivo !== 'TODOS' && !tipos.has(filtroTipoAtivo)) filtroTipoAtivo = 'TODOS';
+      const cats = contarPor(produtosMemoria.filter(combinaTipo), 'categoria');
+      if (filtroCategoriaAtiva !== 'TODOS' && !cats.has(filtroCategoriaAtiva)) filtroCategoriaAtiva = 'TODOS';
+      if (filtroCategoriaAtiva === 'TODOS' && cats.size > 1) filtroSubAtiva = 'TODOS';
+      const subs = contarPor(produtosMemoria.filter((p) => combinaTipo(p) && combinaCategoria(p)), 'classe');
+      if (filtroSubAtiva !== 'TODOS' && !subs.has(filtroSubAtiva)) filtroSubAtiva = 'TODOS';
+
+      // Contagens respeitam a busca digitada, para os números baterem com o resultado
+      const palavras = normalizarTexto(termoBusca).split(/\s+/).filter(Boolean);
+      const base = produtosMemoria.filter((p) => palavras.every((w) => p._busca.includes(w)));
+      const baseTipo = base.filter(combinaTipo);
+      const baseCat = baseTipo.filter(combinaCategoria);
+
+      const itens = (todas, lista, campo, rotuloTodos) => {
+        const n = contarPor(lista, campo);
+        const ordem = [...todas.keys()].sort((a, b) => (a === 'Geral') - (b === 'Geral') || a.localeCompare(b, 'pt-BR'));
+        return [{ valor: 'TODOS', texto: rotuloTodos, total: lista.length }, ...ordem.map((k) => ({ valor: k, texto: k, total: n.get(k) || 0 }))];
+      };
+      const grupo = (nivel, titulo, lista, ativo) => `<fieldset class="sf-grupo"><legend>${titulo}</legend>${lista.map(({ valor, texto, total }) => {
+        const vazio = total === 0 && ativo !== valor;
+        return `<label class="sf-opcao${ativo === valor ? ' ativa' : ''}${vazio ? ' vazia' : ''}"><input type="radio" name="f-${nivel}" data-nivel="${nivel}" value="${esc(valor)}"${ativo === valor ? ' checked' : ''}${vazio ? ' disabled' : ''}><span class="sf-marca"></span><span class="sf-opcao-texto">${esc(texto)}</span><em>${total}</em></label>`;
+      }).join('')}</fieldset>`;
+
+      let html = '';
+      if (tipos.size > 1) html += grupo('tipo', 'Produto', itens(tipos, base, 'tipo', 'Todos'), filtroTipoAtivo);
+      if (cats.size > 1) html += grupo('cat', 'Categoria', itens(cats, baseTipo, 'categoria', 'Todas'), filtroCategoriaAtiva);
+      const temaLiberado = filtroCategoriaAtiva !== 'TODOS' || cats.size <= 1;
+      if (temaLiberado && subs.size > 1) html += grupo('sub', 'Tema', itens(subs, baseCat, 'classe', 'Todos'), filtroSubAtiva);
+      else if (!temaLiberado) html += `<fieldset class="sf-grupo"><legend>Tema</legend><p class="sf-dica">Escolha uma categoria para ver os temas disponíveis.</p></fieldset>`;
+      container.innerHTML = html || '<p class="sf-dica">Ainda não há filtros disponíveis.</p>';
+
+      if (chaveFoco) {
+        const alvo = [...container.querySelectorAll('input')].find((i) => i.dataset.nivel === chaveFoco[0] && i.value === chaveFoco[1]);
+        if (alvo) alvo.focus({ preventScroll: true });
+        else if (painelAberto()) document.getElementById('btnFecharFiltros').focus({ preventScroll: true });
+      }
+
+      // Chips dos filtros ativos
+      const chips = [['tipo', filtroTipoAtivo], ['cat', filtroCategoriaAtiva], ['sub', filtroSubAtiva]].filter(([, v]) => v !== 'TODOS');
+      document.getElementById('filtrosAtivos').innerHTML = chips.map(([nivel, v]) =>
+        `<button type="button" class="sf-chip" data-nivel="${nivel}" aria-label="Remover filtro ${esc(v)}">${esc(v)}<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`).join('');
+
+      // Botão sanduíche, rodapé do painel
+      const n = filtrosAtivosTotal();
+      const badge = document.getElementById('filtrosBadge');
+      const btn = document.getElementById('btnFiltros');
+      const mudou = badge.textContent !== String(n);
+      badge.textContent = n;
+      badge.classList.toggle('escondido', n === 0);
+      btn.classList.toggle('tem-filtros', n > 0);
+      btn.setAttribute('aria-label', n ? `Filtros, ${n} ativo${n > 1 ? 's' : ''}` : 'Filtros');
+      if (mudou && n) { badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop'); }
+
+      const total = filtrarProdutos().length;
+      const aplicar = document.getElementById('btnAplicarFiltros');
+      const texto = total ? `Ver ${total} ${total === 1 ? 'arte' : 'artes'}` : 'Nenhuma arte encontrada';
+      if (aplicar.textContent !== texto) { aplicar.textContent = texto; aplicar.classList.remove('bump'); void aplicar.offsetWidth; aplicar.classList.add('bump'); }
+      aplicar.disabled = total === 0;
+      document.getElementById('btnLimparPainel').disabled = n === 0;
+    }
+
+    function nenhumFiltroAtivo() {
+      return filtroTipoAtivo === 'TODOS' && filtroCategoriaAtiva === 'TODOS' && filtroSubAtiva === 'TODOS' && !normalizarTexto(termoBusca);
+    }
+
+    function atualizarCampoBusca() {
+      document.getElementById('blocoBusca').classList.toggle('tem-texto', !!document.getElementById('campoBusca').value);
+    }
+
+    function definirBusca(valor) {
+      const campo = document.getElementById('campoBusca');
+      campo.value = valor;
+      termoBusca = valor;
+      atualizarCampoBusca();
+      clearTimeout(timerBusca);
+      paginaAtual = 1;
+      construirMenuFiltros();
+      renderizarVitrine();
+    }
+
+    function limparFiltros() {
+      filtroTipoAtivo = 'TODOS'; filtroCategoriaAtiva = 'TODOS'; filtroSubAtiva = 'TODOS';
+      paginaAtual = 1;
+      definirBusca('');
+      animarTroca();
+    }
+
+    // ----- Menu sanduíche: abrir, fechar, foco preso dentro do painel -----
+    function abrirPainelFiltros() {
+      if (painelAberto()) return;
+      filtrouNoPainel = false;
+      document.getElementById('painelFiltros').classList.add('aberto');
+      document.getElementById('filtrosOverlay').classList.add('aberto');
+      document.getElementById('btnFiltros').setAttribute('aria-expanded', 'true');
+      document.body.classList.add('sf-trava');
+      requestAnimationFrame(() => document.getElementById('btnFecharFiltros').focus({ preventScroll: true }));
+    }
+
+    function fecharPainelFiltros() {
+      if (!painelAberto()) return;
+      document.getElementById('painelFiltros').classList.remove('aberto');
+      document.getElementById('filtrosOverlay').classList.remove('aberto');
+      document.getElementById('btnFiltros').setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('sf-trava');
+      document.getElementById('btnFiltros').focus({ preventScroll: true });
+      if (filtrouNoPainel) rolarParaBarra();
+    }
+
+    function rolarParaBarra() {
+      const reduz = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      document.getElementById('barraFiltros').scrollIntoView({ behavior: reduz ? 'auto' : 'smooth', block: 'start' });
+    }
+
+    function prenderFoco(e) {
+      const itens = [...document.getElementById('painelFiltros').querySelectorAll('button:not([disabled]), input:not([disabled])')].filter((el) => el.offsetParent !== null);
+      if (!itens.length) return;
+      const primeiro = itens[0], ultimo = itens[itens.length - 1];
+      if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+    }
+
+    // ----- Paginação -----
+    function listaDePaginas(atual, total) {
+      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+      const s = new Set([1, total, atual - 1, atual, atual + 1]);
+      if (atual <= 3) [2, 3, 4].forEach((n) => s.add(n));
+      if (atual >= total - 2) [total - 1, total - 2, total - 3].forEach((n) => s.add(n));
+      const arr = [...s].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
+      const saida = [];
+      arr.forEach((n, i) => {
+        const ant = arr[i - 1];
+        if (i && n - ant === 2) saida.push(ant + 1);
+        else if (i && n - ant > 2) saida.push('…');
+        saida.push(n);
+      });
+      return saida;
+    }
+
+    function renderizarPaginacao(total) {
+      const nav = document.getElementById('paginacao');
+      const paginas = Math.ceil(total / ITENS_POR_PAGINA);
+      if (paginas <= 1) { nav.innerHTML = ''; nav.classList.add('escondido'); return; }
+      nav.classList.remove('escondido');
+      const ini = (paginaAtual - 1) * ITENS_POR_PAGINA + 1;
+      const fim = Math.min(total, paginaAtual * ITENS_POR_PAGINA);
+      const seta = (d, ro, ic) => `<button type="button" class="sf-pag-btn sf-pag-nav" data-pagina="${paginaAtual + d}" ${(d < 0 && paginaAtual === 1) || (d > 0 && paginaAtual === paginas) ? 'disabled' : ''} aria-label="${ro === 'Anterior' ? 'Página anterior' : 'Próxima página'}">${d < 0 ? ic : ''}<span>${ro}</span>${d > 0 ? ic : ''}</button>`;
+      const chevron = (p) => `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${p}"/></svg>`;
+      const numeros = listaDePaginas(paginaAtual, paginas).map((n) => n === '…'
+        ? '<li class="sf-pag-reticencias" aria-hidden="true">…</li>'
+        : `<li><button type="button" class="sf-pag-btn${n === paginaAtual ? ' atual' : ''}" data-pagina="${n}" aria-label="Página ${n}"${n === paginaAtual ? ' aria-current="page"' : ''}>${n}</button></li>`).join('');
+      nav.innerHTML = `<div class="sf-pag-linha">${seta(-1, 'Anterior', chevron('m15 18-6-6 6-6'))}<ol class="sf-pag-lista">${numeros}</ol><span class="sf-pag-compacta" aria-hidden="true">Página ${paginaAtual} de ${paginas}</span>${seta(1, 'Próxima', chevron('m9 18 6-6-6-6'))}</div><p class="sf-pag-info">Mostrando ${ini}–${fim} de ${total} artes</p>`;
+    }
+
+    function irParaPagina(n) {
+      paginaAtual = n;
+      renderizarVitrine();
+      animarTroca();
+      rolarParaBarra();
+      const titulo = document.getElementById('tituloVitrine');
+      titulo.setAttribute('tabindex', '-1');
+      titulo.focus({ preventScroll: true });
+    }
+
+    function iniciarInterfaceVitrine() {
+      const campo = document.getElementById('campoBusca');
+      campo.addEventListener('input', (e) => {
+        termoBusca = e.target.value;
+        atualizarCampoBusca();
+        clearTimeout(timerBusca);
+        timerBusca = setTimeout(() => { paginaAtual = 1; construirMenuFiltros(); renderizarVitrine(); }, 140);
+      });
+      campo.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') campo.blur();
+        if (e.key === 'Escape' && campo.value) { e.preventDefault(); definirBusca(''); }
+      });
+      document.getElementById('btnLimparBusca').addEventListener('click', () => { definirBusca(''); campo.focus(); });
+      document.getElementById('btnLimparFiltros').addEventListener('click', limparFiltros);
+
+      document.getElementById('btnFiltros').addEventListener('click', () => (painelAberto() ? fecharPainelFiltros() : abrirPainelFiltros()));
+      document.getElementById('btnFecharFiltros').addEventListener('click', fecharPainelFiltros);
+      document.getElementById('filtrosOverlay').addEventListener('click', fecharPainelFiltros);
+      document.getElementById('btnAplicarFiltros').addEventListener('click', fecharPainelFiltros);
+      document.getElementById('btnLimparPainel').addEventListener('click', () => selecionarFiltro('tipo', 'TODOS'));
+      document.getElementById('containerFiltros').addEventListener('change', (e) => {
+        if (e.target.matches('input[data-nivel]')) selecionarFiltro(e.target.dataset.nivel, e.target.value);
+      });
+      document.getElementById('filtrosAtivos').addEventListener('click', (e) => {
+        const chip = e.target.closest('.sf-chip');
+        if (chip) { filtrouNoPainel = false; selecionarFiltro(chip.dataset.nivel, 'TODOS'); }
+      });
+      document.getElementById('paginacao').addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-pagina]');
+        if (b && !b.disabled) irParaPagina(Number(b.dataset.pagina));
+      });
+      document.addEventListener('keydown', (e) => {
+        if (!painelAberto()) return;
+        if (e.key === 'Escape') fecharPainelFiltros();
+        if (e.key === 'Tab') prenderFoco(e);
+      });
+    }
+
+    function filtrarProdutos() {
+      const palavras = normalizarTexto(termoBusca).split(/\s+/).filter(Boolean);
+      return produtosMemoria.filter((p) =>
+        (filtroTipoAtivo === 'TODOS' || valorDe(p, 'tipo') === filtroTipoAtivo) &&
+        (filtroCategoriaAtiva === 'TODOS' || valorDe(p, 'categoria') === filtroCategoriaAtiva) &&
+        (filtroSubAtiva === 'TODOS' || valorDe(p, 'classe') === filtroSubAtiva) &&
+        palavras.every((w) => p._busca.includes(w)));
+    }
+
+    function comprarProduto(prod) {
+      window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), prod.preco);
+    }
+
+    async function alternarDestaque(prod) {
+      try {
+        await updateDoc(doc(db, "produtos", prod.id), { destaque: !prod.destaque });
+        mostrarToast(prod.destaque ? "Destaque removido." : "Anúncio em destaque!", "sucesso");
+        carregarProdutos();
+      } catch (e) { mostrarToast("Erro ao alterar destaque.", "erro"); }
+    }
+
+    // ----- Faixa "Em destaque" -----
+    function criarCardDestaque(prod) {
+      const el = document.createElement('article');
+      el.className = 'card-destaque';
+      el.innerHTML = `
+        <div class="destaque-imagem">
+          <img alt="" loading="lazy">
+          <span class="selo-destaque">⭐ Destaque</span>
+        </div>
+        <div class="destaque-info">
+          <h3 class="destaque-titulo"></h3>
+          <div class="destaque-rodape">
+            <div class="card-preco-box">
+              <span class="preco-label">--</span>
+              <div class="card-preco"><small>R$</small> <span class="destaque-preco"></span></div>
+            </div>
+            <button type="button" class="btn-comprar">Comprar Arte</button>
+          </div>
+        </div>`;
+      const img = el.querySelector('img');
+      img.src = miniatura((prod.imagens || [])[0] || '', 600);
+      img.alt = prod.titulo || '';
+      el.querySelector('.destaque-titulo').textContent = prod.titulo || '';
+      el.querySelector('.destaque-preco').textContent = prod.preco || '0,00';
+      el.querySelector('.destaque-imagem').addEventListener('click', () => abrirGaleria(prod));
+      el.querySelector('.destaque-titulo').addEventListener('click', () => abrirGaleria(prod));
+      el.querySelector('.btn-comprar').addEventListener('click', () => comprarProduto(prod));
+      return el;
+    }
+
+    function renderizarDestaques(visivel) {
+      const secao = document.getElementById('secaoDestaques');
+      const trilho = document.getElementById('destaquesTrilho');
+      const lista = produtosMemoria.filter((p) => p.destaque);
+      trilho.innerHTML = '';
+      if (!visivel || !lista.length) { secao.classList.add('escondido'); return; }
+      secao.classList.remove('escondido');
+      lista.forEach((p) => trilho.appendChild(criarCardDestaque(p)));
+    }
+
+    function rolarDestaques(dir) {
+      const trilho = document.getElementById('destaquesTrilho');
+      trilho.scrollBy({ left: dir * Math.max(240, trilho.clientWidth * 0.8), behavior: 'smooth' });
+    }
+
+    // ----- Grade principal -----
+    function criarCard(prod) {
+      let slidesHTML = '';
+      let dotsHTML = '';
+      (prod.imagens || []).forEach((imgUrl, idx) => {
+        slidesHTML += `<div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}"><img ${idx === 0 ? 'src' : 'data-src'}="${miniatura(imgUrl)}" loading="lazy" decoding="async" alt=""></div>`;
+        dotsHTML += `<div class="dot ${idx === 0 ? 'ativo' : ''}"></div>`;
+      });
+
+      const card = document.createElement('div');
+      card.className = 'card-carrossel';
+      card.innerHTML = `
+        <div class="card-header">
+          <h3 class="card-titulo">${prod.titulo}</h3>
+          <div class="card-meta">
+            ${prod.tipo ? `<span class="badge-tag badge-tipo">${prod.tipo}</span>` : ''}
+            <span class="badge-tag badge-cat">${prod.categoria || 'Geral'}</span>
+            ${prod.classe ? `<span class="badge-tag badge-sub">${prod.classe}</span>` : ''}
+          </div>
+        </div>
+        <div class="carrossel-container">
+          ${slidesHTML}
+          ${prod.destaque ? '<span class="selo-destaque">⭐ Destaque</span>' : ''}
+          ${prod.imagens && prod.imagens.length > 1 ? `
+            <button class="btn-nav btn-prev">❮</button>
+            <button class="btn-nav btn-next">❯</button>
+            <div class="dots-container">${dotsHTML}</div>
+          ` : ''}
+          <span class="icone-expandir" title="Ver galeria completa">⤢</span>
+        </div>
+        <div class="card-body">
+          <div class="card-descricao-wrap">
+            <div class="card-descricao">${prod.descricao || ''}</div>
+          </div>
+          <div class="card-preco-box">
+            <span class="preco-label">--</span>
+            <div class="card-preco"><small>R$</small> ${prod.preco || '0,00'}</div>
+          </div>
+
+          <button type="button" class="btn-comprar">Comprar Arte</button>
+
+          ${usuarioAtual ? `
+            <div class="acoes-admin">
+              <button class="btn-editar">Editar</button>
+              <button class="btn-excluir">Excluir</button>
+              <button class="btn-destacar">${prod.destaque ? '★ Tirar dos destaques' : '☆ Destacar na loja'}</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      if (prod.imagens && prod.imagens.length > 1) {
+        card.querySelector('.btn-prev').addEventListener('click', (e) => { e.stopPropagation(); mudarSlide(card, -1); });
+        card.querySelector('.btn-next').addEventListener('click', (e) => { e.stopPropagation(); mudarSlide(card, 1); });
+      }
+
+      card.querySelector('.carrossel-container').addEventListener('click', () => abrirGaleria(prod));
+      card.querySelector('.btn-comprar').addEventListener('click', () => comprarProduto(prod));
+
+      if (usuarioAtual) {
+        card.querySelector('.btn-editar').addEventListener('click', () => prepararEdicao(prod.id));
+        card.querySelector('.btn-excluir').addEventListener('click', () => excluirCarrossel(prod.id));
+        card.querySelector('.btn-destacar').addEventListener('click', () => alternarDestaque(prod));
+      }
+      return card;
+    }
+
+    function renderizarVitrine() {
+      if (!produtosCarregados) return;
+      const vitrine = document.getElementById('vitrineProdutos');
+      const filtrados = filtrarProdutos();
+      const semFiltro = nenhumFiltroAtivo();
+      const totalPaginas = Math.max(1, Math.ceil(filtrados.length / ITENS_POR_PAGINA));
+      paginaAtual = Math.min(Math.max(1, paginaAtual), totalPaginas);
+
+      renderizarDestaques(semFiltro && paginaAtual === 1);
+
+      document.getElementById('tituloVitrine').textContent = semFiltro ? 'Todas as artes' : 'Resultados';
+      document.getElementById('contadorResultados').textContent = `${filtrados.length} ${filtrados.length === 1 ? 'arte' : 'artes'}`;
+      document.getElementById('btnLimparFiltros').classList.toggle('escondido', semFiltro);
+
+      vitrine.innerHTML = '';
+      if (!filtrados.length) {
+        const vazio = document.createElement('div');
+        vazio.className = 'vazio-vitrine';
+        vazio.innerHTML = '<strong>Nenhuma arte encontrada</strong><p>Tente outra palavra ou limpe os filtros.</p>';
+        vitrine.appendChild(vazio);
+        renderizarPaginacao(0);
+        return;
+      }
+
+      // Só a página atual vai para o DOM: menos cards, menos imagens, página mais leve
+      const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+      const frag = document.createDocumentFragment();
+      filtrados.slice(inicio, inicio + ITENS_POR_PAGINA).forEach((prod) => frag.appendChild(criarCard(prod)));
+      vitrine.appendChild(frag);
+      renderizarPaginacao(filtrados.length);
+    }
+
+    function mudarSlide(card, dir) {
+      const slides = card.getElementsByClassName('carrossel-slide');
+      const dots = card.getElementsByClassName('dot');
+      let ativoIdx = 0;
+      for (let i = 0; i < slides.length; i++) {
+        if (slides[i].classList.contains('ativo')) {
+          ativoIdx = i;
+          slides[i].classList.remove('ativo');
+          if (dots[i]) dots[i].classList.remove('ativo');
+          break;
+        }
+      }
+      let novoIdx = (ativoIdx + dir + slides.length) % slides.length;
+      slides[novoIdx].classList.add('ativo');
+      carregarSlide(slides[novoIdx]); carregarSlide(slides[(novoIdx + 1) % slides.length]);
+      if (dots[novoIdx]) dots[novoIdx].classList.add('ativo');
+    }
+
+    async function excluirCarrossel(id) {
+      if (confirm("Remover este carrossel?")) {
+        await deleteDoc(doc(db, "produtos", id));
+        carregarProdutos();
+      }
+    }
+
+    // PWA — LOADER DE CARREGAMENTO E SERVICE WORKER
+    let pageLoaderEscondido = false;
+
+    function esconderPageLoader() {
+      if (pageLoaderEscondido) return;
+      pageLoaderEscondido = true;
+      const loader = document.getElementById('pageLoader');
+      if (!loader) return;
+      loader.classList.add('page-loader-esconder');
+      setTimeout(() => loader.remove(), 500);
+    }
+
+    async function carregarDadosIniciais() {
+      const inicio = Date.now();
+      try {
+        await Promise.all([
+          carregarConfiguracoesLoja(),
+          carregarTaxonomias(),
+          carregarProdutos()
+        ]);
+      } catch (erro) {
+        console.error('Erro ao carregar dados iniciais da loja:', erro);
+      } finally {
+        const decorrido = Date.now() - inicio;
+        setTimeout(esconderPageLoader, Math.max(0, 350 - decorrido));
+      }
+    }
+
+    setTimeout(esconderPageLoader, 9000);
+
+    window.addEventListener('load', () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch((erro) => {
+          console.error('Erro ao registrar o Service Worker:', erro);
+        });
+      }
+    });
+  </script>
+  <script type="module" src="./pix-checkout.js"></script>
+</body>
+</html>
