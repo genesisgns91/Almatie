@@ -822,16 +822,10 @@
       document.getElementById('boxLogin').classList.add('escondido');
       document.getElementById('modalOverlay').classList.add('escondido');
     }
-function fecharGaleria() {
-      document.getElementById('modalGaleria').classList.add('escondido');
-      document.body.style.overflow = '';
-    }
 
-    // --- COLE AQUI A NOVA FUNÇÃO DE CHECKOUT ---
+    // Função de Checkout para chamar a Cloudflare Worker e o Mercado Pago
     window.iniciarCheckout = async function(produtoId, tituloEncoded, precoStr) {
       const titulo = decodeURIComponent(tituloEncoded);
-      
-      // Limpa o formato do preço para número decimal puro
       const precoLimpo = parseFloat(precoStr.replace(/\./g, '').replace(',', '.'));
 
       if (!precoLimpo || precoLimpo <= 0) {
@@ -866,8 +860,6 @@ function fecharGaleria() {
         mostrarToast("Falha de conexão com o servidor de pagamentos.", "erro");
       }
     };
-    // -------------------------------------------
-
 
     async function fazerLogin() {
       const email = document.getElementById('emailInput').value;
@@ -949,8 +941,9 @@ function fecharGaleria() {
               <span class="preco-label">--</span>
               <div class="card-preco"><small>R$</small> ${prod.preco || '0,00'}</div>
             </div>
-
+            
             <button type="button" class="btn-comprar" onclick="window.iniciarCheckout('${prod.id}', '${encodeURIComponent(prod.titulo)}', '${prod.preco}')">Comprar Arte</button>
+            
             ${usuarioAtual ? `
               <div class="acoes-admin">
                 <button class="btn-editar">Editar</button>
@@ -1012,8 +1005,6 @@ function fecharGaleria() {
       setTimeout(() => loader.remove(), 500);
     }
 
-    // Carrega tudo que a vitrine precisa e só então esconde o loader —
-    // assim o ícone animado fica visível pelo tempo real de carregamento.
     async function carregarDadosIniciais() {
       const inicio = Date.now();
       try {
@@ -1025,13 +1016,11 @@ function fecharGaleria() {
       } catch (erro) {
         console.error('Erro ao carregar dados iniciais da loja:', erro);
       } finally {
-        // tempo mínimo de exibição para evitar um "piscar" em conexões muito rápidas
         const decorrido = Date.now() - inicio;
         setTimeout(esconderPageLoader, Math.max(0, 350 - decorrido));
       }
     }
 
-    // segurança: nunca deixa o visitante preso na tela de carregamento
     setTimeout(esconderPageLoader, 9000);
 
     function filtrarVitrine() {
