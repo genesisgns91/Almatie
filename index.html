@@ -252,6 +252,12 @@
 
 
     <div class="form-group">
+      <label class="check-destaque" for="chkDestaque">
+        <input type="checkbox" id="chkDestaque"> ⭐ Destacar este anúncio no topo da loja
+      </label>
+    </div>
+
+    <div class="form-group">
       <label>Imagens do Carrossel:</label>
       <div class="grid-imagens-modal" id="gridImagens">
         <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
@@ -266,14 +272,36 @@
     <button id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar Edição</button>
   </div>
 
+  <section class="hero-loja">
+    <h2>Artes prontas para <span>sublimar</span></h2>
+    <p>Estampas exclusivas para canecas, camisetas, DTF e muito mais. Pagou no Pix, a arte é liberada na hora.</p>
+  </section>
+
   <div class="area-filtros">
     <div class="area-busca">
       <div class="campo-busca-wrap">
         <span class="icone-busca">🔍</span>
-        <input type="text" id="campoBusca" class="campo-busca" placeholder="Digite para buscar uma arte...">
+        <input type="text" id="campoBusca" class="campo-busca" placeholder="Busque por tema, produto ou palavra-chave...">
       </div>
     </div>
     <div id="containerFiltros" class="menu-categorias"></div>
+  </div>
+
+  <section id="secaoDestaques" class="secao-destaques escondido" aria-label="Anúncios em destaque">
+    <div class="destaques-cabecalho">
+      <h2>⭐ Em destaque</h2>
+      <div class="destaques-nav">
+        <button type="button" id="destaquesPrev" aria-label="Anterior">❮</button>
+        <button type="button" id="destaquesNext" aria-label="Próximo">❯</button>
+      </div>
+    </div>
+    <div class="destaques-trilho" id="destaquesTrilho"></div>
+  </section>
+
+  <div class="vitrine-cabecalho">
+    <h2 id="tituloVitrine">Todas as artes</h2>
+    <span id="contadorResultados" class="contador-resultados"></span>
+    <button type="button" id="btnLimparFiltros" class="btn-link escondido">Limpar filtros</button>
   </div>
 
   <div class="vitrine" id="vitrineProdutos"></div>
@@ -315,6 +343,10 @@
     let taxonomiasMemoria = [];
     let listaImagensAtuais = [];
     let filtroCategoriaAtiva = 'TODOS';
+    let filtroTipoAtivo = 'TODOS';
+    let filtroSubAtiva = 'TODOS';
+    let termoBusca = '';
+    let produtosCarregados = false;
 
     let logoUrlTemp = "";
     let faviconUrlTemp = "";
@@ -700,7 +732,7 @@
         return;
       }
 
-      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, link, imagens: listaImagensAtuais, criadoEm: new Date() };
+      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, link, imagens: listaImagensAtuais, destaque: document.getElementById('chkDestaque').checked, criadoEm: new Date() };
 
       try {
         if (docId) {
@@ -726,6 +758,7 @@
       document.getElementById('editorDescricao').innerHTML = p.descricao || '';
       document.getElementById('preco').value = p.preco;
       document.getElementById('linkCompra').value = p.link;
+      document.getElementById('chkDestaque').checked = !!p.destaque;
 
       listaImagensAtuais = [...(p.imagens || [])];
       renderizarGridImagens();
@@ -745,6 +778,7 @@
       document.getElementById('editorDescricao').innerHTML = '';
       document.getElementById('preco').value = '';
       document.getElementById('linkCompra').value = '';
+      document.getElementById('chkDestaque').checked = false;
       listaImagensAtuais = [];
       renderizarGridImagens();
       atualizarPlaceholderEditor();
@@ -769,7 +803,10 @@
       document.getElementById('btnUploadFavicon').addEventListener('click', () => widgetFavicon.open());
       document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
       document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
-      document.getElementById('campoBusca').addEventListener('keyup', filtrarVitrine);
+      document.getElementById('campoBusca').addEventListener('input', (e) => { termoBusca = e.target.value; renderizarVitrine(); });
+      document.getElementById('btnLimparFiltros').addEventListener('click', limparFiltros);
+      document.getElementById('destaquesPrev').addEventListener('click', () => rolarDestaques(-1));
+      document.getElementById('destaquesNext').addEventListener('click', () => rolarDestaques(1));
 
       // TOOLBAR DO EDITOR — delega os botões com data-cmd para execCommand
       document.querySelectorAll('#editorToolbar [data-cmd]').forEach((btn) => {
@@ -840,97 +877,282 @@
       renderizarVitrine();
     });
 
+    // =========================================================
+    // VITRINE: BUSCA, FILTROS (PRODUTO > CATEGORIA > TEMA) E DESTAQUES
+    // =========================================================
+    function normalizarTexto(t) {
+      return (t || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+    }
+
+    function htmlParaTexto(html) {
+      try { return new DOMParser().parseFromString(html || '', 'text/html').body.textContent || ''; }
+      catch (e) { return ''; }
+    }
+
+    function dataDoProduto(p) {
+      const c = p.criadoEm;
+      if (c && typeof c.toMillis === 'function') return c.toMillis();
+      if (c && c.seconds) return c.seconds * 1000;
+      return 0;
+    }
+
+    const valorDe = (p, campo) => p[campo] || 'Geral';
+
     async function carregarProdutos() {
       try {
         const querySnapshot = await getDocs(collection(db, "produtos"));
         produtosMemoria = [];
-        querySnapshot.forEach((docSnap) => produtosMemoria.push({ id: docSnap.id, ...docSnap.data() }));
+        querySnapshot.forEach((docSnap) => {
+          const p = { id: docSnap.id, ...docSnap.data() };
+          p._busca = normalizarTexto([p.titulo, p.tipo, p.categoria, p.classe, htmlParaTexto(p.descricao)].join(' '));
+          produtosMemoria.push(p);
+        });
+        produtosMemoria.sort((a, b) => dataDoProduto(b) - dataDoProduto(a)); // mais novos primeiro
+        produtosCarregados = true;
         construirMenuFiltros();
         renderizarVitrine();
       } catch (e) { console.error(e); }
     }
 
-    function construirMenuFiltros() {
-      const container = document.getElementById('containerFiltros');
-      const categorias = ['TODOS', ...new Set(produtosMemoria.map(p => p.categoria || 'Geral'))];
-      let html = `<div class="grupo-filtro"><span>Categorias:</span>`;
-      categorias.forEach(cat => {
-        html += `<button class="btn-tag ${filtroCategoriaAtiva === cat ? 'ativo' : ''}" onclick="window.setFiltroCat('${cat}')">${cat}</button>`;
+    function contarPor(lista, campo) {
+      const mapa = new Map();
+      lista.forEach((p) => {
+        const k = valorDe(p, campo);
+        mapa.set(k, (mapa.get(k) || 0) + 1);
       });
-      html += `</div>`;
-      container.innerHTML = html;
+      return mapa;
     }
 
-    window.setFiltroCat = (cat) => { filtroCategoriaAtiva = cat; renderizarVitrine(); };
+    function criarGrupoFiltro(rotulo, itens, ativo, classeExtra, aoSelecionar) {
+      const grupo = document.createElement('div');
+      grupo.className = 'grupo-filtro';
+      const r = document.createElement('span');
+      r.textContent = rotulo;
+      grupo.appendChild(r);
+      itens.forEach(({ valor, texto, total }) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `btn-tag ${classeExtra} ${ativo === valor ? 'ativo' : ''}`;
+        b.textContent = texto;
+        const n = document.createElement('em');
+        n.className = 'contagem';
+        n.textContent = total;
+        b.appendChild(n);
+        b.addEventListener('click', () => aoSelecionar(valor));
+        grupo.appendChild(b);
+      });
+      return grupo;
+    }
 
-    function renderizarVitrine() {
-      const vitrine = document.getElementById('vitrineProdutos');
-      vitrine.innerHTML = '';
+    function construirMenuFiltros() {
+      const container = document.getElementById('containerFiltros');
+      container.innerHTML = '';
 
-      const filtrados = produtosMemoria.filter(p => filtroCategoriaAtiva === 'TODOS' || p.categoria === filtroCategoriaAtiva);
+      // 1) Produto (Tipo): Canecas, Camisetas, DTF...
+      const porTipo = contarPor(produtosMemoria, 'tipo');
+      if (filtroTipoAtivo !== 'TODOS' && !porTipo.has(filtroTipoAtivo)) filtroTipoAtivo = 'TODOS';
+      if (porTipo.size > 1) {
+        const itens = [{ valor: 'TODOS', texto: 'Todos', total: produtosMemoria.length },
+          ...[...porTipo].map(([k, n]) => ({ valor: k, texto: k, total: n }))];
+        container.appendChild(criarGrupoFiltro('Produto:', itens, filtroTipoAtivo, 'btn-tag-tipo', (v) => {
+          filtroTipoAtivo = v; filtroCategoriaAtiva = 'TODOS'; filtroSubAtiva = 'TODOS';
+          construirMenuFiltros(); renderizarVitrine();
+        }));
+      }
 
-      filtrados.forEach((prod) => {
-        let slidesHTML = '';
-        let dotsHTML = '';
-        (prod.imagens || []).forEach((imgUrl, idx) => {
-          slidesHTML += `<div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}"><img src="${imgUrl}"></div>`;
-          dotsHTML += `<div class="dot ${idx === 0 ? 'ativo' : ''}"></div>`;
-        });
+      // 2) Categoria (dentro do produto escolhido)
+      const baseTipo = produtosMemoria.filter((p) => filtroTipoAtivo === 'TODOS' || valorDe(p, 'tipo') === filtroTipoAtivo);
+      const porCat = contarPor(baseTipo, 'categoria');
+      if (filtroCategoriaAtiva !== 'TODOS' && !porCat.has(filtroCategoriaAtiva)) filtroCategoriaAtiva = 'TODOS';
+      if (porCat.size > 1) {
+        const itens = [{ valor: 'TODOS', texto: 'Todas', total: baseTipo.length },
+          ...[...porCat].map(([k, n]) => ({ valor: k, texto: k, total: n }))];
+        container.appendChild(criarGrupoFiltro('Categoria:', itens, filtroCategoriaAtiva, '', (v) => {
+          filtroCategoriaAtiva = v; filtroSubAtiva = 'TODOS';
+          construirMenuFiltros(); renderizarVitrine();
+        }));
+      }
 
-        const card = document.createElement('div');
-        card.className = 'card-carrossel';
-        card.innerHTML = `
-          <div class="card-header">
-            <h3 class="card-titulo">${prod.titulo}</h3>
-            <div class="card-meta">
-              ${prod.tipo ? `<span class="badge-tag badge-tipo">${prod.tipo}</span>` : ''}
-              <span class="badge-tag badge-cat">${prod.categoria || 'Geral'}</span>
-              ${prod.classe ? `<span class="badge-tag badge-sub">${prod.classe}</span>` : ''}
-            </div>
-          </div>
-          <div class="carrossel-container">
-            ${slidesHTML}
-            ${prod.imagens && prod.imagens.length > 1 ? `
-              <button class="btn-nav btn-prev">❮</button>
-              <button class="btn-nav btn-next">❯</button>
-              <div class="dots-container">${dotsHTML}</div>
-            ` : ''}
-            <span class="icone-expandir" title="Ver galeria completa">⤢</span>
-          </div>
-          <div class="card-body">
-            <div class="card-descricao-wrap">
-              <div class="card-descricao">${prod.descricao || ''}</div>
-            </div>
+      // 3) Tema (Subcategoria), só aparece depois de escolher uma categoria
+      if (filtroCategoriaAtiva !== 'TODOS') {
+        const baseCat = baseTipo.filter((p) => valorDe(p, 'categoria') === filtroCategoriaAtiva);
+        const porSub = contarPor(baseCat, 'classe');
+        if (filtroSubAtiva !== 'TODOS' && !porSub.has(filtroSubAtiva)) filtroSubAtiva = 'TODOS';
+        if (porSub.size > 1) {
+          const itens = [{ valor: 'TODOS', texto: 'Todos', total: baseCat.length },
+            ...[...porSub].map(([k, n]) => ({ valor: k, texto: k, total: n }))];
+          container.appendChild(criarGrupoFiltro('Tema:', itens, filtroSubAtiva, '', (v) => {
+            filtroSubAtiva = v; construirMenuFiltros(); renderizarVitrine();
+          }));
+        }
+      }
+    }
+
+    function nenhumFiltroAtivo() {
+      return filtroTipoAtivo === 'TODOS' && filtroCategoriaAtiva === 'TODOS' && filtroSubAtiva === 'TODOS' && !normalizarTexto(termoBusca);
+    }
+
+    function limparFiltros() {
+      filtroTipoAtivo = 'TODOS'; filtroCategoriaAtiva = 'TODOS'; filtroSubAtiva = 'TODOS'; termoBusca = '';
+      document.getElementById('campoBusca').value = '';
+      construirMenuFiltros();
+      renderizarVitrine();
+    }
+
+    function filtrarProdutos() {
+      const palavras = normalizarTexto(termoBusca).split(/\s+/).filter(Boolean);
+      return produtosMemoria.filter((p) =>
+        (filtroTipoAtivo === 'TODOS' || valorDe(p, 'tipo') === filtroTipoAtivo) &&
+        (filtroCategoriaAtiva === 'TODOS' || valorDe(p, 'categoria') === filtroCategoriaAtiva) &&
+        (filtroSubAtiva === 'TODOS' || valorDe(p, 'classe') === filtroSubAtiva) &&
+        palavras.every((w) => p._busca.includes(w)));
+    }
+
+    function comprarProduto(prod) {
+      window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), prod.preco);
+    }
+
+    async function alternarDestaque(prod) {
+      try {
+        await updateDoc(doc(db, "produtos", prod.id), { destaque: !prod.destaque });
+        mostrarToast(prod.destaque ? "Destaque removido." : "Anúncio em destaque!", "sucesso");
+        carregarProdutos();
+      } catch (e) { mostrarToast("Erro ao alterar destaque.", "erro"); }
+    }
+
+    // ----- Faixa "Em destaque" -----
+    function criarCardDestaque(prod) {
+      const el = document.createElement('article');
+      el.className = 'card-destaque';
+      el.innerHTML = `
+        <div class="destaque-imagem">
+          <img alt="" loading="lazy">
+          <span class="selo-destaque">⭐ Destaque</span>
+        </div>
+        <div class="destaque-info">
+          <h3 class="destaque-titulo"></h3>
+          <div class="destaque-rodape">
             <div class="card-preco-box">
               <span class="preco-label">--</span>
-              <div class="card-preco"><small>R$</small> ${prod.preco || '0,00'}</div>
+              <div class="card-preco"><small>R$</small> <span class="destaque-preco"></span></div>
             </div>
-            
-            <button type="button" class="btn-comprar" onclick="window.iniciarCheckout('${prod.id}', '${encodeURIComponent(prod.titulo)}', '${prod.preco}')">Comprar Arte</button>
-            
-            ${usuarioAtual ? `
-              <div class="acoes-admin">
-                <button class="btn-editar">Editar</button>
-                <button class="btn-excluir">Excluir</button>
-              </div>
-            ` : ''}
+            <button type="button" class="btn-comprar">Comprar Arte</button>
           </div>
-        `;
+        </div>`;
+      const img = el.querySelector('img');
+      img.src = (prod.imagens || [])[0] || '';
+      img.alt = prod.titulo || '';
+      el.querySelector('.destaque-titulo').textContent = prod.titulo || '';
+      el.querySelector('.destaque-preco').textContent = prod.preco || '0,00';
+      el.querySelector('.destaque-imagem').addEventListener('click', () => abrirGaleria(prod));
+      el.querySelector('.destaque-titulo').addEventListener('click', () => abrirGaleria(prod));
+      el.querySelector('.btn-comprar').addEventListener('click', () => comprarProduto(prod));
+      return el;
+    }
 
-        if (prod.imagens && prod.imagens.length > 1) {
-          card.querySelector('.btn-prev').addEventListener('click', (e) => { e.stopPropagation(); mudarSlide(card, -1); });
-          card.querySelector('.btn-next').addEventListener('click', (e) => { e.stopPropagation(); mudarSlide(card, 1); });
-        }
+    function renderizarDestaques(visivel) {
+      const secao = document.getElementById('secaoDestaques');
+      const trilho = document.getElementById('destaquesTrilho');
+      const lista = produtosMemoria.filter((p) => p.destaque);
+      trilho.innerHTML = '';
+      if (!visivel || !lista.length) { secao.classList.add('escondido'); return; }
+      secao.classList.remove('escondido');
+      lista.forEach((p) => trilho.appendChild(criarCardDestaque(p)));
+    }
 
-        card.querySelector('.carrossel-container').addEventListener('click', () => abrirGaleria(prod));
+    function rolarDestaques(dir) {
+      const trilho = document.getElementById('destaquesTrilho');
+      trilho.scrollBy({ left: dir * Math.max(240, trilho.clientWidth * 0.8), behavior: 'smooth' });
+    }
 
-        if (usuarioAtual) {
-          card.querySelector('.btn-editar').addEventListener('click', () => prepararEdicao(prod.id));
-          card.querySelector('.btn-excluir').addEventListener('click', () => excluirCarrossel(prod.id));
-        }
-
-        vitrine.appendChild(card);
+    // ----- Grade principal -----
+    function criarCard(prod) {
+      let slidesHTML = '';
+      let dotsHTML = '';
+      (prod.imagens || []).forEach((imgUrl, idx) => {
+        slidesHTML += `<div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}"><img src="${imgUrl}" loading="lazy"></div>`;
+        dotsHTML += `<div class="dot ${idx === 0 ? 'ativo' : ''}"></div>`;
       });
+
+      const card = document.createElement('div');
+      card.className = 'card-carrossel';
+      card.innerHTML = `
+        <div class="card-header">
+          <h3 class="card-titulo">${prod.titulo}</h3>
+          <div class="card-meta">
+            ${prod.tipo ? `<span class="badge-tag badge-tipo">${prod.tipo}</span>` : ''}
+            <span class="badge-tag badge-cat">${prod.categoria || 'Geral'}</span>
+            ${prod.classe ? `<span class="badge-tag badge-sub">${prod.classe}</span>` : ''}
+          </div>
+        </div>
+        <div class="carrossel-container">
+          ${slidesHTML}
+          ${prod.destaque ? '<span class="selo-destaque">⭐ Destaque</span>' : ''}
+          ${prod.imagens && prod.imagens.length > 1 ? `
+            <button class="btn-nav btn-prev">❮</button>
+            <button class="btn-nav btn-next">❯</button>
+            <div class="dots-container">${dotsHTML}</div>
+          ` : ''}
+          <span class="icone-expandir" title="Ver galeria completa">⤢</span>
+        </div>
+        <div class="card-body">
+          <div class="card-descricao-wrap">
+            <div class="card-descricao">${prod.descricao || ''}</div>
+          </div>
+          <div class="card-preco-box">
+            <span class="preco-label">--</span>
+            <div class="card-preco"><small>R$</small> ${prod.preco || '0,00'}</div>
+          </div>
+
+          <button type="button" class="btn-comprar">Comprar Arte</button>
+
+          ${usuarioAtual ? `
+            <div class="acoes-admin">
+              <button class="btn-editar">Editar</button>
+              <button class="btn-excluir">Excluir</button>
+              <button class="btn-destacar">${prod.destaque ? '★ Tirar dos destaques' : '☆ Destacar na loja'}</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      if (prod.imagens && prod.imagens.length > 1) {
+        card.querySelector('.btn-prev').addEventListener('click', (e) => { e.stopPropagation(); mudarSlide(card, -1); });
+        card.querySelector('.btn-next').addEventListener('click', (e) => { e.stopPropagation(); mudarSlide(card, 1); });
+      }
+
+      card.querySelector('.carrossel-container').addEventListener('click', () => abrirGaleria(prod));
+      card.querySelector('.btn-comprar').addEventListener('click', () => comprarProduto(prod));
+
+      if (usuarioAtual) {
+        card.querySelector('.btn-editar').addEventListener('click', () => prepararEdicao(prod.id));
+        card.querySelector('.btn-excluir').addEventListener('click', () => excluirCarrossel(prod.id));
+        card.querySelector('.btn-destacar').addEventListener('click', () => alternarDestaque(prod));
+      }
+      return card;
+    }
+
+    function renderizarVitrine() {
+      if (!produtosCarregados) return;
+      const vitrine = document.getElementById('vitrineProdutos');
+      const filtrados = filtrarProdutos();
+      const semFiltro = nenhumFiltroAtivo();
+
+      renderizarDestaques(semFiltro);
+
+      document.getElementById('tituloVitrine').textContent = semFiltro ? 'Todas as artes' : 'Resultados';
+      document.getElementById('contadorResultados').textContent = `${filtrados.length} ${filtrados.length === 1 ? 'arte' : 'artes'}`;
+      document.getElementById('btnLimparFiltros').classList.toggle('escondido', semFiltro);
+
+      vitrine.innerHTML = '';
+      if (!filtrados.length) {
+        const vazio = document.createElement('div');
+        vazio.className = 'vazio-vitrine';
+        vazio.innerHTML = '<strong>Nenhuma arte encontrada</strong><p>Tente outra palavra ou limpe os filtros.</p>';
+        vitrine.appendChild(vazio);
+        return;
+      }
+      filtrados.forEach((prod) => vitrine.appendChild(criarCard(prod)));
     }
 
     function mudarSlide(card, dir) {
@@ -986,14 +1208,6 @@
     }
 
     setTimeout(esconderPageLoader, 9000);
-
-    function filtrarVitrine() {
-      const termo = document.getElementById('campoBusca').value.toLowerCase();
-      const cards = document.getElementsByClassName('card-carrossel');
-      for (let card of cards) {
-        card.style.display = card.innerText.toLowerCase().includes(termo) ? "flex" : "none";
-      }
-    }
 
     window.addEventListener('load', () => {
       if ('serviceWorker' in navigator) {
