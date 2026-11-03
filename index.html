@@ -297,7 +297,7 @@
           <span class="preco-label">--</span>
           <div class="card-preco"><small>R$</small> <span id="galeriaPrecoValor">0,00</span></div>
         </div>
-        <a href="#" id="galeriaBtnComprar" target="_blank" class="btn-comprar btn-comprar-galeria">Comprar Arte</a>
+        <button type="button" id="galeriaBtnComprar" class="btn-comprar btn-comprar-galeria">Comprar Arte</button>
       </div>
     </div>
   </div>
@@ -337,7 +337,7 @@
 
       document.getElementById('galeriaDescricao').innerHTML = prod.descricao || '';
       document.getElementById('galeriaPrecoValor').innerText = prod.preco || '0,00';
-      document.getElementById('galeriaBtnComprar').href = prod.link || '#';
+      document.getElementById('galeriaBtnComprar').onclick = () => window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), prod.preco);
 
       renderizarGaleriaImagens();
 
@@ -823,65 +823,8 @@
       document.getElementById('modalOverlay').classList.add('escondido');
     }
 
-    // Função de Checkout para chamar a Cloudflare Worker e o Mercado Pago
-    // Função para gerar o Pix Transparente e exibir o QR Code na tela
-    // Função para chamar a Cloudflare Worker e redirecionar para o Checkout Pro
-    window.iniciarCheckout = async function(produtoId, tituloEncoded, precoStr) {
-      const titulo = decodeURIComponent(tituloEncoded);
-      const precoLimpo = parseFloat(precoStr.replace(/\./g, '').replace(',', '.'));
+    // Checkout (Pix transparente) agora vive em pix-checkout.js
 
-      if (!precoLimpo || precoLimpo <= 0) {
-        mostrarToast("Preço do produto inválido para compra.", "erro");
-        return;
-      }
-
-      mostrarToast("Gerando link de pagamento seguro...", "padrao");
-
-      try {
-        const resposta = await fetch("https://almatie-pagamentos.almatie-stock.workers.dev/criar-pagamento", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            produtoId: produtoId,
-            titulo: titulo,
-            preco: precoLimpo,
-            emailCliente: "cliente@almatie.com"
-          })
-        });
-
-        const dados = await resposta.json();
-
-        if (dados.init_point) {
-          // Redireciona o cliente para a página oficial do Mercado Pago
-          window.location.href = dados.init_point;
-        } else {
-          mostrarToast("Erro ao gerar link de pagamento.", "erro");
-          console.error(dados);
-        }
-      } catch (e) {
-        console.error("Erro na requisição:", e);
-        mostrarToast("Falha de conexão com o servidor de pagamentos.", "erro");
-      }
-    };
-
-    // Ações para fechar o modal ou copiar o código Pix
-    document.addEventListener("DOMContentLoaded", () => {
-      const modalPix = document.getElementById('modalPix');
-      
-      document.getElementById('btnFecharPix').addEventListener('click', () => {
-        modalPix.style.display = 'none';
-        modalPix.classList.add('escondido');
-      });
-
-      document.getElementById('btnCopiarPix').addEventListener('click', () => {
-        const inputCopiaCola = document.getElementById('inputPixCopiaCola');
-        inputCopiaCola.select();
-        inputCopiaCola.setSelectionRange(0, 99999);
-        navigator.clipboard.writeText(inputCopiaCola.value);
-        mostrarToast("Chave Pix copiada com sucesso!", "sucesso");
-      });
-    });
-    
     async function fazerLogin() {
       const email = document.getElementById('emailInput').value;
       const senha = document.getElementById('senhaInput').value;
@@ -1060,25 +1003,6 @@
       }
     });
   </script>
-  <!-- MODAL DO PIX TRANSPARENTE -->
-  <div id="modalPix" class="modal-overlay escondido" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999;">
-    <div style="background: #fff; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
-      <h3 style="margin-bottom: 12px; color: #1B1230;">Pague com Pix</h3>
-      <p style="font-size: 14px; color: #666; margin-bottom: 16px;">Escaneie o QR Code abaixo ou copie a chave para pagar no app do seu banco:</p>
-      
-      <div id="pixQrCodeContainer" style="margin-bottom: 16px;">
-        <img id="imgQrCodePix" src="" alt="QR Code Pix" style="max-width: 200px; height: auto; border: 1px solid #ddd; border-radius: 8px;">
-      </div>
-
-      <div style="margin-bottom: 16px;">
-        <input type="text" id="inputPixCopiaCola" readonly style="width: 100%; padding: 8px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9; text-align: center;" />
-      </div>
-
-      <div style="display: flex; gap: 10px;">
-        <button type="button" id="btnCopiarPix" class="btn btn-primary" style="flex: 1; padding: 10px; background: #D6336C; color: #fff; border: none; border-radius: 6px; cursor: pointer;">Copiar Chave Pix</button>
-        <button type="button" id="btnFecharPix" class="btn btn-secondary" style="flex: 1; padding: 10px; background: #ccc; color: #333; border: none; border-radius: 6px; cursor: pointer;">Fechar</button>
-      </div>
-    </div>
-  </div>
+  <script type="module" src="./pix-checkout.js"></script>
 </body>
 </html>
