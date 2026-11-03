@@ -825,6 +825,7 @@
 
     // Função de Checkout para chamar a Cloudflare Worker e o Mercado Pago
     // Função para gerar o Pix Transparente e exibir o QR Code na tela
+    // Função para chamar a Cloudflare Worker e redirecionar para o Checkout Pro
     window.iniciarCheckout = async function(produtoId, tituloEncoded, precoStr) {
       const titulo = decodeURIComponent(tituloEncoded);
       const precoLimpo = parseFloat(precoStr.replace(/\./g, '').replace(',', '.'));
@@ -834,7 +835,7 @@
         return;
       }
 
-      mostrarToast("Gerando QR Code Pix...", "padrao");
+      mostrarToast("Gerando link de pagamento seguro...", "padrao");
 
       try {
         const resposta = await fetch("https://almatie-pagamentos.almatie-stock.workers.dev/criar-pagamento", {
@@ -850,17 +851,11 @@
 
         const dados = await resposta.json();
 
-        if (dados.success && dados.qrCodeBase64) {
-          // Preenche o modal com a imagem do QR Code e o Pix Copia e Cola
-          document.getElementById('imgQrCodePix').src = `data:image/jpeg;base64,${dados.qrCodeBase64}`;
-          document.getElementById('inputPixCopiaCola').value = dados.qrCode;
-          
-          // Exibe o modal do Pix
-          const modalPix = document.getElementById('modalPix');
-          modalPix.style.display = 'flex';
-          modalPix.classList.remove('escondido');
+        if (dados.init_point) {
+          // Redireciona o cliente para a página oficial do Mercado Pago
+          window.location.href = dados.init_point;
         } else {
-          mostrarToast("Erro ao gerar Pix.", "erro");
+          mostrarToast("Erro ao gerar link de pagamento.", "erro");
           console.error(dados);
         }
       } catch (e) {
