@@ -3,9 +3,10 @@
    ========================================================= */
 :root {
   /* Cores de marca — inspiradas no processo CMY da sublimação */
-  --primary: #D6336C;          /* magenta — tinta primária */
-  --primary-hover: #B92457;
-  --primary-soft: #FBE4ED;
+  --primary: #BE3A78;          /* rosa framboesa-orquídea — tinta primária */
+  --primary-hover: #9C2C61;
+  --primary-soft: #F9E8F0;
+  --violet: #7E3C9F;           /* ameixa — par do rosa, vem do violeta da tinta do texto */
 
   --secondary-accent: #0E8FA3; /* ciano — tinta secundária, usada em gradientes/realces */
   --secondary-soft: #E0F4F6;
@@ -23,7 +24,7 @@
   --danger-soft: #FDE8E8;
 
   /* Raios de borda */
-  --radius: 14px;
+  --radius: 16px;
   --radius-sm: 8px;
   --radius-lg: 20px;
   --radius-full: 999px;
@@ -34,7 +35,7 @@
   --shadow-lg: 0 20px 40px -12px rgba(27, 18, 48, 0.22), 0 8px 16px -8px rgba(27, 18, 48, 0.12);
 
   /* Elemento de assinatura: gradiente de tinta, usado com moderação */
-  --gradient-ink: linear-gradient(135deg, var(--primary) 0%, var(--secondary-accent) 100%);
+  --gradient-ink: linear-gradient(135deg, #C93F7E 0%, #A8337F 52%, var(--violet) 100%);
 
   /* Tipografia */
   --font-display: 'Fraunces', serif;
@@ -42,7 +43,11 @@
 
   /* Interatividade */
   --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
-  --focus-ring: 0 0 0 3px rgba(214, 51, 108, 0.35);
+  --focus-ring: 0 0 0 3px rgba(190, 58, 120, 0.35);
+
+  /* Layout de app */
+  --appbar-h: 76px;
+  --nav-h: 64px;
 }
 
 /* =========================================================
@@ -56,7 +61,11 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
+
+button, [role="button"], summary, label { touch-action: manipulation; }
 
 *:focus-visible {
   outline: 2px solid var(--primary);
@@ -146,7 +155,7 @@ p {
   width: min(62vw, 250px);
   height: min(62vw, 250px);
   border-radius: 50%;
-  border: 3px solid rgba(214, 51, 108, 0.15);
+  border: 3px solid rgba(190, 58, 120, 0.15);
   border-top-color: var(--primary);
   border-right-color: var(--secondary-accent);
   animation: pageLoaderGirar 1s linear infinite;
@@ -219,18 +228,19 @@ p {
   display: block;
 }
 
-/* CABEÇALHO FIXO E LOGO */
+/* CABEÇALHO FIXO E LOGO — barra do app, translúcida */
 .site-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 24px;
-  background: linear-gradient(90deg, #ffffff 0%, var(--bg) 100%);
+  padding: calc(10px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-right, 0px)) 10px calc(24px + env(safe-area-inset-left, 0px));
+  background: rgba(251, 248, 244, 0.88);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  backdrop-filter: saturate(1.4) blur(14px);
   border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 50;
 }
 
 .brand-container {
@@ -240,7 +250,7 @@ p {
 }
 
 .logo-img {
-  max-height: 68px;
+  max-height: 52px;
   width: auto;
   object-fit: contain;
   border-radius: var(--radius-sm);
@@ -717,6 +727,9 @@ input:focus, textarea:focus {
   text-align: center;
   background: var(--gradient-ink);
   color: white;
+  border: 0;
+  font-family: var(--font-body);
+  cursor: pointer;
   text-decoration: none;
   padding: 10px 22px;
   border-radius: var(--radius-full);
@@ -894,15 +907,17 @@ input:focus, textarea:focus {
 
 /* Header e Título do Card */
 .card-header {
-  height: 122px;
-  padding: 12px 16px 10px;
+  height: 112px;
+  padding: 14px 16px 6px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  border-bottom: 1px solid var(--border);
+  gap: 6px;
   background: var(--surface);
   overflow: hidden;
 }
+
+/* A arte vem primeiro: é ela que vende */
+.card-carrossel .carrossel-container { order: -1; }
 
 .card-titulo {
   font-size: 1.12rem;
@@ -935,7 +950,7 @@ input:focus, textarea:focus {
 }
 
 .badge-tipo { background: var(--secondary-soft); color: var(--secondary-accent); }
-.badge-cat { background: var(--primary-soft); color: var(--primary); }
+.badge-cat { background: var(--primary-soft); color: var(--primary-hover); }
 .badge-sub { background: var(--bg-alt); color: var(--text-muted); }
 
 /* Espaço da Descrição Formatada — altura fixa, sem scroll, com reticências */
@@ -1439,6 +1454,21 @@ input:focus, textarea:focus {
   border-radius: var(--radius-sm);
 }
 
+.galeria-acao {
+  margin-top: auto;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.galeria-acao .galeria-preco-box {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.galeria-carrossel-wrap { touch-action: pan-y; }
+
 @media (max-width: 760px) {
   .modal-galeria-overlay {
     padding: 0;
@@ -1446,10 +1476,14 @@ input:focus, textarea:focus {
 
   .modal-galeria-container {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
     max-height: 100vh;
+    max-height: 100dvh;
     height: 100vh;
+    height: 100dvh;
     border-radius: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .galeria-carrossel-wrap {
@@ -1458,13 +1492,42 @@ input:focus, textarea:focus {
   }
 
   .btn-fechar-galeria {
-    top: calc(34px + env(safe-area-inset-top, 0px));
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
   }
 
   .galeria-info {
     overflow-y: visible;
-    padding-top: 51px;
-    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    padding: 20px 20px 0;
+  }
+
+  .galeria-titulo { padding-right: 0; font-size: 1.3rem; }
+
+  /* Barra de compra presa ao rodapé, como em apps de loja */
+  .galeria-acao {
+    position: sticky;
+    bottom: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 18px -20px 0;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.94);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-comprar-galeria {
+    flex: 1;
+    width: auto;
+    min-height: 50px;
+    border-radius: var(--radius-full);
   }
 }
 
@@ -1800,7 +1863,7 @@ input:focus, textarea:focus {
   border-radius: var(--radius-sm);
   border: 1px solid var(--primary);
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-hover);
   cursor: pointer;
   transition: var(--transition);
 }
@@ -1816,4 +1879,204 @@ input:focus, textarea:focus {
   .card-carrossel:hover,
   .card-destaque:hover { transform: none; }
   .destaques-trilho { scroll-behavior: auto; }
+}
+
+
+/* =========================================================
+   CAMADA "APP INSTALÁVEL" — celulares (até 640px)
+   Barra de navegação inferior, folhas (bottom sheets), áreas
+   seguras do Android e gestos de toque.
+   ========================================================= */
+
+/* Barra inferior: só existe no celular */
+.app-nav { display: none; }
+
+/* Faixa "Em destaque" respeita o modo app */
+.galeria-dots .dot { background: rgba(255, 255, 255, 0.55); }
+
+@media (max-width: 640px) {
+  :root { --appbar-h: 60px; }
+
+  body {
+    font-size: 0.9375rem;
+    background-image: none;               /* fundo liso: menos ruído, mais "app" */
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 20px);
+  }
+
+  /* App bar compacta */
+  .site-header {
+    padding: calc(8px + env(safe-area-inset-top, 0px)) calc(14px + env(safe-area-inset-right, 0px)) 8px calc(14px + env(safe-area-inset-left, 0px));
+  }
+  .brand-container { gap: 10px; min-width: 0; }
+  .logo-img { max-height: 40px; }
+  .brand { min-width: 0; }
+  .brand h1 { font-size: 1.15rem; line-height: 1.15; }
+  .brand span { font-size: 0.7rem; line-height: 1.3; }
+  .btn-engrenagem { width: 44px; height: 44px; flex: none; font-size: 1.15rem; }
+
+  /* Margens laterais iguais em toda a página */
+  .area-filtros,
+  .vitrine-cabecalho,
+  .secao-destaques {
+    max-width: none;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .area-filtros { margin-top: 14px; margin-bottom: 4px; gap: 12px; }
+  .vitrine-cabecalho { margin-top: 8px; }
+  .vitrine-cabecalho h2 { font-size: 1.25rem; }
+
+  /* Vitrine em coluna única, cards mais "feed" */
+  .vitrine {
+    max-width: none;
+    padding: 12px 14px;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .card-carrossel { border-radius: 20px; box-shadow: 0 2px 10px -2px rgba(27, 18, 48, 0.12); }
+  .card-header { height: auto; padding: 14px 16px 0; }
+  .card-titulo { font-size: 1.08rem; }
+  .badge-tag { font-size: 0.68rem; padding: 3px 9px; }
+  .card-descricao-wrap { height: auto; }
+  .card-descricao { font-size: 0.85rem; }
+  .card-body { padding: 12px 16px 16px; row-gap: 14px; }
+  .card-preco { font-size: 1.45rem; }
+  .btn-comprar { min-height: 46px; padding: 0 26px; font-size: 0.9rem; }
+  .btn-comprar:active { transform: scale(0.97); }
+  .carrossel-container { touch-action: pan-y; }
+  .btn-nav { width: 34px; height: 34px; }
+  .icone-expandir { opacity: 0.85; }
+  .acoes-admin button { min-height: 40px; }
+
+  /* Destaques: trilho que sangra até a borda da tela */
+  .secao-destaques { padding-left: 0; padding-right: 0; }
+  .destaques-cabecalho { padding: 0 14px; }
+  .destaques-trilho { padding: 6px 14px 16px; gap: 14px; scroll-padding-left: 14px; scrollbar-width: none; }
+  .destaques-trilho::-webkit-scrollbar { display: none; }
+  .destaques-nav { display: none; }       /* no toque, arrasta-se com o dedo */
+  .card-destaque { width: min(280px, 78vw); }
+
+  /* Toast acima da barra inferior */
+  .toast {
+    left: 16px;
+    right: 16px;
+    bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 14px);
+    text-align: center;
+    border-radius: 14px;
+    padding: 12px 16px;
+  }
+
+  /* Login como folha inferior */
+  .modal-login {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    border-radius: 26px 26px 0 0;
+    border-width: 1px 0 0;
+    padding: 22px 20px calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+  .modal-login::before {
+    content: "";
+    display: block;
+    width: 38px;
+    height: 4px;
+    margin: -10px auto 14px;
+    border-radius: 4px;
+    background: rgba(27, 18, 48, 0.18);
+  }
+  .btn-fechar-modal { width: 40px; height: 40px; }
+
+  /* Painel admin em largura total */
+  .painel-admin { max-width: none; margin: 12px; padding: 18px 16px; border-radius: 20px; }
+  .secao-personalizacao { padding: 14px; }
+  .secao-personalizacao summary { min-height: 28px; }
+  input:not([type="checkbox"]):not([type="color"]),
+  textarea,
+  .select-custom { font-size: 16px; min-height: 46px; }
+  .btn { min-height: 48px; border-radius: 12px; }
+  .editor-toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .editor-toolbar::-webkit-scrollbar { display: none; }
+  .editor-toolbar > * { flex: none; }
+  .editor-toolbar button, .btn-editor-icon, .editor-select-tamanho, .editor-cor-label { min-height: 36px; }
+  .editor-hint { display: none; }
+
+  /* Barra de navegação inferior (estilo Material) */
+  body { overscroll-behavior-y: contain; }
+
+  .app-nav {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+    padding: 0 8px env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.94);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+    border-top: 1px solid var(--border);
+  }
+
+  .app-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 0;
+    background: none;
+    color: var(--text-muted);
+    font: 600 0.6875rem/1 var(--font-body);
+    cursor: pointer;
+  }
+
+  .app-nav-icone {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 30px;
+    border-radius: var(--radius-full);
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .app-nav-item.ativo { color: var(--primary-hover); }
+  .app-nav-item.ativo .app-nav-icone { background: var(--primary-soft); }
+  .app-nav-item:active .app-nav-icone { background: var(--bg-alt); }
+
+  .app-nav-badge {
+    position: absolute;
+    top: -3px;
+    right: 9px;
+    display: grid;
+    place-items: center;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* Teclado aberto na busca: a barra sai da frente */
+  body:has(#campoBusca:focus) .app-nav { display: none; }
+}
+
+/* Como app instalado (tela cheia, sem barra do navegador) */
+@media (display-mode: standalone) {
+  body { overscroll-behavior-y: none; }
+  button, .card-carrossel, .card-destaque, .site-header, .app-nav { -webkit-user-select: none; user-select: none; }
+  input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-nav-icone { transition: none; }
 }
