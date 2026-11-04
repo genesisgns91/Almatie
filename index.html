@@ -262,14 +262,6 @@
       </div>
     </details>
 
-    <details class="secao-personalizacao">
-      <summary>🔒 Mover links antigos para o Worker (uma vez só)</summary>
-      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
-        <span class="hint">Leva os links de download dos produtos já cadastrados para o cofre do Worker e apaga a cópia pública do banco.</span>
-        <button type="button" id="btnMigrarLinks" class="btn btn-secondary">Mover links antigos</button>
-      </div>
-    </details>
-
     <hr class="form-divider">
 
     <input type="hidden" id="editDocId" value="">
@@ -517,7 +509,7 @@
 
   <script type="module">
     import { db, auth } from './firebase-config.js';
-    import { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const CLOUD_NAME = "zxi2bufg"; 
@@ -942,8 +934,7 @@
         // 1º o link vai para o cofre do Worker; só se der certo o produto é publicado
         if (link) await chamarWorkerAdmin('/admin/salvar-link', { produtoId: ref.id, link });
         if (docId) {
-          // se o link foi enviado, apaga qualquer cópia antiga que ainda esteja no banco público
-          await updateDoc(ref, link ? { ...dados, link: deleteField() } : dados);
+          await updateDoc(ref, dados);
         } else {
           await setDoc(ref, dados);
         }
@@ -968,8 +959,8 @@
       campoLink.value = '';
       campoLink.placeholder = 'Carregando o link atual…';
       chamarWorkerAdmin('/admin/ver-link', { produtoId: p.id })
-        .then((d) => { campoLink.value = d.link || p.link || ''; })
-        .catch(() => { campoLink.value = p.link || ''; })
+        .then((d) => { campoLink.value = d.link || ''; })
+        .catch(() => { campoLink.value = ''; })
         .finally(() => { campoLink.placeholder = 'Em branco = manter o link atual'; });
       document.getElementById('chkDestaque').checked = !!p.destaque;
 
@@ -1017,7 +1008,6 @@
       document.getElementById('btnUploadFavicon').addEventListener('click', () => widgetFavicon.open());
       document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
       document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
-      document.getElementById('btnMigrarLinks').addEventListener('click', migrarLinksAntigos);
       iniciarInterfaceVitrine();
       document.getElementById('destaquesPrev').addEventListener('click', () => rolarDestaques(-1));
       document.getElementById('destaquesNext').addEventListener('click', () => rolarDestaques(1));
@@ -1068,23 +1058,6 @@
 
       carregarDadosIniciais();
     });
-
-    // MIGRAÇÃO (uso único): leva os links antigos do banco público para o cofre do Worker
-    async function migrarLinksAntigos() {
-      const pendentes = produtosMemoria.filter((p) => p.link);
-      if (!pendentes.length) { mostrarToast("Nenhum link antigo para mover.", "sucesso"); return; }
-      if (!confirm(`Mover ${pendentes.length} link(s) para o Worker?`)) return;
-      let feitos = 0;
-      for (const p of pendentes) {
-        try {
-          await chamarWorkerAdmin('/admin/salvar-link', { produtoId: p.id, link: p.link });
-          await updateDoc(doc(db, "produtos", p.id), { link: deleteField() });
-          feitos++;
-        } catch (e) { console.error('Falha ao mover o link de', p.id, e); }
-      }
-      mostrarToast(`${feitos} de ${pendentes.length} links movidos.`, feitos === pendentes.length ? 'sucesso' : 'erro');
-      carregarProdutos();
-    }
 
     function fecharModalLogin() {
       document.getElementById('boxLogin').classList.add('escondido');
