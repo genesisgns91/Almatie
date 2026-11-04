@@ -47,13 +47,26 @@ function fechar() {
   document.body.style.overflow = "";
 }
 
+// Ao fechar pelo botão/fundo, limpa o código do pedido do endereço (volta ao site "limpo")
+function limparRetorno() {
+  try {
+    if (new URLSearchParams(window.location.search).has("ped")) {
+      history.replaceState(null, "", window.location.pathname);
+    }
+  } catch { /* ignora */ }
+}
+function fecharPeloUsuario() {
+  fechar();
+  limparRetorno();
+}
+
 function criarModal() {
   fechar();
   overlay = document.createElement("div");
   overlay.className = "pix-overlay";
   overlay.innerHTML = `<div class="pix-box"><button class="pix-fechar" title="Fechar">✕</button><div id="pixConteudo"></div></div>`;
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) fechar(); });
-  overlay.querySelector(".pix-fechar").addEventListener("click", fechar);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) fecharPeloUsuario(); });
+  overlay.querySelector(".pix-fechar").addEventListener("click", fecharPeloUsuario);
   document.body.appendChild(overlay);
   document.body.style.overflow = "hidden";
   return overlay.querySelector("#pixConteudo");
@@ -211,7 +224,7 @@ function telaSucesso(container, link, pedidoId) {
     aviso.textContent = "Salve o link de download antes de fechar esta janela.";
     container.querySelector("#pixAreaLink").appendChild(aviso);
   }
-  container.querySelector("#pixFecharOk").addEventListener("click", fechar);
+  container.querySelector("#pixFecharOk").addEventListener("click", fecharPeloUsuario);
 }
 
 // ---------- ponto de entrada ----------
@@ -221,3 +234,55 @@ window.iniciarCheckout = function (produtoId, tituloEncoded /*, precoStr (ignora
   const container = criarModal();
   telaFormulario(container, produtoId, titulo);
 };
+
+// ---------- volta do pagamento com cartão (Mercado Pago devolve o cliente ao site) ----------
+function verificarRetornoCartao() {
+  const q = new URLSearchParams(window.location.search);
+  const ped = q.get("ped");
+  if (!ped || !/^[0-9a-f]{32}$/.test(ped)) return;
+
+  const pagamento = q.get("payment_id") || q.get("collection_id") || "";
+  const container = criarModal();
+  container.innerHTML = `
+    <h3>Confirmando seu pagamento…</h3>
+    <div class="pix-aguardando" id="pixRetornoMsg">⏳ Só um instante.</div>
+    <button class="pix-btn pix-btn-sec" id="pixRetornoFechar">Fechar</button>
+  `;
+  container.querySelector("#pixRetornoFechar").addEventListener("click", fecharPeloUsuario);
+  const msg = container.querySelector("#pixRetornoMsg");
+
+  if (!/^\d+$/.test(pagamento)) {
+    msg.textContent = "O pagamento não foi concluído. Feche e tente novamente.";
+    return;
+  }
+
+  inicioPolling = Date.now();
+  const consultar = async () => {
+    if (Date.now() - inicioPolling > TEMPO_MAXIMO_MS) {
+      pararPolling();
+      msg.textContent = "Ainda não recebemos a confirmação. Se você já pagou, guarde este endereço e volte em alguns minutos.";
+      return;
+    }
+    try {
+      const r = await fetch(`${WORKER}/status-pagamento?id=${encodeURIComponent(pagamento)}&ped=${encodeURIComponent(ped)}`);
+      const s = await r.json();
+      if (s.status === "approved") {
+        pararPolling();
+        telaSucesso(container, s.link, pagamento);
+      } else if (["rejected", "cancelled", "refunded", "charged_back"].includes(s.status)) {
+        pararPolling();
+        msg.textContent = "O pagamento não foi aprovado. Feche e tente novamente.";
+      } else if (s.status) {
+        msg.textContent = "⏳ Pagamento em análise. Assim que for aprovado, sua arte aparece aqui. Guarde este endereço para voltar depois.";
+      } else if (r.status === 403) {
+        pararPolling();
+        msg.textContent = "Não foi possível confirmar este pedido.";
+      }
+    } catch { /* tenta de novo no próximo ciclo */ }
+  };
+  pararPolling();
+  consultar();
+  timerStatus = setInterval(consultar, INTERVALO_STATUS_MS);
+}
+
+verificarRetornoCartao();
