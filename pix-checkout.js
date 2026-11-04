@@ -174,11 +174,11 @@ function telaQrCode(container, dados, titulo) {
       return;
     }
     try {
-      const r = await fetch(`${WORKER}/status-pagamento?id=${dados.id}`);
+      const r = await fetch(`${WORKER}/status-pagamento?id=${encodeURIComponent(dados.id)}&senha=${encodeURIComponent(dados.senha)}`);
       const s = await r.json();
       if (s.status === "approved") {
         pararPolling();
-        telaSucesso(container, s.link);
+        telaSucesso(container, s.link, dados.id);
       } else if (["rejected", "cancelled", "expired"].includes(s.status)) {
         pararPolling();
         container.querySelector(".pix-aguardando").textContent = "Pagamento não concluído. Feche e tente novamente.";
@@ -187,14 +187,16 @@ function telaQrCode(container, dados, titulo) {
   }, INTERVALO_STATUS_MS);
 }
 
-function telaSucesso(container, link) {
+function telaSucesso(container, link, pedidoId) {
   container.innerHTML = `
     <div class="pix-ok-icone">✅</div>
     <h3>Pagamento confirmado!</h3>
     <p class="pix-produto">Obrigada pela compra! Sua arte já está liberada.</p>
+    <p class="pix-aguardando" id="pixPedido"></p>
     <div id="pixAreaLink"></div>
     <button class="pix-btn pix-btn-sec" id="pixFecharOk">Fechar</button>
   `;
+  if (pedidoId) container.querySelector("#pixPedido").textContent = `Pedido nº ${pedidoId}`;
   if (link && /^https?:\/\//i.test(link)) {
     const a = document.createElement("a");
     a.href = link;

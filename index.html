@@ -262,6 +262,14 @@
       </div>
     </details>
 
+    <details class="secao-personalizacao">
+      <summary>🔒 Mover links antigos para o Worker (uma vez só)</summary>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <span class="hint">Leva os links de download dos produtos já cadastrados para o cofre do Worker e apaga a cópia pública do banco.</span>
+        <button type="button" id="btnMigrarLinks" class="btn btn-secondary">Mover links antigos</button>
+      </div>
+    </details>
+
     <hr class="form-divider">
 
     <input type="hidden" id="editDocId" value="">
@@ -509,11 +517,28 @@
 
   <script type="module">
     import { db, auth } from './firebase-config.js';
-    import { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const CLOUD_NAME = "zxi2bufg"; 
     const UPLOAD_PRESET = "almatie";
+
+    // Os links de download das artes NÃO ficam mais no banco público: o Worker guarda num cofre
+    // e só entrega depois do pagamento aprovado.
+    const WORKER = "https://almatie-pagamentos.almatie-stock.workers.dev";
+
+    async function chamarWorkerAdmin(rota, corpo) {
+      if (!auth.currentUser) throw new Error("Faça login como admin.");
+      const token = await auth.currentUser.getIdToken();
+      const r = await fetch(`${WORKER}${rota}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(corpo)
+      });
+      const dados = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(dados.error || "Falha ao falar com o servidor.");
+      return dados;
+    }
 
     let usuarioAtual = null;
     let produtosMemoria = [];
@@ -897,9 +922,10 @@
       const subcategoria = document.getElementById('selectSubcategoria').value || 'Geral';
       const descricao = document.getElementById('editorDescricao').innerHTML;
       const preco = document.getElementById('preco').value;
-      const link = document.getElementById('linkCompra').value;
+      const link = document.getElementById('linkCompra').value.trim();
 
-      if (!titulo || !link) {
+      // Ao editar, deixar o link em branco = manter o link atual
+      if (!titulo || (!docId && !link)) {
         mostrarToast("Preencha ao menos o Título e o Link!", "erro");
         return;
       }
@@ -909,18 +935,22 @@
         return;
       }
 
-      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, link, imagens: listaImagensAtuais, destaque: document.getElementById('chkDestaque').checked, criadoEm: new Date() };
+      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, imagens: listaImagensAtuais, destaque: document.getElementById('chkDestaque').checked, criadoEm: new Date() };
 
       try {
+        const ref = docId ? doc(db, "produtos", docId) : doc(collection(db, "produtos"));
+        // 1º o link vai para o cofre do Worker; só se der certo o produto é publicado
+        if (link) await chamarWorkerAdmin('/admin/salvar-link', { produtoId: ref.id, link });
         if (docId) {
-          await updateDoc(doc(db, "produtos", docId), dados);
+          // se o link foi enviado, apaga qualquer cópia antiga que ainda esteja no banco público
+          await updateDoc(ref, link ? { ...dados, link: deleteField() } : dados);
         } else {
-          await addDoc(collection(db, "produtos"), dados);
+          await setDoc(ref, dados);
         }
         mostrarToast(docId ? "Carrossel atualizado!" : "Carrossel publicado!", "sucesso");
         cancelarEdicao();
         carregarProdutos();
-      } catch (e) { mostrarToast("Erro ao salvar.", "erro"); }
+      } catch (e) { mostrarToast(e.message || "Erro ao salvar.", "erro"); }
     }
 
     function prepararEdicao(id) {
@@ -934,7 +964,13 @@
       document.getElementById('selectSubcategoria').value = p.classe || '';
       document.getElementById('editorDescricao').innerHTML = p.descricao || '';
       document.getElementById('preco').value = p.preco;
-      document.getElementById('linkCompra').value = p.link;
+      const campoLink = document.getElementById('linkCompra');
+      campoLink.value = '';
+      campoLink.placeholder = 'Carregando o link atual…';
+      chamarWorkerAdmin('/admin/ver-link', { produtoId: p.id })
+        .then((d) => { campoLink.value = d.link || p.link || ''; })
+        .catch(() => { campoLink.value = p.link || ''; })
+        .finally(() => { campoLink.placeholder = 'Em branco = manter o link atual'; });
       document.getElementById('chkDestaque').checked = !!p.destaque;
 
       listaImagensAtuais = [...(p.imagens || [])];
@@ -955,6 +991,7 @@
       document.getElementById('editorDescricao').innerHTML = '';
       document.getElementById('preco').value = '';
       document.getElementById('linkCompra').value = '';
+      document.getElementById('linkCompra').placeholder = 'https://seu-link.com';
       document.getElementById('chkDestaque').checked = false;
       listaImagensAtuais = [];
       renderizarGridImagens();
@@ -980,6 +1017,7 @@
       document.getElementById('btnUploadFavicon').addEventListener('click', () => widgetFavicon.open());
       document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
       document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
+      document.getElementById('btnMigrarLinks').addEventListener('click', migrarLinksAntigos);
       iniciarInterfaceVitrine();
       document.getElementById('destaquesPrev').addEventListener('click', () => rolarDestaques(-1));
       document.getElementById('destaquesNext').addEventListener('click', () => rolarDestaques(1));
@@ -1030,6 +1068,23 @@
 
       carregarDadosIniciais();
     });
+
+    // MIGRAÇÃO (uso único): leva os links antigos do banco público para o cofre do Worker
+    async function migrarLinksAntigos() {
+      const pendentes = produtosMemoria.filter((p) => p.link);
+      if (!pendentes.length) { mostrarToast("Nenhum link antigo para mover.", "sucesso"); return; }
+      if (!confirm(`Mover ${pendentes.length} link(s) para o Worker?`)) return;
+      let feitos = 0;
+      for (const p of pendentes) {
+        try {
+          await chamarWorkerAdmin('/admin/salvar-link', { produtoId: p.id, link: p.link });
+          await updateDoc(doc(db, "produtos", p.id), { link: deleteField() });
+          feitos++;
+        } catch (e) { console.error('Falha ao mover o link de', p.id, e); }
+      }
+      mostrarToast(`${feitos} de ${pendentes.length} links movidos.`, feitos === pendentes.length ? 'sucesso' : 'erro');
+      carregarProdutos();
+    }
 
     function fecharModalLogin() {
       document.getElementById('boxLogin').classList.add('escondido');
@@ -1540,6 +1595,7 @@
     async function excluirCarrossel(id) {
       if (confirm("Remover este carrossel?")) {
         await deleteDoc(doc(db, "produtos", id));
+        try { await chamarWorkerAdmin('/admin/apagar-link', { produtoId: id }); } catch (e) { console.error(e); }
         carregarProdutos();
       }
     }
