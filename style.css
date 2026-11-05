@@ -794,8 +794,9 @@ input:focus, textarea:focus {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 10px;
-  max-height: 280px;
+  max-height: min(62vh, 440px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 8px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -2034,3 +2035,44 @@ input:focus, textarea:focus {
   cursor: pointer;
 }
 .galeria-tag:hover { border-color: var(--primary); background: var(--primary-soft); }
+
+/* ===== Ordenar imagens do carrossel (arrastar) ===== */
+.item-img-grid { cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.item-img-grid img { pointer-events: none; -webkit-user-drag: none; }
+.item-img-grid.arrastando-origem { opacity: 0.35; outline: 2px dashed var(--primary); outline-offset: -2px; }
+.arrastando-fantasma {
+  position: fixed;
+  z-index: 2000;
+  margin: 0;
+  pointer-events: none;
+  opacity: 0.94;
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.07) rotate(2deg);
+}
+body.ordenando-imagens { cursor: grabbing; -webkit-user-select: none; user-select: none; }
+
+.num-img {
+  position: absolute; left: 4px; bottom: 4px;
+  min-width: 20px; height: 20px; padding: 0 7px;
+  border-radius: var(--radius-full);
+  background: rgba(27, 18, 48, 0.72); color: #fff;
+  font: 700 0.68rem/20px var(--font-body); text-align: center;
+  pointer-events: none;
+}
+.num-img.capa { background: var(--primary); }
+
+.btn-primeira-img {
+  position: absolute; top: 4px; left: 4px;
+  width: 22px; height: 22px; padding: 0;
+  border: none; border-radius: 50%;
+  background: rgba(27, 18, 48, 0.72); color: #fff;
+  font-size: 13px; font-weight: 700; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-primeira-img:hover { background: var(--primary); }
+
+/* Botão de IA na barra do editor */
+.editor-toolbar .btn-ia { background: var(--gradient-ink); color: #fff; border-color: transparent; padding: 0 14px; }
+.editor-toolbar .btn-ia:hover { color: #fff; filter: brightness(1.08); }
+.editor-toolbar .btn-ia:disabled { opacity: 0.7; cursor: wait; }

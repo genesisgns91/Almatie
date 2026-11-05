@@ -308,6 +308,8 @@
       <label>Descrição do Produto:</label>
       <div id="editorDescricaoWrap" class="editor-wrap">
         <div class="editor-toolbar" id="editorToolbar" role="toolbar" aria-label="Formatação do texto">
+          <button type="button" tabindex="-1" id="btnCriarTextoIA" class="btn-ia" title="Cria um texto de divulgação com IA a partir dos dados preenchidos">✨ Criar com IA</button>
+          <span class="editor-toolbar-divisor"></span>
           <button type="button" tabindex="-1" data-cmd="bold" title="Negrito" aria-label="Negrito"><b>B</b></button>
           <button type="button" tabindex="-1" data-cmd="italic" title="Itálico" aria-label="Itálico"><i>I</i></button>
           <button type="button" tabindex="-1" data-cmd="underline" title="Sublinhado" aria-label="Sublinhado"><u>U</u></button>
@@ -327,7 +329,8 @@
           <button type="button" tabindex="-1" id="btnLimparFormatacao" title="Remover toda a formatação do trecho" aria-label="Limpar formatação">Limpar</button>
         </div>
         <div id="editorDescricao" class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Digite aqui a descrição..."></div>
-        <span class="hint editor-hint">Selecione um trecho do texto e toque no botão da formatação. O texto colado entra sem formatação de outros sites.</span>
+        <button type="button" id="btnDesfazerIA" class="btn-link escondido" style="align-self:flex-start;margin-top:8px">↩ Voltar ao texto anterior</button>
+        <span class="hint editor-hint">Selecione um trecho do texto e toque no botão da formatação. O botão ✨ cria um texto de divulgação com IA usando o título, o valor, as tags e o texto que você já escreveu.</span>
       </div>
     </div>
 
@@ -347,7 +350,7 @@
 
     <div class="form-row">
       <div class="form-group campo-valor-group">
-        <label for="precoPromo">Valor promocional (opcional):</label>
+        <label for="precoPromo">Valor promocional:</label>
         <div class="campo-moeda-wrap">
           <span class="prefixo-moeda">R$</span>
           <input type="text" id="precoPromo" inputmode="numeric" placeholder="0,00">
@@ -382,7 +385,7 @@
           <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
         </div>
       </div>
-      <span class="hint">Adicione ou remova fotos para montar a sequência do carrossel.</span>
+      <span class="hint">A primeira imagem é a capa. Arraste as imagens para mudar a ordem (no celular, segure a imagem um instante e arraste) ou toque em ⇧ para mandar uma para o início.</span>
     </div>
 
     <button id="btnSalvar" class="btn btn-primary" style="margin-top: 15px;">Publicar Carrossel</button>
@@ -520,6 +523,19 @@
     // Os links de download das artes NÃO ficam mais no banco público: o Worker guarda num cofre
     // e só entrega depois do pagamento aprovado.
     const WORKER = "https://almatie-pagamentos.almatie-stock.workers.dev";
+
+    // Workers de IA para criar o texto de divulgação. Tenta na ordem; se um não responder, passa para o próximo.
+    const WORKERS_IA = [
+      "https://certificados-groq-proxy.genesisgns.workers.dev/",
+      "https://gns91-groq-proxy.genesisgns.workers.dev/",
+      "https://forzion-gpt-proxy.genesisgns.workers.dev/",
+      "https://mamoot-gpt-proxy.genesisgns.workers.dev/",
+      "https://astro-gns-proxy.genesisgns.workers.dev/",
+      "https://shiny-sky-21dd.genesisgns.workers.dev/",
+      "https://astro2.genesisgns.workers.dev/",
+      "https://interno.genesisgns.workers.dev/"
+    ];
+    const IA_MODELO = "llama-3.3-70b-versatile";   // usado pelos workers do tipo Groq; os demais ignoram
 
     async function chamarWorkerAdmin(rota, corpo) {
       if (!auth.currentUser) throw new Error("Faça login como admin.");
@@ -745,6 +761,7 @@
         if (btn.dataset.cor) { executarComandoEditor('foreColor', btn.dataset.cor); return; }
         if (btn.id === 'btnInserirLink') { inserirLinkEditor(); return; }
         if (btn.id === 'btnLimparFormatacao') { limparFormatacaoEditor(); return; }
+        if (btn.id === 'btnCriarTextoIA') { criarTextoComIA(); return; }
         if (btn.dataset.cmd === 'titulo') { alternarTituloEditor(); return; }
         if (btn.dataset.cmd) executarComandoEditor(btn.dataset.cmd);
       });
@@ -760,6 +777,7 @@
         document.execCommand('insertText', false, texto);
       });
       editor.addEventListener('drop', (e) => e.preventDefault());
+      document.getElementById('btnDesfazerIA').addEventListener('click', voltarTextoAntesIA);
       atualizarPlaceholderEditor();
     }
 
@@ -871,6 +889,143 @@
       const info = document.getElementById('infoDesconto');
       info.textContent = (promo > 0 && normal > 0 && promo < normal) ? `Desconto de ${Math.round((1 - promo / normal) * 100)}%` :
         (promo > 0 && normal > 0 ? 'O valor promocional precisa ser menor que o valor normal.' : '');
+    }
+
+    // =========================================================
+    // TEXTO DE DIVULGAÇÃO COM IA
+    // =========================================================
+    let textoAntesIA = null;
+
+    function montarMensagensIA(d) {
+      const sistema = `Você é redator de e-commerce brasileiro e escreve textos curtos de divulgação para a loja "Almatiê Art", que vende pacotes de artes digitais prontas para sublimação (canecas, camisetas, DTF e outros). O pagamento é por Pix ou cartão e a arte é liberada na hora, para download.
+
+Escreva o texto em HTML simples, usando SOMENTE estas tags: <h3>, <p>, <b>, <ul>, <li>, <br> e <span style="color:#BE3A78"> (rosa) ou <span style="color:#7E3C9F"> (ameixa) para destacar poucas palavras. Responda apenas com o HTML, sem explicações e sem blocos de código.
+
+Estrutura (curta, entre 60 e 110 palavras no total):
+1. <h3> com um título chamativo e 1 emoji.
+2. <p> com 1 ou 2 frases sobre o pacote e para quem ele serve.
+3. <ul> com 3 ou 4 benefícios curtos, cada <li> começando com um emoji.
+4. <p> final com uma chamada para ação curta e 1 emoji. Se houver promoção, informe o valor com clareza e a data de término, se existir.
+
+Regras: português do Brasil; tom comercial caloroso e profissional, sem exageros e sem palavras em maiúsculas gritando; no máximo 6 emojis no total. Use APENAS as informações fornecidas: NÃO invente quantidade de artes, formatos de arquivo, resolução, medidas ou prazos que não estejam nos dados. Pode citar que a arte é liberada na hora após o pagamento. Se o texto atual tiver informações úteis, aproveite-as e melhore a escrita.`;
+
+      const linhas = [`- Título: ${d.titulo}`];
+      if (d.tipo) linhas.push(`- Tipo de produto: ${d.tipo}`);
+      if (d.categoria) linhas.push(`- Categoria: ${d.categoria}`);
+      if (d.subcategoria) linhas.push(`- Tema: ${d.subcategoria}`);
+      if (d.preco) linhas.push(`- Valor: R$ ${d.preco}`);
+      if (d.precoPromo) linhas.push(`- Promoção: de R$ ${d.preco} por R$ ${d.precoPromo}${d.promoAte ? ` (até ${d.promoAte})` : ''}`);
+      if (d.tags.length) linhas.push(`- Palavras-chave: ${d.tags.join(', ')}`);
+
+      const aspas = '"""';
+      const usuario = `Dados do produto:\n${linhas.join('\n')}\n\n` +
+        (d.textoAtual ? `Texto atual (aproveite o que for útil):\n${aspas}\n${d.textoAtual}\n${aspas}\n\n` : '') +
+        'Crie o novo texto promocional.';
+      return [{ role: 'system', content: sistema }, { role: 'user', content: usuario }];
+    }
+
+    function extrairTextoIA(r) {
+      if (typeof r === 'string') return r;
+      const c = r && (
+        r.choices?.[0]?.message?.content ?? r.choices?.[0]?.text ?? r.content?.[0]?.text ?? r.content ??
+        r.candidates?.[0]?.content?.parts?.[0]?.text ?? r.message?.content ?? r.message ??
+        r.text ?? r.response ?? r.result ?? r.output ?? r.reply ?? r.answer ?? r.data);
+      return typeof c === 'string' ? c : '';
+    }
+
+    function textoIAparaHtml(bruto) {
+      let t = String(bruto || '').trim().replace(/^```(?:html)?\s*/i, '').replace(/\s*```$/, '').trim();
+      const negrito = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+      if (/<(h3|h4|p|ul|ol|li|div|br)\b/i.test(t)) {
+        t = t.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');            // veio HTML: só garante o negrito
+      } else {                                                    // veio texto puro: vira parágrafos, título e lista
+        let saida = '', emLista = false;
+        t.split(/\n+/).map((l) => l.trim()).filter(Boolean).forEach((l) => {
+          const item = l.match(/^[-•*]\s+(.*)$/);
+          if (item) {
+            if (!emLista) { saida += '<ul>'; emLista = true; }
+            saida += `<li>${negrito(item[1])}</li>`;
+            return;
+          }
+          if (emLista) { saida += '</ul>'; emLista = false; }
+          const titulo = l.match(/^#{1,4}\s+(.*)$/);
+          saida += titulo ? `<h3>${negrito(titulo[1])}</h3>` : `<p>${negrito(l)}</p>`;
+        });
+        if (emLista) saida += '</ul>';
+        t = saida;
+      }
+      return sanitizarDescricao(t);
+    }
+
+    async function gerarTextoPromocional(dados, aoTentar) {
+      const mensagens = montarMensagensIA(dados);
+      const prompt = mensagens.map((m) => m.content).join('\n\n');
+      for (let i = 0; i < WORKERS_IA.length; i++) {
+        if (aoTentar) aoTentar(i + 1, WORKERS_IA.length);
+        const controle = new AbortController();
+        const limite = setTimeout(() => controle.abort(), 20000);
+        try {
+          const r = await fetch(WORKERS_IA[i], {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: IA_MODELO, messages: mensagens, prompt, temperature: 0.7, max_tokens: 700 }),
+            signal: controle.signal
+          });
+          const bruto = await r.text();
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          let resposta; try { resposta = JSON.parse(bruto); } catch (e) { resposta = bruto; }
+          const html = textoIAparaHtml(extrairTextoIA(resposta));
+          if (htmlParaTexto(html).trim().length < 40) throw new Error('resposta vazia');
+          return html;
+        } catch (e) {
+          console.warn(`IA ${i + 1}/${WORKERS_IA.length} não respondeu:`, e.message);
+        } finally {
+          clearTimeout(limite);
+        }
+      }
+      throw new Error('Nenhuma IA respondeu agora. Tente de novo em instantes.');
+    }
+
+    async function criarTextoComIA() {
+      const titulo = document.getElementById('titulo').value.trim();
+      if (!titulo) { mostrarToast('Preencha o título antes de criar o texto com IA.', 'erro'); return; }
+
+      const promoAte = document.getElementById('promoAte').value;
+      const dados = {
+        titulo,
+        tipo: document.getElementById('selectTipo').value,
+        categoria: document.getElementById('selectCategoria').value,
+        subcategoria: document.getElementById('selectSubcategoria').value,
+        preco: document.getElementById('preco').value.trim(),
+        precoPromo: document.getElementById('precoPromo').value.trim(),
+        promoAte: promoAte ? formatarFimPromo(new Date(promoAte).getTime()) : '',
+        tags: extrairTags(document.getElementById('tagsProduto').value),
+        textoAtual: (obterEditor().innerText || '').trim().slice(0, 900)
+      };
+
+      const btn = document.getElementById('btnCriarTextoIA');
+      btn.disabled = true;
+      try {
+        const html = await gerarTextoPromocional(dados, (n, total) => { btn.textContent = n === 1 ? '✨ Criando…' : `✨ Tentando outra IA (${n}/${total})…`; });
+        textoAntesIA = obterEditor().innerHTML;
+        obterEditor().innerHTML = html;
+        atualizarPlaceholderEditor();
+        document.getElementById('btnDesfazerIA').classList.remove('escondido');
+        mostrarToast('Texto criado! Revise e ajuste se quiser.', 'sucesso');
+      } catch (e) {
+        mostrarToast(e.message || 'Não foi possível criar o texto.', 'erro');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Criar com IA';
+      }
+    }
+
+    function voltarTextoAntesIA() {
+      if (textoAntesIA === null) return;
+      obterEditor().innerHTML = textoAntesIA;
+      textoAntesIA = null;
+      atualizarPlaceholderEditor();
+      document.getElementById('btnDesfazerIA').classList.add('escondido');
     }
 
     // MÁSCARA DE MOEDA (R$ 0,00)
@@ -1042,9 +1197,113 @@
       listaImagensAtuais.forEach((url, index) => {
         const div = document.createElement('div');
         div.className = 'item-img-grid';
-        div.innerHTML = `<img src="${url}"><button type="button" class="btn-remover-img" onclick="window.removerImagemGrid(${index})">✕</button>`;
+        div.dataset.indice = index;
+        div.innerHTML = `<img src="${esc(url)}" alt="" draggable="false">
+          <span class="num-img ${index === 0 ? 'capa' : ''}">${index === 0 ? 'Capa' : index + 1}</span>
+          ${index > 0 ? `<button type="button" class="btn-primeira-img" title="Colocar em primeiro" aria-label="Colocar em primeiro" onclick="window.moverImagemPrimeira(${index})">⇧</button>` : ''}
+          <button type="button" class="btn-remover-img" aria-label="Remover imagem" onclick="window.removerImagemGrid(${index})">✕</button>`;
         grid.appendChild(div);
       });
+    }
+
+    window.moverImagemPrimeira = (index) => {
+      const [img] = listaImagensAtuais.splice(index, 1);
+      listaImagensAtuais.unshift(img);
+      renderizarGridImagens();
+      document.getElementById('gridImagens').scrollTop = 0;
+    };
+
+    // Arrastar para reordenar: com o mouse é só clicar e arrastar; no celular, segure a imagem um instante e arraste
+    function iniciarOrdenacaoImagens() {
+      const grid = document.getElementById('gridImagens');
+      let a = null;
+      const itens = () => Array.from(grid.querySelectorAll('.item-img-grid'));
+
+      function comecar() {
+        const r = a.item.getBoundingClientRect();
+        a.ativo = true;
+        a.dx = a.x - r.left;
+        a.dy = a.y - r.top;
+        const fantasma = a.item.cloneNode(true);
+        fantasma.classList.add('arrastando-fantasma');
+        fantasma.style.width = r.width + 'px';
+        fantasma.style.height = r.height + 'px';
+        document.body.appendChild(fantasma);
+        a.fantasma = fantasma;
+        a.item.classList.add('arrastando-origem');
+        document.body.classList.add('ordenando-imagens');
+        if (navigator.vibrate) navigator.vibrate(12);
+        mover();
+        a.rolagem = setInterval(rolar, 16);
+      }
+
+      function mover() {
+        a.fantasma.style.left = (a.x - a.dx) + 'px';
+        a.fantasma.style.top = (a.y - a.dy) + 'px';
+        const sob = document.elementFromPoint(a.x, a.y);
+        const alvo = sob && sob.closest('.item-img-grid');
+        if (alvo && alvo !== a.item && grid.contains(alvo)) {
+          const lista = itens();
+          if (lista.indexOf(alvo) > lista.indexOf(a.item)) alvo.after(a.item); else alvo.before(a.item);
+        }
+      }
+
+      function rolar() {   // perto da borda, a lista rola sozinha
+        const r = grid.getBoundingClientRect();
+        if (a.y < r.top + 36) grid.scrollTop -= 10;
+        else if (a.y > r.bottom - 36) grid.scrollTop += 10;
+        else return;
+        mover();
+      }
+
+      function terminar(confirmar) {
+        if (!a) return;
+        clearTimeout(a.timer);
+        clearInterval(a.rolagem);
+        window.removeEventListener('pointermove', aoMover);
+        window.removeEventListener('pointerup', aoSoltar);
+        window.removeEventListener('pointercancel', aoCancelar);
+        const ativo = a.ativo;
+        if (a.fantasma) a.fantasma.remove();
+        a.item.classList.remove('arrastando-origem');
+        document.body.classList.remove('ordenando-imagens');
+        if (ativo && confirmar) {
+          const ordem = itens().map((el) => Number(el.dataset.indice));
+          listaImagensAtuais = ordem.map((i) => listaImagensAtuais[i]);
+        }
+        a = null;
+        if (ativo) renderizarGridImagens();
+      }
+
+      function aoMover(e) {
+        if (!a || e.pointerId !== a.id) return;
+        a.x = e.clientX;
+        a.y = e.clientY;
+        if (!a.ativo) {
+          const distancia = Math.hypot(a.x - a.x0, a.y - a.y0);
+          if (a.tipo === 'mouse') { if (distancia > 6) comecar(); }
+          else if (distancia > 10) terminar(false);   // o dedo andou antes da espera: é rolagem, não arrasto
+          return;
+        }
+        mover();
+      }
+      const aoSoltar = (e) => { if (a && e.pointerId === a.id) terminar(true); };
+      const aoCancelar = (e) => { if (a && e.pointerId === a.id) terminar(false); };
+
+      grid.addEventListener('pointerdown', (e) => {
+        const item = e.target.closest('.item-img-grid');
+        if (!item || e.target.closest('button') || a) return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        a = { item, id: e.pointerId, tipo: e.pointerType, x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, ativo: false };
+        window.addEventListener('pointermove', aoMover);
+        window.addEventListener('pointerup', aoSoltar);
+        window.addEventListener('pointercancel', aoCancelar);
+        if (e.pointerType !== 'mouse') a.timer = setTimeout(() => { if (a && !a.ativo) comecar(); }, 280);
+      });
+      // Enquanto arrasta com o dedo, a tela não rola junto
+      grid.addEventListener('touchmove', (e) => { if (a && a.ativo) e.preventDefault(); }, { passive: false });
+      grid.addEventListener('contextmenu', (e) => { if (e.target.closest('.item-img-grid')) e.preventDefault(); });
+      window.addEventListener('keydown', (e) => { if (e.key === 'Escape') terminar(false); });
     }
 
     window.removerImagemGrid = (index) => {
@@ -1149,6 +1408,8 @@
       document.getElementById('promoAte').value = '';
       document.getElementById('tagsProduto').value = '';
       document.getElementById('infoDesconto').textContent = '';
+      textoAntesIA = null;
+      document.getElementById('btnDesfazerIA').classList.add('escondido');
       document.getElementById('linkCompra').value = '';
       document.getElementById('linkCompra').placeholder = 'https://seu-link.com';
       document.getElementById('chkDestaque').checked = false;
@@ -1182,6 +1443,7 @@
       document.getElementById('destaquesNext').addEventListener('click', () => rolarDestaques(1));
 
       iniciarEditorTexto();
+      iniciarOrdenacaoImagens();
 
       aplicarMascaraMoeda(document.getElementById('preco'));
       aplicarMascaraMoeda(document.getElementById('precoPromo'));
