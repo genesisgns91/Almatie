@@ -2076,3 +2076,8 @@ body.ordenando-imagens { cursor: grabbing; -webkit-user-select: none; user-selec
 .editor-toolbar .btn-ia { background: var(--gradient-ink); color: #fff; border-color: transparent; padding: 0 14px; }
 .editor-toolbar .btn-ia:hover { color: #fff; filter: brightness(1.08); }
 .editor-toolbar .btn-ia:disabled { opacity: 0.7; cursor: wait; }
+
+/* Detalhes do erro da IA */
+.detalhes-ia { margin-top: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); padding: 10px 12px; font-size: 0.8rem; }
+.detalhes-ia summary { cursor: pointer; font-weight: 600; color: var(--primary-hover); }
+.detalhes-ia pre { margin: 10px 0; max-height: 220px; overflow: auto; white-space: pre-wrap; word-break: break-word; font: 0.72rem/1.5 ui-monospace, Consolas, monospace; color: var(--text-muted); -webkit-user-select: text; user-select: text; }

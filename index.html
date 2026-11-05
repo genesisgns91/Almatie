@@ -329,6 +329,11 @@
           <button type="button" tabindex="-1" id="btnLimparFormatacao" title="Remover toda a formatação do trecho" aria-label="Limpar formatação">Limpar</button>
         </div>
         <div id="editorDescricao" class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Digite aqui a descrição..."></div>
+        <details id="detalhesIA" class="detalhes-ia escondido">
+          <summary>Ver detalhes do erro da IA</summary>
+          <pre id="logIA"></pre>
+          <button type="button" id="btnCopiarLogIA" class="btn-link">Copiar detalhes</button>
+        </details>
         <button type="button" id="btnDesfazerIA" class="btn-link escondido" style="align-self:flex-start;margin-top:8px">↩ Voltar ao texto anterior</button>
         <span class="hint editor-hint">Selecione um trecho do texto e toque no botão da formatação. O botão ✨ cria um texto de divulgação com IA usando o título, o valor, as tags e o texto que você já escreveu.</span>
       </div>
@@ -778,6 +783,11 @@
       });
       editor.addEventListener('drop', (e) => e.preventDefault());
       document.getElementById('btnDesfazerIA').addEventListener('click', voltarTextoAntesIA);
+      document.getElementById('btnCopiarLogIA').addEventListener('click', async () => {
+        const texto = document.getElementById('logIA').textContent;
+        try { await navigator.clipboard.writeText(texto); mostrarToast('Detalhes copiados.', 'sucesso'); }
+        catch (e) { mostrarToast('Selecione o texto e copie manualmente.', 'erro'); }
+      });
       atualizarPlaceholderEditor();
     }
 
@@ -924,13 +934,24 @@ Regras: português do Brasil; tom comercial caloroso e profissional, sem exagero
       return [{ role: 'system', content: sistema }, { role: 'user', content: usuario }];
     }
 
+    function primeiroTextoLongo(no, profundidade = 0) {
+      if (typeof no === 'string') return no.trim().length >= 40 ? no : '';
+      if (!no || typeof no !== 'object' || profundidade > 5) return '';
+      for (const [chave, valor] of Object.entries(no)) {
+        if (/^(model|id|object|system_fingerprint|usage|error|created)$/i.test(chave)) continue;
+        const achado = primeiroTextoLongo(valor, profundidade + 1);
+        if (achado) return achado;
+      }
+      return '';
+    }
+
     function extrairTextoIA(r) {
       if (typeof r === 'string') return r;
       const c = r && (
         r.choices?.[0]?.message?.content ?? r.choices?.[0]?.text ?? r.content?.[0]?.text ?? r.content ??
         r.candidates?.[0]?.content?.parts?.[0]?.text ?? r.message?.content ?? r.message ??
         r.text ?? r.response ?? r.result ?? r.output ?? r.reply ?? r.answer ?? r.data);
-      return typeof c === 'string' ? c : '';
+      return typeof c === 'string' && c.trim() ? c : primeiroTextoLongo(r);   // último recurso: o primeiro texto longo da resposta
     }
 
     function textoIAparaHtml(bruto) {
@@ -957,33 +978,85 @@ Regras: português do Brasil; tom comercial caloroso e profissional, sem exagero
       return sanitizarDescricao(t);
     }
 
+    // Formatos de pedido que os workers costumam aceitar. O site tenta um por vez e lembra qual funcionou em cada worker.
+    const IA_FORMATOS = [
+      { nome: 'chat com modelo', corpo: (m) => ({ model: IA_MODELO, messages: m, temperature: 0.7, max_tokens: 700 }) },
+      { nome: 'chat sem modelo', corpo: (m) => ({ messages: m, temperature: 0.7, max_tokens: 700 }) },
+      { nome: 'prompt único', corpo: (m, p) => ({ prompt: p }) },
+      { nome: 'sistema + prompt', corpo: (m) => ({ system: m[0].content, prompt: m[1].content }) }
+    ];
+
+    function lerFormatosIA() {
+      try { return JSON.parse(localStorage.getItem('almatie_ia_formatos') || '{}'); } catch (e) { return {}; }
+    }
+    function guardarFormatoIA(indiceWorker, indiceFormato) {
+      try { const f = lerFormatosIA(); f[indiceWorker] = indiceFormato; localStorage.setItem('almatie_ia_formatos', JSON.stringify(f)); } catch (e) { /* ignora */ }
+    }
+
+    async function chamarWorkerIA(url, corpo) {
+      const controle = new AbortController();
+      const limite = setTimeout(() => controle.abort(), 20000);
+      try {
+        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo), signal: controle.signal });
+        return { ok: r.ok, status: r.status, bruto: await r.text() };
+      } finally {
+        clearTimeout(limite);
+      }
+    }
+
     async function gerarTextoPromocional(dados, aoTentar) {
       const mensagens = montarMensagensIA(dados);
       const prompt = mensagens.map((m) => m.content).join('\n\n');
+      const lembrados = lerFormatosIA();
+      const log = [`Site: ${location.origin}  ·  modelo enviado: ${IA_MODELO}`];
+
       for (let i = 0; i < WORKERS_IA.length; i++) {
         if (aoTentar) aoTentar(i + 1, WORKERS_IA.length);
-        const controle = new AbortController();
-        const limite = setTimeout(() => controle.abort(), 20000);
-        try {
-          const r = await fetch(WORKERS_IA[i], {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model: IA_MODELO, messages: mensagens, prompt, temperature: 0.7, max_tokens: 700 }),
-            signal: controle.signal
-          });
-          const bruto = await r.text();
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          let resposta; try { resposta = JSON.parse(bruto); } catch (e) { resposta = bruto; }
+        const nome = new URL(WORKERS_IA[i]).hostname.split('.')[0];
+        const ordem = IA_FORMATOS.map((f, k) => k);
+        if (lembrados[i] != null) ordem.sort((a, b) => (a === lembrados[i] ? -1 : b === lembrados[i] ? 1 : 0));
+
+        for (const k of ordem) {
+          const formato = IA_FORMATOS[k];
+          const prefixo = `${i + 1}) ${nome} · formato "${formato.nome}" · `;
+          let resp;
+          try {
+            resp = await chamarWorkerIA(WORKERS_IA[i], formato.corpo(mensagens, prompt));
+          } catch (e) {
+            log.push(prefixo + (e.name === 'AbortError' ? 'sem resposta em 20 segundos' : 'sem resposta: bloqueado pelo navegador (CORS) ou sem conexão'));
+            break;                                              // outro formato não resolveria: próximo worker
+          }
+          const trecho = resp.bruto.replace(/\s+/g, ' ').slice(0, 220);
+          if (!resp.ok) {
+            log.push(prefixo + `HTTP ${resp.status} · ${trecho}`);
+            if (resp.status >= 500 || resp.status === 429) break;
+            continue;                                           // erro 4xx: tenta outro formato no mesmo worker
+          }
+          let resposta;
+          try { resposta = JSON.parse(resp.bruto); } catch (e) { resposta = resp.bruto; }
+          if (resposta && typeof resposta === 'object' && resposta.error) {
+            log.push(prefixo + `erro na resposta · ${trecho}`);
+            continue;
+          }
           const html = textoIAparaHtml(extrairTextoIA(resposta));
-          if (htmlParaTexto(html).trim().length < 40) throw new Error('resposta vazia');
+          if (htmlParaTexto(html).trim().length < 40) {
+            log.push(prefixo + `respondeu, mas sem texto aproveitável · ${trecho}`);
+            break;
+          }
+          guardarFormatoIA(i, k);
           return html;
-        } catch (e) {
-          console.warn(`IA ${i + 1}/${WORKERS_IA.length} não respondeu:`, e.message);
-        } finally {
-          clearTimeout(limite);
         }
       }
-      throw new Error('Nenhuma IA respondeu agora. Tente de novo em instantes.');
+      const erro = new Error('Nenhuma IA respondeu. Veja os detalhes abaixo do editor.');
+      erro.detalhes = log.join('\n');
+      throw erro;
+    }
+
+    function mostrarDetalhesIA(texto) {
+      const caixa = document.getElementById('detalhesIA');
+      document.getElementById('logIA').textContent = texto || '';
+      caixa.classList.toggle('escondido', !texto);
+      caixa.open = !!texto;
     }
 
     async function criarTextoComIA() {
@@ -1005,6 +1078,7 @@ Regras: português do Brasil; tom comercial caloroso e profissional, sem exagero
 
       const btn = document.getElementById('btnCriarTextoIA');
       btn.disabled = true;
+      mostrarDetalhesIA('');
       try {
         const html = await gerarTextoPromocional(dados, (n, total) => { btn.textContent = n === 1 ? '✨ Criando…' : `✨ Tentando outra IA (${n}/${total})…`; });
         textoAntesIA = obterEditor().innerHTML;
@@ -1013,6 +1087,7 @@ Regras: português do Brasil; tom comercial caloroso e profissional, sem exagero
         document.getElementById('btnDesfazerIA').classList.remove('escondido');
         mostrarToast('Texto criado! Revise e ajuste se quiser.', 'sucesso');
       } catch (e) {
+        mostrarDetalhesIA(e.detalhes || '');
         mostrarToast(e.message || 'Não foi possível criar o texto.', 'erro');
       } finally {
         btn.disabled = false;
