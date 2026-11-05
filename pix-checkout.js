@@ -20,13 +20,14 @@ css.textContent = `
 .pix-produto{font-size:.9rem;color:#666;margin-bottom:14px}
 .pix-box label{display:block;text-align:left;font-size:.8rem;font-weight:600;margin:10px 0 4px}
 .pix-box input[type=text],.pix-box input[type=email]{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;font-size:15px;box-sizing:border-box}
-.pix-btn{display:block;width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;background:#D6336C;color:#fff}
+.pix-btn{display:block;width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;background:#BE3A78;color:#fff}
 .pix-btn:disabled{opacity:.6;cursor:wait}
 .pix-btn-sec{background:#f1eef6;color:#1B1230;font-weight:600}
 .pix-link-cartao{display:inline-block;margin-top:14px;font-size:.8rem;color:#666;background:none;border:none;text-decoration:underline;cursor:pointer}
+.pix-cartao-destaque{color:#9C2C61!important;font-weight:700;font-size:.92rem;text-decoration:underline}
 .pix-erro{color:#c0392b;font-size:.85rem;margin-top:10px;min-height:1em}
 .pix-qr img{width:210px;height:210px;border:1px solid #eee;border-radius:10px;margin:8px auto}
-.pix-valor{font-size:1.4rem;font-weight:800;color:#D6336C;margin:6px 0}
+.pix-valor{font-size:1.4rem;font-weight:800;color:#BE3A78;margin:6px 0}
 .pix-copia{width:100%;font-size:11px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fafafa;text-align:center;box-sizing:border-box}
 .pix-aguardando{font-size:.85rem;color:#666;margin-top:12px}
 .pix-ok-icone{font-size:48px}
@@ -103,7 +104,8 @@ function telaFormulario(container, produtoId, titulo) {
     <input type="text" id="pixNome" placeholder="Seu nome" autocomplete="name">
     <button class="pix-btn" id="pixGerar">Gerar QR Code Pix</button>
     <div class="pix-erro" id="pixErro"></div>
-    <button class="pix-link-cartao" id="pixCartao">Prefiro pagar com cartão</button>
+    <button class="pix-link-cartao pix-cartao-destaque" id="pixCartao">Prefiro pagar com cartão de crédito</button><br>
+    <button class="pix-link-cartao" id="pixRecuperar">Já paguei e perdi meu link</button>
   `;
   container.querySelector(".pix-produto").textContent = titulo;
   container.querySelector("#pixEmail").value = lerStorage("almatie_email");
@@ -140,6 +142,8 @@ function telaFormulario(container, produtoId, titulo) {
     }
   });
 
+  container.querySelector("#pixRecuperar").addEventListener("click", () => telaRecuperar(container, produtoId, titulo));
+
   container.querySelector("#pixCartao").addEventListener("click", async (e) => {
     e.target.textContent = "Abrindo pagamento...";
     try {
@@ -152,8 +156,52 @@ function telaFormulario(container, produtoId, titulo) {
       if (dados.init_point) window.location.href = dados.init_point;
       else throw new Error();
     } catch {
-      e.target.textContent = "Prefiro pagar com cartão";
+      e.target.textContent = "Prefiro pagar com cartão de crédito";
       erro.textContent = "Não foi possível abrir o pagamento com cartão.";
+    }
+  });
+}
+
+function telaRecuperar(container, produtoId, titulo) {
+  container.innerHTML = `
+    <h3>Recuperar minha compra</h3>
+    <div class="pix-produto">Informe o e-mail usado na compra e o número do pedido (aparece no comprovante do Mercado Pago e na tela de pagamento confirmado).</div>
+    <label for="recEmail">E-mail da compra</label>
+    <input type="email" id="recEmail" placeholder="voce@email.com" autocomplete="email">
+    <label for="recPedido">Número do pedido</label>
+    <input type="text" id="recPedido" placeholder="Somente números" inputmode="numeric" autocomplete="off">
+    <button class="pix-btn" id="recBuscar">Recuperar minha arte</button>
+    <div class="pix-erro" id="recErro"></div>
+    <button class="pix-link-cartao" id="recVoltar">Voltar</button>
+  `;
+  container.querySelector("#recEmail").value = lerStorage("almatie_email");
+  const erro = container.querySelector("#recErro");
+  const btn = container.querySelector("#recBuscar");
+  container.querySelector("#recVoltar").addEventListener("click", () => telaFormulario(container, produtoId, titulo));
+
+  btn.addEventListener("click", async () => {
+    const email = container.querySelector("#recEmail").value.trim();
+    const pedido = container.querySelector("#recPedido").value.replace(/\D/g, "");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || pedido.length < 5) {
+      erro.textContent = "Confira o e-mail e o número do pedido.";
+      return;
+    }
+    erro.textContent = "";
+    btn.disabled = true;
+    btn.textContent = "Procurando...";
+    try {
+      const r = await fetch(`${WORKER}/recuperar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, pedido }),
+      });
+      const dados = await r.json();
+      if (!r.ok || !dados.link) throw new Error(dados.error || "Não foi possível recuperar a compra.");
+      telaSucesso(container, dados.link, pedido);
+    } catch (e) {
+      erro.textContent = e.message || "Falha de conexão. Tente novamente.";
+      btn.disabled = false;
+      btn.textContent = "Recuperar minha arte";
     }
   });
 }
@@ -192,6 +240,9 @@ function telaQrCode(container, dados, titulo) {
       if (s.status === "approved") {
         pararPolling();
         telaSucesso(container, s.link, dados.id);
+      } else if (s.status === "divergente") {
+        pararPolling();
+        container.querySelector(".pix-aguardando").textContent = `Recebemos seu pagamento, mas precisamos conferir alguns dados. Guarde o pedido nº ${dados.id} e fale com a loja.`;
       } else if (["rejected", "cancelled", "expired"].includes(s.status)) {
         pararPolling();
         container.querySelector(".pix-aguardando").textContent = "Pagamento não concluído. Feche e tente novamente.";
@@ -221,7 +272,7 @@ function telaSucesso(container, link, pedidoId) {
     container.querySelector("#pixAreaLink").appendChild(a);
     const aviso = document.createElement("p");
     aviso.className = "pix-aguardando";
-    aviso.textContent = "Salve o link de download antes de fechar esta janela.";
+    aviso.textContent = "Salve o link de download antes de fechar esta janela. Se perder, use \"Já paguei e perdi meu link\" informando o e-mail e o nº do pedido.";
     container.querySelector("#pixAreaLink").appendChild(aviso);
   }
   container.querySelector("#pixFecharOk").addEventListener("click", fecharPeloUsuario);
@@ -269,6 +320,9 @@ function verificarRetornoCartao() {
       if (s.status === "approved") {
         pararPolling();
         telaSucesso(container, s.link, pagamento);
+      } else if (s.status === "divergente") {
+        pararPolling();
+        msg.textContent = `Recebemos seu pagamento, mas precisamos conferir alguns dados. Guarde o pedido nº ${pagamento} e fale com a loja.`;
       } else if (["rejected", "cancelled", "refunded", "charged_back"].includes(s.status)) {
         pararPolling();
         msg.textContent = "O pagamento não foi aprovado. Feche e tente novamente.";

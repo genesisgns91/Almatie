@@ -1009,7 +1009,7 @@ input:focus, textarea:focus {
   font-weight: 600;
 }
 
-/* EDITOR DE TEXTO FORMATADO (ADMIN) */
+/* EDITOR DE TEXTO SIMPLES (ADMIN) */
 .editor-wrap {
   display: flex;
   flex-direction: column;
@@ -1018,22 +1018,42 @@ input:focus, textarea:focus {
 .editor-toolbar {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 6px;
   background: var(--bg-alt);
   padding: 8px;
   border: 1px solid var(--border);
   border-bottom: none;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  position: sticky;
-  top: 0;
-  z-index: 3;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+.editor-toolbar::-webkit-scrollbar { display: none; }
+.editor-toolbar > * { flex: none; }
 
-.editor-toolbar-grupo {
-  display: flex;
+.editor-toolbar button {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 11px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  font: 600 0.85rem/1 var(--font-body);
+  color: var(--text);
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
+  transition: var(--transition);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.editor-toolbar button:hover { border-color: var(--primary); color: var(--primary-hover); }
+.editor-toolbar button.ativo {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary-hover);
 }
 
 .editor-toolbar-divisor {
@@ -1043,125 +1063,21 @@ input:focus, textarea:focus {
   margin: 0 2px;
 }
 
-.editor-toolbar button,
-.btn-editor-icon {
-  min-width: 30px;
-  height: 30px;
-  padding: 0 9px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition);
-}
-
-.btn-editor-icon svg {
-  display: block;
-}
-
-.editor-toolbar button:hover,
-.btn-editor-icon:hover {
-  background: var(--primary-soft);
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-.btn-editor-icon.ativo {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-editor-texto {
-  padding: 0 10px;
-  font-size: 0.75rem;
-}
-
-.btn-editor-expandir {
-  margin-left: auto;
-  padding: 0 12px;
-  height: 30px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--transition);
-  white-space: nowrap;
-}
-
-.btn-editor-expandir:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.editor-select-tamanho {
-  height: 30px;
-  padding: 0 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  outline: none;
-  transition: var(--transition);
-}
-
-.editor-select-tamanho:hover {
-  border-color: var(--primary);
-}
-
-.editor-cor-label {
-  position: relative;
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--text);
-  transition: var(--transition);
-  overflow: hidden;
-}
-
-.editor-cor-label:hover {
-  border-color: var(--primary);
-}
-
-.editor-cor-icone-marcador {
-  font-size: 0.7rem;
-}
-
-.editor-cor-label input[type="color"] {
-  position: absolute;
-  bottom: -6px;
-  left: -6px;
-  width: 42px;
-  height: 42px;
+/* Bolinhas de cor do texto */
+.editor-toolbar .editor-cor {
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: none;
-  cursor: pointer;
-  opacity: 0.015;
+  border-radius: 50%;
+  background: var(--cor);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--border);
 }
+.editor-toolbar .editor-cor:hover { border-color: #fff; box-shadow: 0 0 0 2px var(--cor); }
 
 .editor-content {
-  min-height: 130px;
+  min-height: 160px;
   max-height: 340px;
   border: 1px solid var(--border);
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
@@ -1170,37 +1086,18 @@ input:focus, textarea:focus {
   outline: none;
   overflow-y: auto;
   resize: vertical;
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1.55;
   transition: border-color var(--transition);
+  -webkit-user-select: text;
+  user-select: text;
 }
-
-.editor-content:focus {
-  border-color: var(--primary);
-  box-shadow: var(--focus-ring);
-}
-
-.editor-content.vazio::before {
-  content: attr(data-placeholder);
-  color: var(--text-muted);
-  pointer-events: none;
-}
-
-.editor-content a {
-  color: var(--primary);
-  text-decoration: underline;
-}
-
-.editor-hint {
-  margin-top: 6px;
-  display: block;
-}
-
-/* Modo expandido — mais espaço para formatar textos longos */
-.editor-expandido .editor-content {
-  min-height: 360px;
-  max-height: 62vh;
-}
+.editor-content:focus { border-color: var(--primary); box-shadow: var(--focus-ring); }
+.editor-content.vazio::before { content: attr(data-placeholder); color: var(--text-muted); pointer-events: none; }
+.editor-content a { color: var(--primary-hover); text-decoration: underline; }
+.editor-content h3 { font-family: var(--font-body); font-size: 1.05rem; margin: 6px 0 2px; }
+.editor-content ul, .editor-content ol { padding-left: 22px; margin: 4px 0; }
+.editor-hint { margin-top: 6px; display: block; }
 
 /* SELECTS E TAXONOMIAS (ADMIN) */
 .select-custom {
@@ -1997,11 +1894,7 @@ input:focus, textarea:focus {
   textarea,
   .select-custom { font-size: 16px; min-height: 46px; }
   .btn { min-height: 48px; border-radius: 12px; }
-  .editor-toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-  .editor-toolbar::-webkit-scrollbar { display: none; }
-  .editor-toolbar > * { flex: none; }
-  .editor-toolbar button, .btn-editor-icon, .editor-select-tamanho, .editor-cor-label { min-height: 36px; }
-  .editor-hint { display: none; }
+  .editor-content { min-height: 180px; }
 
   /* Barra de navegação inferior (estilo Material) */
   body { overscroll-behavior-y: contain; }
@@ -2080,3 +1973,64 @@ input:focus, textarea:focus {
 @media (prefers-reduced-motion: reduce) {
   .app-nav-icone { transition: none; }
 }
+
+
+/* ===== Painel do admin: pedidos e vendas ===== */
+.lista-pedidos { display: flex; flex-direction: column; gap: 10px; }
+.pedido-item {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 14px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px;
+}
+.pedido-topo { display: flex; justify-content: space-between; gap: 10px; font-size: 0.9rem; }
+.pedido-topo span { color: var(--primary-hover); font-weight: 700; white-space: nowrap; }
+.pedido-etiquetas { display: flex; flex-wrap: wrap; gap: 6px; }
+.pedido-tag { font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: var(--radius-full); background: var(--bg-alt); color: var(--text-muted); }
+.pedido-tag.ok { background: #DDF3E4; color: #1E6B3A; }
+.pedido-tag.alerta { background: #FFF1D6; color: #8A5A00; }
+.pedido-tag.erro { background: #FBE0E0; color: #A12626; }
+.pedido-info { font-size: 0.75rem; color: var(--text-muted); word-break: break-word; }
+.pedido-item .btn-link { align-self: flex-start; }
+
+
+/* ===== Descrição formatada (títulos, links) ===== */
+.card-descricao h3, .card-descricao h4 { font-family: var(--font-body); font-size: inherit; font-weight: 700; margin: 0; color: var(--text); }
+.card-descricao a { color: inherit; text-decoration: none; pointer-events: none; }
+.galeria-descricao h3, .galeria-descricao h4 { font-family: var(--font-body); font-size: 1.05rem; font-weight: 700; margin: 12px 0 4px; color: var(--text); }
+.galeria-descricao a { color: var(--primary-hover); text-decoration: underline; }
+.galeria-descricao p, .galeria-descricao div { margin: 0; }
+
+/* ===== Desconto: valor original tachado + valor atual ===== */
+.preco-label.promo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.preco-label s { color: var(--text-muted); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.pill-desc {
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: var(--primary-soft);
+  color: var(--primary-hover);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+.preco-validade { margin-top: 3px; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); }
+
+/* ===== Tags na galeria ===== */
+.galeria-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.galeria-tag {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--primary-hover);
+  font: 600 0.78rem/1 var(--font-body);
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+.galeria-tag:hover { border-color: var(--primary); background: var(--primary-soft); }

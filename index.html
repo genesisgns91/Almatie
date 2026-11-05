@@ -36,11 +36,20 @@
     .sf-area :focus-visible,.sf-painel :focus-visible{outline:3px solid rgba(190,58,120,.4);outline-offset:2px}
 
     /* Mensagem inicial discreta: mesmo banner da marca, porém compacto e com texto suave */
-    .hero-loja.sf-hero{max-width:calc(min(1800px,94vw) - 32px);padding:14px 22px 15px;margin-top:16px;border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+    .hero-loja.sf-hero{display:flex;align-items:center;justify-content:space-between;gap:14px;max-width:calc(min(1800px,94vw) - 32px);padding:14px 22px 15px;margin-top:16px;border-radius:var(--radius);box-shadow:var(--shadow-sm)}
     .hero-loja.sf-hero::before{width:150px;height:150px;right:-30px;top:-70px}
     .hero-loja.sf-hero::after{display:none}
     .hero-loja.sf-hero h2{font-family:var(--font-body);font-size:.95rem;font-weight:600;letter-spacing:0;line-height:1.4}
     .hero-loja.sf-hero p{margin-top:2px;max-width:none;text-wrap:pretty;font-size:.8125rem;font-weight:400;line-height:1.5;color:rgba(255,255,255,.86)}
+
+    /* Atalhos discretos no canto da caixa rosa (Mockup e Instagram) */
+    .hero-texto{min-width:0;position:relative;z-index:1}
+    .hero-atalhos{position:relative;z-index:1;flex:none;display:flex;align-items:center;gap:8px}
+    .hero-atalho{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:44px;height:44px;padding:0 9px;border-radius:12px;background:rgba(255,255,255,.14);color:rgba(255,255,255,.92);text-decoration:none;transition:background-color .2s,transform .2s}
+    .hero-atalho:hover{background:rgba(255,255,255,.26)}
+    .hero-atalho:active{transform:scale(.95)}
+    .hero-atalho svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .hero-atalho span{font-size:.5625rem;font-weight:600;letter-spacing:.06em;line-height:1;opacity:.9}
 
     /* Barra: botão sanduíche + busca */
     .sf-barra{display:flex;gap:10px;scroll-margin-top:calc(var(--appbar-h,76px) + env(safe-area-inset-top,0px) + 12px)}
@@ -262,6 +271,15 @@
       </div>
     </details>
 
+    <details class="secao-personalizacao" id="secaoPedidos">
+      <summary>📦 Pedidos e vendas</summary>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <span class="hint" id="pedidosResumo">Toque em Atualizar para ver os pedidos mais recentes.</span>
+        <button type="button" id="btnPedidos" class="btn btn-secondary">Atualizar pedidos</button>
+        <div id="listaPedidos" class="lista-pedidos"></div>
+      </div>
+    </details>
+
     <hr class="form-divider">
 
     <input type="hidden" id="editDocId" value="">
@@ -287,81 +305,29 @@
     </div>
 
     <div class="form-group">
-      <label>Descrição do Produto (com Formatação):</label>
+      <label>Descrição do Produto:</label>
       <div id="editorDescricaoWrap" class="editor-wrap">
-        <div class="editor-toolbar" id="editorToolbar">
-          <div class="editor-toolbar-grupo">
-            <button type="button" class="btn-editor-icon" data-cmd="undo" title="Desfazer (Ctrl+Z)">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
-            </button>
-            <button type="button" class="btn-editor-icon" data-cmd="redo" title="Refazer (Ctrl+Y)">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
-            </button>
-          </div>
+        <div class="editor-toolbar" id="editorToolbar" role="toolbar" aria-label="Formatação do texto">
+          <button type="button" tabindex="-1" data-cmd="bold" title="Negrito" aria-label="Negrito"><b>B</b></button>
+          <button type="button" tabindex="-1" data-cmd="italic" title="Itálico" aria-label="Itálico"><i>I</i></button>
+          <button type="button" tabindex="-1" data-cmd="underline" title="Sublinhado" aria-label="Sublinhado"><u>U</u></button>
           <span class="editor-toolbar-divisor"></span>
-          <div class="editor-toolbar-grupo">
-            <button type="button" class="btn-editor-icon" data-cmd="bold" title="Negrito (Ctrl+B)"><b>B</b></button>
-            <button type="button" class="btn-editor-icon" data-cmd="italic" title="Itálico (Ctrl+I)"><i>I</i></button>
-            <button type="button" class="btn-editor-icon" data-cmd="underline" title="Sublinhado (Ctrl+U)"><u>U</u></button>
-            <button type="button" class="btn-editor-icon" data-cmd="strikeThrough" title="Tachado"><s>T</s></button>
-          </div>
+          <button type="button" tabindex="-1" data-cmd="titulo" title="Transformar em título" aria-label="Título">Título</button>
+          <button type="button" tabindex="-1" data-cmd="insertUnorderedList" title="Lista com marcadores" aria-label="Lista com marcadores">• Lista</button>
+          <button type="button" tabindex="-1" data-cmd="insertOrderedList" title="Lista numerada" aria-label="Lista numerada">1. Lista</button>
           <span class="editor-toolbar-divisor"></span>
-          <div class="editor-toolbar-grupo">
-            <button type="button" class="btn-editor-icon" data-cmd="justifyLeft" title="Alinhar à esquerda">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="17" y2="18"/></svg>
-            </button>
-            <button type="button" class="btn-editor-icon" data-cmd="justifyCenter" title="Centralizar">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="6" y1="18" x2="18" y2="18"/></svg>
-            </button>
-            <button type="button" class="btn-editor-icon" data-cmd="justifyRight" title="Alinhar à direita">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="7" y1="18" x2="20" y2="18"/></svg>
-            </button>
-          </div>
+          <button type="button" tabindex="-1" class="editor-cor" data-cor="#BE3A78" style="--cor:#BE3A78" title="Rosa" aria-label="Texto rosa"></button>
+          <button type="button" tabindex="-1" class="editor-cor" data-cor="#7E3C9F" style="--cor:#7E3C9F" title="Ameixa" aria-label="Texto ameixa"></button>
+          <button type="button" tabindex="-1" class="editor-cor" data-cor="#0E8FA3" style="--cor:#0E8FA3" title="Azul" aria-label="Texto azul"></button>
+          <button type="button" tabindex="-1" class="editor-cor" data-cor="#2E8B57" style="--cor:#2E8B57" title="Verde" aria-label="Texto verde"></button>
+          <button type="button" tabindex="-1" class="editor-cor" data-cor="#D9731A" style="--cor:#D9731A" title="Laranja" aria-label="Texto laranja"></button>
+          <button type="button" tabindex="-1" class="editor-cor" data-cor="#1B1230" style="--cor:#1B1230" title="Escuro" aria-label="Texto escuro"></button>
           <span class="editor-toolbar-divisor"></span>
-          <div class="editor-toolbar-grupo">
-            <button type="button" class="btn-editor-icon" data-cmd="insertUnorderedList" title="Lista de marcadores">• Lista</button>
-            <button type="button" class="btn-editor-icon" data-cmd="insertOrderedList" title="Lista numerada">1. Lista</button>
-          </div>
-          <span class="editor-toolbar-divisor"></span>
-          <div class="editor-toolbar-grupo">
-            <select id="seletorFonteEditor" class="editor-select-tamanho" title="Fonte do texto">
-              <option value="">Fonte</option>
-              <option value="'Inter', sans-serif">Padrão</option>
-              <option value="'Fraunces', serif">Elegante</option>
-              <option value="'Caveat', cursive">Manuscrita</option>
-              <option value="'Courier Prime', monospace">Máquina</option>
-            </select>
-            <select id="seletorTamanhoFonte" class="editor-select-tamanho" title="Tamanho da fonte">
-              <option value="">Tamanho</option>
-              <option value="12px">Pequeno</option>
-              <option value="16px">Normal</option>
-              <option value="19px">Médio</option>
-              <option value="23px">Grande</option>
-              <option value="28px">Título</option>
-            </select>
-            <label class="editor-cor-label" title="Cor do texto">
-              <span class="editor-cor-icone">A</span>
-              <input type="color" id="corTextoEditor" value="#1B1230">
-            </label>
-            <label class="editor-cor-label" title="Cor de destaque (marca-texto)">
-              <span class="editor-cor-icone editor-cor-icone-marcador">🖊</span>
-              <input type="color" id="corFundoEditor" value="#FBE4ED">
-            </label>
-          </div>
-          <span class="editor-toolbar-divisor"></span>
-          <div class="editor-toolbar-grupo">
-            <button type="button" class="btn-editor-icon" id="btnInserirLink" title="Inserir link">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15 15 9"/><path d="M10.5 6.5 12 5a3.5 3.5 0 0 1 5 5l-1.5 1.5"/><path d="M13.5 17.5 12 19a3.5 3.5 0 0 1-5-5l1.5-1.5"/></svg>
-            </button>
-            <button type="button" class="btn-editor-icon" id="btnRemoverLink" title="Remover link">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15 15 9"/><path d="M10.5 6.5 12 5a3.5 3.5 0 0 1 5 5l-1.5 1.5"/><path d="M13.5 17.5 12 19a3.5 3.5 0 0 1-5-5l1.5-1.5"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
-            </button>
-            <button type="button" class="btn-editor-icon btn-editor-texto" id="btnLimparFormatacao" title="Limpar formatação">✕ Limpar</button>
-          </div>
-          <button type="button" class="btn-editor-expandir" id="btnExpandirEditor" title="Expandir área de edição">⤢ Expandir</button>
+          <button type="button" tabindex="-1" id="btnInserirLink" title="Link (selecione um trecho antes)" aria-label="Link">🔗 Link</button>
+          <button type="button" tabindex="-1" id="btnLimparFormatacao" title="Remover toda a formatação do trecho" aria-label="Limpar formatação">Limpar</button>
         </div>
-        <div id="editorDescricao" class="editor-content" contenteditable="true" data-placeholder="Digite aqui a descrição detalhada..."></div>
-        <span class="hint editor-hint">Selecione um trecho do texto e use os botões acima para formatar. Atalhos: Ctrl+B (negrito), Ctrl+I (itálico), Ctrl+U (sublinhado).</span>
+        <div id="editorDescricao" class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Digite aqui a descrição..."></div>
+        <span class="hint editor-hint">Selecione um trecho do texto e toque no botão da formatação. O texto colado entra sem formatação de outros sites.</span>
       </div>
     </div>
 
@@ -377,6 +343,28 @@
         <label for="linkCompra">Link de Destino / Checkout:</label>
         <input type="url" id="linkCompra" placeholder="https://seu-link.com">
       </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group campo-valor-group">
+        <label for="precoPromo">Valor promocional (opcional):</label>
+        <div class="campo-moeda-wrap">
+          <span class="prefixo-moeda">R$</span>
+          <input type="text" id="precoPromo" inputmode="numeric" placeholder="0,00">
+        </div>
+        <span class="hint" id="infoDesconto"></span>
+      </div>
+      <div class="form-group flex-1">
+        <label for="promoAte">Promoção vale até (opcional):</label>
+        <input type="datetime-local" id="promoAte">
+        <span class="hint">Em branco = sem data para acabar. Passada a data, o preço volta ao normal sozinho.</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="tagsProduto">Tags / palavras-chave para a busca (opcional):</label>
+      <input type="text" id="tagsProduto" placeholder="#kombi #verao #flores" autocomplete="off">
+      <span class="hint">Separe por espaço ou vírgula. Quem pesquisar por essas palavras encontra este pacote.</span>
     </div>
 
 
@@ -402,8 +390,20 @@
   </div>
 
   <section class="hero-loja sf-hero">
-    <h2>Artes prontas para sublimar</h2>
-    <p>Estampas exclusivas para canecas, camisetas, DTF e muito mais. Pagou no Pix, a arte é liberada na hora.</p>
+    <div class="hero-texto">
+      <h2>Artes prontas para sublimar</h2>
+      <p>Estampas exclusivas para canecas, camisetas, DTF e muito mais. Pagou no Pix, a arte é liberada na hora.</p>
+    </div>
+    <nav class="hero-atalhos" aria-label="Links da loja">
+      <a class="hero-atalho" href="https://genesisgns91.github.io/Mockup/" target="_blank" rel="noopener" title="Mockup" aria-label="Abrir o site de Mockup">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h11v7.5a4.5 4.5 0 0 1-4.5 4.5h-2a4.5 4.5 0 0 1-4.5-4.5V7z"/><path d="M15.5 9h1.5a2.5 2.5 0 0 1 0 5h-1.5"/><path d="M3 21h14"/></svg>
+        <span>mockup</span>
+      </a>
+      <!-- TROQUE o endereço abaixo pelo link do seu Instagram -->
+      <a class="hero-atalho" href="https://www.instagram.com/" target="_blank" rel="noopener" title="Instagram" aria-label="Abrir o Instagram da loja">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor"/></svg>
+      </a>
+    </nav>
   </section>
 
   <div class="area-filtros sf-area">
@@ -496,10 +496,12 @@
         <h2 id="galeriaTitulo" class="galeria-titulo"></h2>
         <div class="galeria-meta card-meta" id="galeriaMeta"></div>
         <div class="galeria-descricao" id="galeriaDescricao"></div>
+        <div class="galeria-tags escondido" id="galeriaTags"></div>
         <div class="galeria-acao">
           <div class="galeria-preco-box">
-            <span class="preco-label">--</span>
+            <span class="preco-label" id="galeriaPrecoLabel">Valor</span>
             <div class="card-preco"><small>R$</small> <span id="galeriaPrecoValor">0,00</span></div>
+            <span class="preco-validade escondido" id="galeriaValidade"></span>
           </div>
           <button type="button" id="galeriaBtnComprar" class="btn-comprar btn-comprar-galeria">Comprar Arte</button>
         </div>
@@ -556,14 +558,34 @@
       document.getElementById('galeriaTitulo').innerText = prod.titulo || '';
 
       let metaHTML = '';
-      if (prod.tipo) metaHTML += `<span class="badge-tag badge-tipo">${prod.tipo}</span>`;
-      metaHTML += `<span class="badge-tag badge-cat">${prod.categoria || 'Geral'}</span>`;
-      if (prod.classe) metaHTML += `<span class="badge-tag badge-sub">${prod.classe}</span>`;
+      if (prod.tipo) metaHTML += `<span class="badge-tag badge-tipo">${esc(prod.tipo)}</span>`;
+      metaHTML += `<span class="badge-tag badge-cat">${esc(prod.categoria || 'Geral')}</span>`;
+      if (prod.classe) metaHTML += `<span class="badge-tag badge-sub">${esc(prod.classe)}</span>`;
       document.getElementById('galeriaMeta').innerHTML = metaHTML;
 
-      document.getElementById('galeriaDescricao').innerHTML = prod.descricao || '';
-      document.getElementById('galeriaPrecoValor').innerText = prod.preco || '0,00';
-      document.getElementById('galeriaBtnComprar').onclick = () => window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), prod.preco);
+      document.getElementById('galeriaDescricao').innerHTML = prod._desc ?? sanitizarDescricao(prod.descricao);
+
+      const tagsBox = document.getElementById('galeriaTags');
+      tagsBox.innerHTML = '';
+      (prod.tags || []).forEach((t) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'galeria-tag';
+        chip.textContent = '#' + t;
+        chip.addEventListener('click', () => { fecharGaleria(); definirBusca(t); document.getElementById('barraFiltros').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+        tagsBox.appendChild(chip);
+      });
+      tagsBox.classList.toggle('escondido', !(prod.tags || []).length);
+
+      const info = infoPreco(prod);
+      const rotulo = document.getElementById('galeriaPrecoLabel');
+      rotulo.className = 'preco-label' + (info.ativa ? ' promo' : '');
+      rotulo.innerHTML = htmlRotuloPreco(info);
+      document.getElementById('galeriaPrecoValor').innerText = info.atual;
+      const validade = document.getElementById('galeriaValidade');
+      validade.classList.toggle('escondido', !info.ate);
+      validade.textContent = info.ate ? `Promoção até ${formatarFimPromo(info.ate)}` : '';
+      document.getElementById('galeriaBtnComprar').onclick = () => window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), info.atual);
 
       renderizarGaleriaImagens();
 
@@ -608,124 +630,248 @@
       setTimeout(() => toast.remove(), 2600);
     }
 
-    // EDITOR DE TEXTO FORMATADO
-    let selecaoEditorSalva = null;
+    // =========================================================
+    // EDITOR DE TEXTO SIMPLES (descrição do produto)
+    // =========================================================
+    let selecaoEditor = null;
+    const obterEditor = () => document.getElementById('editorDescricao');
 
-    function obterEditor() {
-      return document.getElementById('editorDescricao');
-    }
-
+    // Guarda onde o cursor/seleção está, para os botões da barra agirem no trecho certo
     function salvarSelecaoEditor() {
-      const editor = obterEditor();
       const sel = window.getSelection();
-      if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
-        selecaoEditorSalva = sel.getRangeAt(0).cloneRange();
+      if (sel && sel.rangeCount && obterEditor().contains(sel.anchorNode)) {
+        selecaoEditor = sel.getRangeAt(0).cloneRange();
       }
     }
 
     function restaurarSelecaoEditor() {
-      const editor = obterEditor();
-      editor.focus();
-      if (selecaoEditorSalva) {
+      obterEditor().focus({ preventScroll: true });
+      if (selecaoEditor) {
         const sel = window.getSelection();
         sel.removeAllRanges();
-        sel.addRange(selecaoEditorSalva);
+        sel.addRange(selecaoEditor);
       }
     }
 
     function executarComandoEditor(comando, valor = null) {
       restaurarSelecaoEditor();
+      try { document.execCommand('styleWithCSS', false, comando === 'foreColor'); } catch (e) { /* ignora */ }
       document.execCommand(comando, false, valor);
       salvarSelecaoEditor();
       atualizarEstadoBotoesEditor();
       atualizarPlaceholderEditor();
     }
 
+    const blocoAtualEditor = () => String(document.queryCommandValue('formatBlock') || '').toLowerCase().replace(/[<>]/g, '');
+
+    function alternarTituloEditor() {
+      restaurarSelecaoEditor();
+      const sel = window.getSelection();
+      const no = sel && sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+      const titulo = no && no.closest('h3');
+      if (titulo && obterEditor().contains(titulo)) {
+        // volta a ser texto comum (o navegador aninha tags quando se faz isso por comando)
+        const comum = document.createElement('div');
+        while (titulo.firstChild) comum.appendChild(titulo.firstChild);
+        titulo.replaceWith(comum);
+      } else {
+        document.execCommand('formatBlock', false, 'h3');
+      }
+      salvarSelecaoEditor();
+      atualizarEstadoBotoesEditor();
+    }
+
     function atualizarEstadoBotoesEditor() {
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount || !obterEditor().contains(sel.anchorNode)) return;
       document.querySelectorAll('#editorToolbar [data-cmd]').forEach((btn) => {
         try {
-          btn.classList.toggle('ativo', document.queryCommandState(btn.dataset.cmd));
+          const cmd = btn.dataset.cmd;
+          btn.classList.toggle('ativo', cmd === 'titulo' ? blocoAtualEditor() === 'h3' : document.queryCommandState(cmd));
         } catch (e) { /* comando não suportado neste navegador */ }
       });
+      const no = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
+      document.getElementById('btnInserirLink').classList.toggle('ativo', !!(no && no.closest('a')));
     }
 
     function atualizarPlaceholderEditor() {
       const editor = obterEditor();
-      const vazio = editor.textContent.trim().length === 0 && !editor.querySelector('img');
-      editor.classList.toggle('vazio', vazio);
+      editor.classList.toggle('vazio', editor.textContent.trim().length === 0 && !editor.querySelector('li'));
     }
 
+    // Um só botão: coloca o link no trecho selecionado ou, se já houver link ali, tira
     function inserirLinkEditor() {
       restaurarSelecaoEditor();
       const sel = window.getSelection();
-      if (!sel || sel.isCollapsed) {
-        mostrarToast('Selecione um trecho de texto para transformar em link.', 'erro');
+      const no = sel && sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+      if (no && no.closest('a')) {
+        document.execCommand('unlink', false, null);
+        salvarSelecaoEditor();
+        atualizarEstadoBotoesEditor();
         return;
       }
-      const url = prompt('Cole o endereço do link (ex: https://seu-link.com):');
+      if (!sel || sel.isCollapsed) {
+        mostrarToast('Selecione um trecho do texto para transformar em link.', 'erro');
+        return;
+      }
+      let url = (prompt('Cole o endereço do link:', 'https://') || '').trim();
       if (!url) return;
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      try { new URL(url); } catch (e) { mostrarToast('Esse endereço de link não parece válido.', 'erro'); return; }
+      restaurarSelecaoEditor();
       document.execCommand('createLink', false, url);
       salvarSelecaoEditor();
-    }
-
-    function removerLinkEditor() {
-      restaurarSelecaoEditor();
-      document.execCommand('unlink', false, null);
-      salvarSelecaoEditor();
+      atualizarEstadoBotoesEditor();
     }
 
     function limparFormatacaoEditor() {
       restaurarSelecaoEditor();
       document.execCommand('removeFormat', false, null);
       document.execCommand('unlink', false, null);
+      document.execCommand('formatBlock', false, 'p');
       salvarSelecaoEditor();
       atualizarEstadoBotoesEditor();
     }
 
-    function alternarExpandirEditor() {
-      const wrap = document.getElementById('editorDescricaoWrap');
-      const btn = document.getElementById('btnExpandirEditor');
-      const expandido = wrap.classList.toggle('editor-expandido');
-      btn.innerHTML = expandido ? '⤡ Recolher' : '⤢ Expandir';
+    function iniciarEditorTexto() {
+      const editor = obterEditor();
+      const barra = document.getElementById('editorToolbar');
+
+      // Tocar nos botões não tira o foco nem a seleção do texto (era isso que "bugava")
+      barra.addEventListener('mousedown', (e) => { if (e.target.closest('button')) e.preventDefault(); });
+      barra.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        if (btn.dataset.cor) { executarComandoEditor('foreColor', btn.dataset.cor); return; }
+        if (btn.id === 'btnInserirLink') { inserirLinkEditor(); return; }
+        if (btn.id === 'btnLimparFormatacao') { limparFormatacaoEditor(); return; }
+        if (btn.dataset.cmd === 'titulo') { alternarTituloEditor(); return; }
+        if (btn.dataset.cmd) executarComandoEditor(btn.dataset.cmd);
+      });
+
+      // Funciona também com a seleção feita no toque (celular)
+      document.addEventListener('selectionchange', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });
+
+      editor.addEventListener('input', atualizarPlaceholderEditor);
+      // Colar sempre como texto simples: sem fontes e cores bagunçadas de outros sites
+      editor.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const texto = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, texto);
+      });
+      editor.addEventListener('drop', (e) => e.preventDefault());
+      atualizarPlaceholderEditor();
     }
 
-    window.formatarCor = (cor) => {
-      restaurarSelecaoEditor();
-      document.execCommand('foreColor', false, cor);
-      salvarSelecaoEditor();
-    };
+    // ----- Limpeza do texto formatado: só passa o que é seguro e simples -----
+    const TAGS_REMOVER = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'IMG', 'SVG', 'LINK', 'META', 'FORM', 'INPUT',
+      'BUTTON', 'TEXTAREA', 'SELECT', 'VIDEO', 'AUDIO', 'CANVAS', 'MATH', 'NOSCRIPT', 'TEMPLATE', 'BASE', 'TITLE', 'HEAD']);
+    const TAGS_PERMITIDAS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE', 'BR', 'P', 'DIV', 'SPAN', 'UL', 'OL', 'LI', 'A', 'H3', 'H4']);
+    const COR_OK = /^(#[0-9a-f]{3,8}|rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*[\d.]+\s*)?\))$/i;
 
-    window.formatarCorFundo = (cor) => {
-      restaurarSelecaoEditor();
-      document.execCommand('hiliteColor', false, cor);
-      salvarSelecaoEditor();
-    };
+    function sanitizarDescricao(html) {
+      if (!html) return '';
+      const doc = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html');
 
-    window.formatarFonte = (fonte) => {
-      if (!fonte) return;
-      restaurarSelecaoEditor();
-      document.execCommand('fontName', false, 'almatie-fonte-temp');
-      const editor = obterEditor();
-      editor.querySelectorAll('font[face="almatie-fonte-temp"]').forEach((el) => {
-        el.removeAttribute('face');
-        el.style.fontFamily = fonte;
+      const limpar = (pai) => {
+        Array.from(pai.childNodes).forEach((no) => {
+          if (no.nodeType === 3) return;                        // texto puro
+          if (no.nodeType !== 1) { no.remove(); return; }       // comentários etc.
+          if (TAGS_REMOVER.has(no.tagName)) { no.remove(); return; }
+          limpar(no);
+
+          let tag = no.tagName;
+          let cor = '';
+          if (tag === 'FONT') {                                  // texto antigo: só aproveita a cor
+            cor = no.getAttribute('color') || no.style.color || '';
+            const span = doc.createElement('span');
+            while (no.firstChild) span.appendChild(no.firstChild);
+            no.replaceWith(span);
+            no = span; tag = 'SPAN';
+          } else if (tag === 'SPAN') {
+            cor = no.style.color || '';
+          }
+          if (!TAGS_PERMITIDAS.has(tag)) {                       // tag desconhecida: fica só o texto dentro
+            no.replaceWith(...Array.from(no.childNodes));
+            return;
+          }
+
+          const alinhar = ['DIV', 'P', 'H3', 'H4'].includes(tag) ? no.style.textAlign : '';
+          const href = tag === 'A' ? (no.getAttribute('href') || '').trim() : '';
+          Array.from(no.attributes).forEach((a) => no.removeAttribute(a.name));
+
+          if (tag === 'SPAN') {
+            if (COR_OK.test(cor)) no.style.color = cor;
+            else if (!no.attributes.length) { no.replaceWith(...Array.from(no.childNodes)); return; }
+          }
+          if (alinhar && ['left', 'center', 'right'].includes(alinhar)) no.style.textAlign = alinhar;
+          if (tag === 'A') {
+            if (/^(https?:\/\/|mailto:)/i.test(href)) {
+              no.setAttribute('href', href);
+              no.setAttribute('target', '_blank');
+              no.setAttribute('rel', 'noopener noreferrer nofollow');
+            } else {
+              no.replaceWith(...Array.from(no.childNodes));      // link inseguro: vira texto comum
+            }
+          }
+        });
+      };
+      limpar(doc.body);
+      return doc.body.innerHTML.trim();
+    }
+
+    // ----- Preço, desconto e tags -----
+    const precoParaNumero = (s) => parseFloat(String(s || '0').replace(/\./g, '').replace(',', '.')) || 0;
+
+    function infoPreco(prod) {
+      const original = precoParaNumero(prod.preco);
+      const promo = precoParaNumero(prod.precoPromo);
+      const ate = Number(prod.promoAte) || 0;
+      const ativa = promo > 0 && promo < original && (!ate || Date.now() < ate);
+      return {
+        ativa,
+        atual: ativa ? prod.precoPromo : (prod.preco || '0,00'),
+        original: prod.preco || '0,00',
+        desconto: ativa ? Math.round((1 - promo / original) * 100) : 0,
+        ate: ativa && ate ? ate : 0
+      };
+    }
+
+    const formatarFimPromo = (ms) => new Date(ms).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+    function htmlRotuloPreco(i) {
+      return i.ativa ? `<s>R$ ${esc(i.original)}</s><em class="pill-desc">-${i.desconto}%</em>` : 'Valor';
+    }
+
+    function htmlPrecoBox(prod) {
+      const i = infoPreco(prod);
+      return `<div class="card-preco-box">
+        <span class="preco-label ${i.ativa ? 'promo' : ''}">${htmlRotuloPreco(i)}</span>
+        <div class="card-preco"><small>R$</small> ${esc(i.atual)}</div>
+        ${i.ate ? `<span class="preco-validade">Promoção até ${esc(formatarFimPromo(i.ate))}</span>` : ''}
+      </div>`;
+    }
+
+    function extrairTags(texto) {
+      const vistos = new Set();
+      const lista = [];
+      String(texto || '').split(/[\s,;]+/).forEach((t) => {
+        t = t.replace(/^#+/, '').trim().slice(0, 30);
+        const chave = normalizarTexto(t);
+        if (t && !vistos.has(chave)) { vistos.add(chave); lista.push(t); }
       });
-      salvarSelecaoEditor();
-      document.getElementById('seletorFonteEditor').value = '';
-    };
+      return lista.slice(0, 25);
+    }
 
-    window.formatarTamanho = (tamanho) => {
-      if (!tamanho) return;
-      restaurarSelecaoEditor();
-      document.execCommand('fontSize', false, '7');
-      const editor = obterEditor();
-      editor.querySelectorAll('font[size="7"]').forEach((el) => {
-        el.removeAttribute('size');
-        el.style.fontSize = tamanho;
-      });
-      salvarSelecaoEditor();
-      document.getElementById('seletorTamanhoFonte').value = '';
-    };
+    const paraCampoDataHora = (ms) => new Date(ms - new Date(ms).getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+    function atualizarInfoDesconto() {
+      const normal = precoParaNumero(document.getElementById('preco').value);
+      const promo = precoParaNumero(document.getElementById('precoPromo').value);
+      const info = document.getElementById('infoDesconto');
+      info.textContent = (promo > 0 && normal > 0 && promo < normal) ? `Desconto de ${Math.round((1 - promo / normal) * 100)}%` :
+        (promo > 0 && normal > 0 ? 'O valor promocional precisa ser menor que o valor normal.' : '');
+    }
 
     // MÁSCARA DE MOEDA (R$ 0,00)
     function aplicarMascaraMoeda(input) {
@@ -912,8 +1058,11 @@
       const tipo = document.getElementById('selectTipo').value || 'Geral';
       const categoria = document.getElementById('selectCategoria').value || 'Geral';
       const subcategoria = document.getElementById('selectSubcategoria').value || 'Geral';
-      const descricao = document.getElementById('editorDescricao').innerHTML;
+      const descricao = sanitizarDescricao(document.getElementById('editorDescricao').innerHTML);
       const preco = document.getElementById('preco').value;
+      const precoPromo = document.getElementById('precoPromo').value.trim();
+      const promoAteTxt = document.getElementById('promoAte').value;
+      const tags = extrairTags(document.getElementById('tagsProduto').value);
       const link = document.getElementById('linkCompra').value.trim();
 
       // Ao editar, deixar o link em branco = manter o link atual
@@ -927,7 +1076,18 @@
         return;
       }
 
-      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, imagens: listaImagensAtuais, destaque: document.getElementById('chkDestaque').checked, criadoEm: new Date() };
+      if (precoPromo) {
+        if (precoParaNumero(precoPromo) <= 0 || precoParaNumero(precoPromo) >= precoParaNumero(preco)) {
+          mostrarToast("O valor promocional precisa ser menor que o valor normal.", "erro");
+          return;
+        }
+        if (promoAteTxt && new Date(promoAteTxt).getTime() <= Date.now()) {
+          mostrarToast("A data do fim da promoção precisa estar no futuro.", "erro");
+          return;
+        }
+      }
+
+      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, precoPromo: precoPromo || '', promoAte: (precoPromo && promoAteTxt) ? new Date(promoAteTxt).getTime() : null, tags, imagens: listaImagensAtuais, destaque: document.getElementById('chkDestaque').checked, criadoEm: new Date() };
 
       try {
         const ref = docId ? doc(db, "produtos", docId) : doc(collection(db, "produtos"));
@@ -955,6 +1115,10 @@
       document.getElementById('selectSubcategoria').value = p.classe || '';
       document.getElementById('editorDescricao').innerHTML = p.descricao || '';
       document.getElementById('preco').value = p.preco;
+      document.getElementById('precoPromo').value = p.precoPromo || '';
+      document.getElementById('promoAte').value = p.promoAte ? paraCampoDataHora(Number(p.promoAte)) : '';
+      document.getElementById('tagsProduto').value = (p.tags || []).map((t) => '#' + t).join(' ');
+      atualizarInfoDesconto();
       const campoLink = document.getElementById('linkCompra');
       campoLink.value = '';
       campoLink.placeholder = 'Carregando o link atual…';
@@ -981,6 +1145,10 @@
       document.getElementById('selectSubcategoria').value = '';
       document.getElementById('editorDescricao').innerHTML = '';
       document.getElementById('preco').value = '';
+      document.getElementById('precoPromo').value = '';
+      document.getElementById('promoAte').value = '';
+      document.getElementById('tagsProduto').value = '';
+      document.getElementById('infoDesconto').textContent = '';
       document.getElementById('linkCompra').value = '';
       document.getElementById('linkCompra').placeholder = 'https://seu-link.com';
       document.getElementById('chkDestaque').checked = false;
@@ -1008,40 +1176,17 @@
       document.getElementById('btnUploadFavicon').addEventListener('click', () => widgetFavicon.open());
       document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
       document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
+      document.getElementById('btnPedidos').addEventListener('click', carregarPedidos);
       iniciarInterfaceVitrine();
       document.getElementById('destaquesPrev').addEventListener('click', () => rolarDestaques(-1));
       document.getElementById('destaquesNext').addEventListener('click', () => rolarDestaques(1));
 
-      // TOOLBAR DO EDITOR — delega os botões com data-cmd para execCommand
-      document.querySelectorAll('#editorToolbar [data-cmd]').forEach((btn) => {
-        btn.addEventListener('click', () => executarComandoEditor(btn.dataset.cmd));
-      });
-      document.getElementById('btnInserirLink').addEventListener('click', inserirLinkEditor);
-      document.getElementById('btnRemoverLink').addEventListener('click', removerLinkEditor);
-      document.getElementById('btnLimparFormatacao').addEventListener('click', limparFormatacaoEditor);
-      document.getElementById('btnExpandirEditor').addEventListener('click', alternarExpandirEditor);
-      document.getElementById('corTextoEditor').addEventListener('input', (e) => window.formatarCor(e.target.value));
-      document.getElementById('corFundoEditor').addEventListener('input', (e) => window.formatarCorFundo(e.target.value));
-      document.getElementById('seletorTamanhoFonte').addEventListener('change', (e) => window.formatarTamanho(e.target.value));
-      document.getElementById('seletorFonteEditor').addEventListener('change', (e) => window.formatarFonte(e.target.value));
-
-      const editorDescricaoEl = document.getElementById('editorDescricao');
-      editorDescricaoEl.addEventListener('mouseup', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });
-      editorDescricaoEl.addEventListener('keyup', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });
-      editorDescricaoEl.addEventListener('focus', atualizarEstadoBotoesEditor);
-      editorDescricaoEl.addEventListener('input', atualizarPlaceholderEditor);
-      editorDescricaoEl.addEventListener('keydown', (e) => {
-        if (!(e.ctrlKey || e.metaKey)) return;
-        const atalhos = { b: 'bold', i: 'italic', u: 'underline' };
-        const comando = atalhos[e.key.toLowerCase()];
-        if (comando) {
-          e.preventDefault();
-          executarComandoEditor(comando);
-        }
-      });
-      atualizarPlaceholderEditor();
+      iniciarEditorTexto();
 
       aplicarMascaraMoeda(document.getElementById('preco'));
+      aplicarMascaraMoeda(document.getElementById('precoPromo'));
+      document.getElementById('preco').addEventListener('input', atualizarInfoDesconto);
+      document.getElementById('precoPromo').addEventListener('input', atualizarInfoDesconto);
 
       document.getElementById('btnFecharGaleria').addEventListener('click', fecharGaleria);
       document.getElementById('modalGaleria').addEventListener('click', (e) => {
@@ -1058,6 +1203,75 @@
 
       carregarDadosIniciais();
     });
+
+    // ===== PEDIDOS (painel do admin) =====
+    async function carregarPedidos() {
+      const lista = document.getElementById('listaPedidos');
+      const resumo = document.getElementById('pedidosResumo');
+      const btn = document.getElementById('btnPedidos');
+      btn.disabled = true; btn.textContent = 'Carregando...';
+      try {
+        const dados = await chamarWorkerAdmin('/admin/pedidos', {});
+        lista.innerHTML = '';
+        const pagos = dados.pedidos.filter(p => p.pago).length;
+        const semEntrega = dados.pedidos.filter(p => p.pago && !p.entregue).length;
+        const divergentes = dados.pedidos.filter(p => p.divergente).length;
+        resumo.textContent = `${dados.total} pedido(s) no total. Nos ${dados.pedidos.length} mais recentes: ${pagos} pagos` +
+          (semEntrega ? `, ${semEntrega} pago(s) ainda sem entrega confirmada` : '') +
+          (divergentes ? `, ${divergentes} com valor divergente` : '') + '.';
+        if (!dados.pedidos.length) { lista.textContent = 'Nenhum pedido ainda.'; return; }
+
+        const rotulo = { approved: 'Pago', pending: 'Aguardando', in_process: 'Em análise', rejected: 'Recusado',
+                         cancelled: 'Cancelado', aguardando: 'Aguardando', refunded: 'Reembolsado', charged_back: 'Contestado' };
+        dados.pedidos.forEach((p) => {
+          const item = document.createElement('div');
+          item.className = 'pedido-item';
+
+          const topo = document.createElement('div');
+          topo.className = 'pedido-topo';
+          const titulo = document.createElement('strong');
+          titulo.textContent = p.titulo || 'Arte';
+          const valor = document.createElement('span');
+          valor.textContent = Number(p.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          topo.append(titulo, valor);
+
+          const etiquetas = document.createElement('div');
+          etiquetas.className = 'pedido-etiquetas';
+          const add = (texto, classe) => { const e = document.createElement('span'); e.className = 'pedido-tag ' + classe; e.textContent = texto; etiquetas.appendChild(e); };
+          add(rotulo[p.status] || p.status || '—', p.pago ? 'ok' : 'neutro');
+          add(p.tipo === 'cartao' ? 'Cartão' : 'Pix', 'neutro');
+          if (p.pago) add(p.entregue ? 'Entregue' : 'Sem entrega confirmada', p.entregue ? 'ok' : 'alerta');
+          if (p.emailEnviado) add('E-mail enviado', 'ok');
+          if (p.divergente) add('Valor divergente', 'erro');
+
+          const info = document.createElement('div');
+          info.className = 'pedido-info';
+          const quando = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+          info.textContent = [quando, p.email || 'e-mail ainda não informado', p.pagamentoId ? `Pedido nº ${p.pagamentoId}` : ''].filter(Boolean).join(' · ');
+
+          item.append(topo, etiquetas, info);
+
+          if (p.pago && p.email && dados.emailAtivo) {
+            const reenviar = document.createElement('button');
+            reenviar.type = 'button';
+            reenviar.className = 'btn-link';
+            reenviar.textContent = 'Reenviar e-mail com o link';
+            reenviar.addEventListener('click', async () => {
+              reenviar.disabled = true;
+              try { await chamarWorkerAdmin('/admin/reenviar-email', { ped: p.ped }); mostrarToast('E-mail reenviado.', 'sucesso'); }
+              catch (e) { mostrarToast(e.message || 'Não foi possível enviar.', 'erro'); }
+              reenviar.disabled = false;
+            });
+            item.appendChild(reenviar);
+          }
+          lista.appendChild(item);
+        });
+      } catch (e) {
+        mostrarToast(e.message || 'Não foi possível carregar os pedidos.', 'erro');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Atualizar pedidos';
+      }
+    }
 
     function fecharModalLogin() {
       document.getElementById('boxLogin').classList.add('escondido');
@@ -1108,7 +1322,8 @@
         produtosMemoria = [];
         querySnapshot.forEach((docSnap) => {
           const p = { id: docSnap.id, ...docSnap.data() };
-          p._busca = normalizarTexto([p.titulo, p.tipo, p.categoria, p.classe, htmlParaTexto(p.descricao)].join(' '));
+          p._desc = sanitizarDescricao(p.descricao);
+          p._busca = normalizarTexto([p.titulo, p.tipo, p.categoria, p.classe, (p.tags || []).join(' '), htmlParaTexto(p._desc)].join(' '));
           produtosMemoria.push(p);
         });
         produtosMemoria.sort((a, b) => dataDoProduto(b) - dataDoProduto(a)); // mais novos primeiro
@@ -1392,7 +1607,7 @@
     }
 
     function comprarProduto(prod) {
-      window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), prod.preco);
+      window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), infoPreco(prod).atual);
     }
 
     async function alternarDestaque(prod) {
@@ -1415,10 +1630,7 @@
         <div class="destaque-info">
           <h3 class="destaque-titulo"></h3>
           <div class="destaque-rodape">
-            <div class="card-preco-box">
-              <span class="preco-label">--</span>
-              <div class="card-preco"><small>R$</small> <span class="destaque-preco"></span></div>
-            </div>
+            ${htmlPrecoBox(prod)}
             <button type="button" class="btn-comprar">Comprar Arte</button>
           </div>
         </div>`;
@@ -1426,7 +1638,6 @@
       img.src = miniatura((prod.imagens || [])[0] || '', 600);
       img.alt = prod.titulo || '';
       el.querySelector('.destaque-titulo').textContent = prod.titulo || '';
-      el.querySelector('.destaque-preco').textContent = prod.preco || '0,00';
       el.querySelector('.destaque-imagem').addEventListener('click', () => abrirGaleria(prod));
       el.querySelector('.destaque-titulo').addEventListener('click', () => abrirGaleria(prod));
       el.querySelector('.btn-comprar').addEventListener('click', () => comprarProduto(prod));
@@ -1453,7 +1664,7 @@
       let slidesHTML = '';
       let dotsHTML = '';
       (prod.imagens || []).forEach((imgUrl, idx) => {
-        slidesHTML += `<div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}"><img ${idx === 0 ? 'src' : 'data-src'}="${miniatura(imgUrl)}" loading="lazy" decoding="async" alt=""></div>`;
+        slidesHTML += `<div class="carrossel-slide ${idx === 0 ? 'ativo' : ''}"><img ${idx === 0 ? 'src' : 'data-src'}="${esc(miniatura(imgUrl))}" loading="lazy" decoding="async" alt=""></div>`;
         dotsHTML += `<div class="dot ${idx === 0 ? 'ativo' : ''}"></div>`;
       });
 
@@ -1461,11 +1672,11 @@
       card.className = 'card-carrossel';
       card.innerHTML = `
         <div class="card-header">
-          <h3 class="card-titulo">${prod.titulo}</h3>
+          <h3 class="card-titulo">${esc(prod.titulo)}</h3>
           <div class="card-meta">
-            ${prod.tipo ? `<span class="badge-tag badge-tipo">${prod.tipo}</span>` : ''}
-            <span class="badge-tag badge-cat">${prod.categoria || 'Geral'}</span>
-            ${prod.classe ? `<span class="badge-tag badge-sub">${prod.classe}</span>` : ''}
+            ${prod.tipo ? `<span class="badge-tag badge-tipo">${esc(prod.tipo)}</span>` : ''}
+            <span class="badge-tag badge-cat">${esc(prod.categoria || 'Geral')}</span>
+            ${prod.classe ? `<span class="badge-tag badge-sub">${esc(prod.classe)}</span>` : ''}
           </div>
         </div>
         <div class="carrossel-container">
@@ -1480,12 +1691,9 @@
         </div>
         <div class="card-body">
           <div class="card-descricao-wrap">
-            <div class="card-descricao">${prod.descricao || ''}</div>
+            <div class="card-descricao">${prod._desc ?? sanitizarDescricao(prod.descricao)}</div>
           </div>
-          <div class="card-preco-box">
-            <span class="preco-label">--</span>
-            <div class="card-preco"><small>R$</small> ${prod.preco || '0,00'}</div>
-          </div>
+          ${htmlPrecoBox(prod)}
 
           <button type="button" class="btn-comprar">Comprar Arte</button>
 
