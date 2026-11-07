@@ -163,7 +163,6 @@
     }
   </style>
 
-  <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
 </head>
 <body>
 
@@ -214,188 +213,8 @@
     <div id="msgErro" class="status-msg" style="color: var(--danger);"></div>
   </div>
 
-  <div id="painelAdmin" class="painel-admin escondido">
-    <h3 id="tituloPainel">
-      Painel de Gestão
-      <button id="btnFazerLogout" class="btn-link" style="color: var(--danger);">Sair</button>
-    </h3>
-
-    <details class="secao-personalizacao">
-      <summary>⚙️ Personalizar Identidade da Loja (Logo & Favicon)</summary>
-      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 16px;">
-        <div class="form-group">
-          <label>Logo da Loja:</label>
-          <div class="upload-preview-container">
-            <div class="preview-box">
-              <img id="previewLogo" src="" alt="Preview Logo" class="escondido">
-              <span id="textNoLogo" class="hint">Sem logo</span>
-            </div>
-            <button type="button" id="btnUploadLogo" class="btn btn-secondary">📁 Upload Logo</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Favicon:</label>
-          <div class="upload-preview-container">
-            <div class="preview-box preview-favicon">
-              <img id="previewFavicon" src="" alt="Preview Favicon" class="escondido">
-              <span id="textNoFavicon" class="hint">Sem favicon</span>
-            </div>
-            <button type="button" id="btnUploadFavicon" class="btn btn-secondary">📁 Upload Favicon</button>
-          </div>
-        </div>
-
-        <button id="btnSalvarConfig" class="btn btn-primary">Salvar Identidade Visual</button>
-      </div>
-    </details>
-
-    <details class="secao-personalizacao">
-      <summary>🏷️ Cadastrar Tipos / Categorias / Subcategorias</summary>
-      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label for="novoTipo">Tipo:</label>
-            <input type="text" id="novoTipo" placeholder="Ex: Canecas, Almofadas">
-          </div>
-          <div class="form-group flex-1">
-            <label for="novaCategoria">Categoria:</label>
-            <input type="text" id="novaCategoria" placeholder="Ex: Datas Comemorativas">
-          </div>
-          <div class="form-group flex-1">
-            <label for="novaSubcategoria">Subcategoria:</label>
-            <input type="text" id="novaSubcategoria" placeholder="Ex: Dia das Mães">
-          </div>
-        </div>
-        <button id="btnCadastrarTaxonomia" class="btn btn-secondary">＋ Cadastrar Opção</button>
-        <div id="listaTaxonomias" class="tags-taxonomia-container"></div>
-      </div>
-    </details>
-
-    <details class="secao-personalizacao" id="secaoPedidos">
-      <summary>📦 Pedidos e vendas</summary>
-      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
-        <span class="hint" id="pedidosResumo">Toque em Atualizar para ver os pedidos mais recentes.</span>
-        <button type="button" id="btnPedidos" class="btn btn-secondary">Atualizar pedidos</button>
-        <div id="listaPedidos" class="lista-pedidos"></div>
-      </div>
-    </details>
-
-    <hr class="form-divider">
-
-    <input type="hidden" id="editDocId" value="">
-
-    <div class="form-group">
-      <label for="titulo">Título do Carrossel:</label>
-      <input type="text" id="titulo" placeholder="Ex: Pacote de Artes Canecas Kombi Vintage">
-    </div>
-
-    <div class="form-row">
-      <div class="form-group flex-1">
-        <label for="selectTipo">Tipo:</label>
-        <select id="selectTipo" class="select-custom"><option value="">Selecione...</option></select>
-      </div>
-      <div class="form-group flex-1">
-        <label for="selectCategoria">Categoria:</label>
-        <select id="selectCategoria" class="select-custom"><option value="">Selecione...</option></select>
-      </div>
-      <div class="form-group flex-1">
-        <label for="selectSubcategoria">Subcategoria / Classe:</label>
-        <select id="selectSubcategoria" class="select-custom"><option value="">Selecione...</option></select>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Descrição do Produto:</label>
-      <div id="editorDescricaoWrap" class="editor-wrap">
-        <div class="editor-toolbar" id="editorToolbar" role="toolbar" aria-label="Formatação do texto">
-          <button type="button" tabindex="-1" id="btnCriarTextoIA" class="btn-ia" title="Cria um texto de divulgação com IA a partir dos dados preenchidos">✨ Criar com IA</button>
-          <span class="editor-toolbar-divisor"></span>
-          <button type="button" tabindex="-1" data-cmd="bold" title="Negrito" aria-label="Negrito"><b>B</b></button>
-          <button type="button" tabindex="-1" data-cmd="italic" title="Itálico" aria-label="Itálico"><i>I</i></button>
-          <button type="button" tabindex="-1" data-cmd="underline" title="Sublinhado" aria-label="Sublinhado"><u>U</u></button>
-          <span class="editor-toolbar-divisor"></span>
-          <button type="button" tabindex="-1" data-cmd="titulo" title="Transformar em título" aria-label="Título">Título</button>
-          <button type="button" tabindex="-1" data-cmd="insertUnorderedList" title="Lista com marcadores" aria-label="Lista com marcadores">• Lista</button>
-          <button type="button" tabindex="-1" data-cmd="insertOrderedList" title="Lista numerada" aria-label="Lista numerada">1. Lista</button>
-          <span class="editor-toolbar-divisor"></span>
-          <button type="button" tabindex="-1" class="editor-cor" data-cor="#BE3A78" style="--cor:#BE3A78" title="Rosa" aria-label="Texto rosa"></button>
-          <button type="button" tabindex="-1" class="editor-cor" data-cor="#7E3C9F" style="--cor:#7E3C9F" title="Ameixa" aria-label="Texto ameixa"></button>
-          <button type="button" tabindex="-1" class="editor-cor" data-cor="#0E8FA3" style="--cor:#0E8FA3" title="Azul" aria-label="Texto azul"></button>
-          <button type="button" tabindex="-1" class="editor-cor" data-cor="#2E8B57" style="--cor:#2E8B57" title="Verde" aria-label="Texto verde"></button>
-          <button type="button" tabindex="-1" class="editor-cor" data-cor="#D9731A" style="--cor:#D9731A" title="Laranja" aria-label="Texto laranja"></button>
-          <button type="button" tabindex="-1" class="editor-cor" data-cor="#1B1230" style="--cor:#1B1230" title="Escuro" aria-label="Texto escuro"></button>
-          <span class="editor-toolbar-divisor"></span>
-          <button type="button" tabindex="-1" id="btnInserirLink" title="Link (selecione um trecho antes)" aria-label="Link">🔗 Link</button>
-          <button type="button" tabindex="-1" id="btnLimparFormatacao" title="Remover toda a formatação do trecho" aria-label="Limpar formatação">Limpar</button>
-        </div>
-        <div id="editorDescricao" class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Digite aqui a descrição..."></div>
-        <details id="detalhesIA" class="detalhes-ia escondido">
-          <summary>Ver detalhes do erro da IA</summary>
-          <pre id="logIA"></pre>
-          <button type="button" id="btnCopiarLogIA" class="btn-link">Copiar detalhes</button>
-        </details>
-        <button type="button" id="btnDesfazerIA" class="btn-link escondido" style="align-self:flex-start;margin-top:8px">↩ Voltar ao texto anterior</button>
-        <span class="hint editor-hint">Selecione um trecho do texto e toque no botão da formatação. O botão ✨ cria um texto de divulgação com IA usando o título, o valor, as tags e o texto que você já escreveu.</span>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group campo-valor-group">
-        <label for="preco">Valor:</label>
-        <div class="campo-moeda-wrap">
-          <span class="prefixo-moeda">R$</span>
-          <input type="text" id="preco" inputmode="numeric" placeholder="0,00">
-        </div>
-      </div>
-      <div class="form-group flex-1">
-        <label for="linkCompra">Link de Destino / Checkout:</label>
-        <input type="url" id="linkCompra" placeholder="https://seu-link.com">
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group campo-valor-group">
-        <label for="precoPromo">Valor promocional:</label>
-        <div class="campo-moeda-wrap">
-          <span class="prefixo-moeda">R$</span>
-          <input type="text" id="precoPromo" inputmode="numeric" placeholder="0,00">
-        </div>
-        <span class="hint" id="infoDesconto"></span>
-      </div>
-      <div class="form-group flex-1">
-        <label for="promoAte">Promoção vale até (opcional):</label>
-        <input type="datetime-local" id="promoAte">
-        <span class="hint">Em branco = sem data para acabar. Passada a data, o preço volta ao normal sozinho.</span>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="tagsProduto">Tags / palavras-chave para a busca (opcional):</label>
-      <input type="text" id="tagsProduto" placeholder="#kombi #verao #flores" autocomplete="off">
-      <span class="hint">Separe por espaço ou vírgula. Quem pesquisar por essas palavras encontra este pacote.</span>
-    </div>
-
-
-    <div class="form-group">
-      <label class="check-destaque" for="chkDestaque">
-        <input type="checkbox" id="chkDestaque"> ⭐ Destacar este anúncio no topo da loja
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>Imagens do Carrossel:</label>
-      <div class="grid-imagens-modal" id="gridImagens">
-        <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
-          <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
-          <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
-        </div>
-      </div>
-      <span class="hint">A primeira imagem é a capa. Arraste as imagens para mudar a ordem (no celular, segure a imagem um instante e arraste) ou toque em ⇧ para mandar uma para o início.</span>
-    </div>
-
-    <button id="btnSalvar" class="btn btn-primary" style="margin-top: 15px;">Publicar Carrossel</button>
-    <button id="btnCancelarEdit" class="btn btn-secondary escondido">Cancelar Edição</button>
-  </div>
+  <!-- O painel de gestão é entregue pelo Worker somente ao admin logado -->
+  <div id="painelAdminMontagem"></div>
 
   <section class="hero-loja sf-hero">
     <div class="hero-texto">
@@ -522,53 +341,22 @@
     import { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const CLOUD_NAME = "zxi2bufg"; 
-    const UPLOAD_PRESET = "almatie";
 
-    // Os links de download das artes NÃO ficam mais no banco público: o Worker guarda num cofre
-    // e só entrega depois do pagamento aprovado.
-    const WORKER = "https://almatie-pagamentos.almatie-stock.workers.dev";
+    // Worker que entrega o painel de administração (só depois de conferir o login do admin)
+    const ADMIN_WORKER = "https://almatie-site.almatie-stock.workers.dev";
 
-    // Workers de IA para criar o texto de divulgação. Tenta na ordem; se um não responder, passa para o próximo.
-    // Os 3 últimos (astro-gns-proxy, shiny-sky-21dd, astro2) vêm por último: só são usados se todos os anteriores falharem.
-    const WORKERS_IA = [
-      "https://certificados-groq-proxy.genesisgns.workers.dev/",
-      "https://gns91-groq-proxy.genesisgns.workers.dev/",
-      "https://forzion-gpt-proxy.genesisgns.workers.dev/",
-      "https://mamoot-gpt-proxy.genesisgns.workers.dev/",
-      "https://interno.genesisgns.workers.dev/",
-      // ---- instáveis: sempre por último ----
-      "https://astro-gns-proxy.genesisgns.workers.dev/",
-      "https://shiny-sky-21dd.genesisgns.workers.dev/",
-      "https://astro2.genesisgns.workers.dev/"
-    ];
-    const IA_MODELO = "llama-3.3-70b-versatile";   // usado pelos workers do tipo Groq; os demais ignoram
 
-    async function chamarWorkerAdmin(rota, corpo) {
-      if (!auth.currentUser) throw new Error("Faça login como admin.");
-      const token = await auth.currentUser.getIdToken();
-      const r = await fetch(`${WORKER}${rota}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify(corpo)
-      });
-      const dados = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(dados.error || "Falha ao falar com o servidor.");
-      return dados;
-    }
 
     let usuarioAtual = null;
     let produtosMemoria = [];
-    let taxonomiasMemoria = [];
-    let listaImagensAtuais = [];
     let filtroCategoriaAtiva = 'TODOS';
     let filtroTipoAtivo = 'TODOS';
     let filtroSubAtiva = 'TODOS';
     let termoBusca = '';
     let produtosCarregados = false;
+    let configLoja = null;
+    let painelAdminCarregado = false;
 
-    let logoUrlTemp = "";
-    let faviconUrlTemp = "";
 
     let galeriaImagens = [];
     let galeriaIndexAtual = 0;
@@ -653,145 +441,16 @@
       setTimeout(() => toast.remove(), 2600);
     }
 
-    // =========================================================
-    // EDITOR DE TEXTO SIMPLES (descrição do produto)
-    // =========================================================
-    let selecaoEditor = null;
-    const obterEditor = () => document.getElementById('editorDescricao');
 
-    // Guarda onde o cursor/seleção está, para os botões da barra agirem no trecho certo
-    function salvarSelecaoEditor() {
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount && obterEditor().contains(sel.anchorNode)) {
-        selecaoEditor = sel.getRangeAt(0).cloneRange();
-      }
-    }
 
-    function restaurarSelecaoEditor() {
-      obterEditor().focus({ preventScroll: true });
-      if (selecaoEditor) {
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(selecaoEditor);
-      }
-    }
 
-    function executarComandoEditor(comando, valor = null) {
-      restaurarSelecaoEditor();
-      try { document.execCommand('styleWithCSS', false, comando === 'foreColor'); } catch (e) { /* ignora */ }
-      document.execCommand(comando, false, valor);
-      salvarSelecaoEditor();
-      atualizarEstadoBotoesEditor();
-      atualizarPlaceholderEditor();
-    }
 
-    const blocoAtualEditor = () => String(document.queryCommandValue('formatBlock') || '').toLowerCase().replace(/[<>]/g, '');
 
-    function alternarTituloEditor() {
-      restaurarSelecaoEditor();
-      const sel = window.getSelection();
-      const no = sel && sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
-      const titulo = no && no.closest('h3');
-      if (titulo && obterEditor().contains(titulo)) {
-        // volta a ser texto comum (o navegador aninha tags quando se faz isso por comando)
-        const comum = document.createElement('div');
-        while (titulo.firstChild) comum.appendChild(titulo.firstChild);
-        titulo.replaceWith(comum);
-      } else {
-        document.execCommand('formatBlock', false, 'h3');
-      }
-      salvarSelecaoEditor();
-      atualizarEstadoBotoesEditor();
-    }
 
-    function atualizarEstadoBotoesEditor() {
-      const sel = window.getSelection();
-      if (!sel || !sel.rangeCount || !obterEditor().contains(sel.anchorNode)) return;
-      document.querySelectorAll('#editorToolbar [data-cmd]').forEach((btn) => {
-        try {
-          const cmd = btn.dataset.cmd;
-          btn.classList.toggle('ativo', cmd === 'titulo' ? blocoAtualEditor() === 'h3' : document.queryCommandState(cmd));
-        } catch (e) { /* comando não suportado neste navegador */ }
-      });
-      const no = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
-      document.getElementById('btnInserirLink').classList.toggle('ativo', !!(no && no.closest('a')));
-    }
 
-    function atualizarPlaceholderEditor() {
-      const editor = obterEditor();
-      editor.classList.toggle('vazio', editor.textContent.trim().length === 0 && !editor.querySelector('li'));
-    }
 
-    // Um só botão: coloca o link no trecho selecionado ou, se já houver link ali, tira
-    function inserirLinkEditor() {
-      restaurarSelecaoEditor();
-      const sel = window.getSelection();
-      const no = sel && sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
-      if (no && no.closest('a')) {
-        document.execCommand('unlink', false, null);
-        salvarSelecaoEditor();
-        atualizarEstadoBotoesEditor();
-        return;
-      }
-      if (!sel || sel.isCollapsed) {
-        mostrarToast('Selecione um trecho do texto para transformar em link.', 'erro');
-        return;
-      }
-      let url = (prompt('Cole o endereço do link:', 'https://') || '').trim();
-      if (!url) return;
-      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-      try { new URL(url); } catch (e) { mostrarToast('Esse endereço de link não parece válido.', 'erro'); return; }
-      restaurarSelecaoEditor();
-      document.execCommand('createLink', false, url);
-      salvarSelecaoEditor();
-      atualizarEstadoBotoesEditor();
-    }
 
-    function limparFormatacaoEditor() {
-      restaurarSelecaoEditor();
-      document.execCommand('removeFormat', false, null);
-      document.execCommand('unlink', false, null);
-      document.execCommand('formatBlock', false, 'p');
-      salvarSelecaoEditor();
-      atualizarEstadoBotoesEditor();
-    }
 
-    function iniciarEditorTexto() {
-      const editor = obterEditor();
-      const barra = document.getElementById('editorToolbar');
-
-      // Tocar nos botões não tira o foco nem a seleção do texto (era isso que "bugava")
-      barra.addEventListener('mousedown', (e) => { if (e.target.closest('button')) e.preventDefault(); });
-      barra.addEventListener('click', (e) => {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        if (btn.dataset.cor) { executarComandoEditor('foreColor', btn.dataset.cor); return; }
-        if (btn.id === 'btnInserirLink') { inserirLinkEditor(); return; }
-        if (btn.id === 'btnLimparFormatacao') { limparFormatacaoEditor(); return; }
-        if (btn.id === 'btnCriarTextoIA') { criarTextoComIA(); return; }
-        if (btn.dataset.cmd === 'titulo') { alternarTituloEditor(); return; }
-        if (btn.dataset.cmd) executarComandoEditor(btn.dataset.cmd);
-      });
-
-      // Funciona também com a seleção feita no toque (celular)
-      document.addEventListener('selectionchange', () => { salvarSelecaoEditor(); atualizarEstadoBotoesEditor(); });
-
-      editor.addEventListener('input', atualizarPlaceholderEditor);
-      // Colar sempre como texto simples: sem fontes e cores bagunçadas de outros sites
-      editor.addEventListener('paste', (e) => {
-        e.preventDefault();
-        const texto = (e.clipboardData || window.clipboardData).getData('text/plain');
-        document.execCommand('insertText', false, texto);
-      });
-      editor.addEventListener('drop', (e) => e.preventDefault());
-      document.getElementById('btnDesfazerIA').addEventListener('click', voltarTextoAntesIA);
-      document.getElementById('btnCopiarLogIA').addEventListener('click', async () => {
-        const texto = document.getElementById('logIA').textContent;
-        try { await navigator.clipboard.writeText(texto); mostrarToast('Detalhes copiados.', 'sucesso'); }
-        catch (e) { mostrarToast('Selecione o texto e copie manualmente.', 'erro'); }
-      });
-      atualizarPlaceholderEditor();
-    }
 
     // ----- Limpeza do texto formatado: só passa o que é seguro e simples -----
     const TAGS_REMOVER = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'IMG', 'SVG', 'LINK', 'META', 'FORM', 'INPUT',
@@ -882,374 +541,29 @@
       </div>`;
     }
 
-    function extrairTags(texto) {
-      const vistos = new Set();
-      const lista = [];
-      String(texto || '').split(/[\s,;]+/).forEach((t) => {
-        t = t.replace(/^#+/, '').trim().slice(0, 30);
-        const chave = normalizarTexto(t);
-        if (t && !vistos.has(chave)) { vistos.add(chave); lista.push(t); }
-      });
-      return lista.slice(0, 25);
-    }
 
-    const paraCampoDataHora = (ms) => new Date(ms - new Date(ms).getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
-    function atualizarInfoDesconto() {
-      const normal = precoParaNumero(document.getElementById('preco').value);
-      const promo = precoParaNumero(document.getElementById('precoPromo').value);
-      const info = document.getElementById('infoDesconto');
-      info.textContent = (promo > 0 && normal > 0 && promo < normal) ? `Desconto de ${Math.round((1 - promo / normal) * 100)}%` :
-        (promo > 0 && normal > 0 ? 'O valor promocional precisa ser menor que o valor normal.' : '');
-    }
 
-    // =========================================================
-    // TEXTO DE DIVULGAÇÃO COM IA
-    // =========================================================
-    let textoAntesIA = null;
 
-    const AVISO_PRODUTO_DIGITAL = '<p><i>⚠️ Aviso: este é um produto digital. O link para download será disponibilizado após a confirmação do pagamento. Nenhum produto físico será enviado — caso você espere receber as artes impressas, este produto não é o ideal.</i></p>';
-    const MARCA_TAGS = '[[TAGS]]';
 
-    function montarMensagensIA(d) {
-      const sistema = `Você é redator publicitário de e-commerce brasileiro e escreve textos curtos de divulgação para a loja "Almatiê Art", que vende pacotes de artes digitais prontas para quem trabalha com produtos personalizados (sublimação, DTF e outras personalizações). O objetivo é poupar o trabalho do cliente de criar artes do zero. Os pacotes são sempre bem organizados.
 
-PARTE 1 - DESCRIÇÃO. Escreva em HTML simples, usando SOMENTE as tags: <h3>, <p>, <b>, <ul>, <li>, <br> e <span style="color:#BE3A78"> (rosa) ou <span style="color:#7E3C9F"> (ameixa) para destacar poucas palavras. Estrutura:
-1. <h3> com um título de chamada chamativo ligado ao TEMA da arte (use a categoria/classe e o título do carrossel), com 1 emoji.
-2. <p> com 1 ou 2 frases em tom publicitário: para quem o pacote serve e a vantagem de já receber as artes prontas.
-3. <ul> de 1 a 5 <li> curtos, cada um começando com um emoji, descrevendo o que a pessoa vai receber. Cada <li> deve corresponder a algo que está ESCRITO no texto atual ou nos campos (por exemplo: a quantidade de artes e o que mais o texto atual citar). Se só a quantidade de artes foi informada, a lista terá apenas esse item (ou 2, juntando com o tema/uso).
-4. <p> final com uma chamada para ação curta e 1 emoji.
-Regras: português do Brasil; tom publicitário caloroso e profissional, sem exageros e sem escrever em MAIÚSCULAS; entre 70 e 130 palavras; no máximo 8 emojis. REGRA MAIS IMPORTANTE: use APENAS informações que estejam escritas nos campos ou no texto atual. Nem todo pacote tem mockups, arquivos editáveis, bônus ou formatos especiais: só cite mockups, editáveis, bônus, formatos de arquivo, resolução, medidas ou prazos se isso aparecer explicitamente no texto atual. Na dúvida, NÃO cite. Nunca complete a lista com itens genéricos para ficar mais cheia; uma lista curta e verdadeira é o correto. Se (e somente se) existir o campo "Pacote Premium: sim", deixe claro que é uma coleção Premium: artes com acabamento mais cuidadoso, montagem caprichada e qualidade superior, produzidas com mais tempo e atenção (sem citar preço mais alto). Se houver promoção, informe o valor com clareza e a data de término, se existir. NÃO escreva nenhum aviso sobre produto digital, download, pagamento ou entrega física: esse aviso é adicionado automaticamente depois, e você deve ignorar avisos desse tipo que existirem no texto atual.
 
-PARTE 2 - TAGS. Depois do HTML, escreva em uma nova linha exatamente ${MARCA_TAGS} e, logo em seguida, de 6 a 10 tags de busca no formato #tag separadas por espaço, em minúsculas, sem acentos e sem espaços dentro de cada tag. As tags servem de FILTRO de busca, então devem ser ESPECÍFICAS deste pacote: o tema (ex.: #signos), os elementos ou subtemas dele (ex.: #zodiaco #astrologia #horoscopo), o tipo de produto (ex.: #caneca), a categoria/data (ex.: #diadasmaes) e variações que o cliente digitaria para esse tema. Use as palavras do título, tipo, categoria e subcategoria como ponto de partida.
-PROIBIDO nas tags: termos genéricos que servem para qualquer pacote (#artesprontas #artepersonalizada #arte #artes #editavel #mockup #mockups #pacotedeartes #personalizado #sublimacao #dtf #digital #premium). Só use uma técnica (sublimação, DTF) ou "premium" se estiver escrita nos campos ou no texto atual; nunca invente uma técnica.
 
-Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e sem blocos de código.`;
 
-      const linhas = [`- Título do carrossel: ${d.titulo}`];
-      if (d.tipo) linhas.push(`- Tipo: ${d.tipo}`);
-      if (d.categoria) linhas.push(`- Categoria: ${d.categoria}`);
-      if (d.subcategoria) linhas.push(`- Subcategoria / Classe: ${d.subcategoria}`);
-      if (d.premium) linhas.push('- Pacote Premium: sim');
-      if (d.preco) linhas.push(`- Valor: R$ ${d.preco}`);
-      if (d.precoPromo) linhas.push(`- Promoção: de R$ ${d.preco} por R$ ${d.precoPromo}${d.promoAte ? ` (até ${d.promoAte})` : ''}`);
-      if (d.tags.length) linhas.push(`- Tags já preenchidas: ${d.tags.join(', ')}`);
 
-      const aspas = '"""';
-      const usuario = `Dados do produto:\n${linhas.join('\n')}\n\n` +
-        (d.textoAtual ? `Texto atual da Descrição do Produto (use como base: aproveite quantidades, adicionais, mockups, editáveis e demais informações, melhorando e padronizando):\n${aspas}\n${d.textoAtual}\n${aspas}\n\n` : '') +
-        'Crie a descrição de venda padronizada e as tags.';
-      return [{ role: 'system', content: sistema }, { role: 'user', content: usuario }];
-    }
 
-    // Separa a resposta da IA em descrição (HTML) e tags
-    const TAGS_GENERICAS = new Set(['artesprontas','arteprontas','artepersonalizada','artespersonalizadas','arte','artes','editavel','editaveis','mockup','mockups','pacotedeartes','pacotedearte','personalizado','personalizados','digital','pacote','pacotes','vetor','png']);
-    function filtrarTagsIA(tags, dados) {
-      const base = normalizarTexto([dados.titulo, dados.tipo, dados.categoria, dados.subcategoria, dados.textoAtual, dados.tags.join(' ')].join(' ')).replace(/[^a-z0-9]/g, '');
-      return tags.filter((t) => {
-        const k = normalizarTexto(t).replace(/[^a-z0-9]/g, '');
-        if (!k || TAGS_GENERICAS.has(k)) return false;
-        if (/premium/.test(k) && !dados.premium) return false;
-        if (/dtf/.test(k) && !/dtf/.test(base)) return false;
-        if (/sublim/.test(k) && !/sublim/.test(base)) return false;
-        return true;
-      });
-    }
 
-    function separarDescricaoETags(bruto) {
-      const t = String(bruto || '');
-      const pos = t.indexOf(MARCA_TAGS);
-      if (pos === -1) return { descricao: t, tags: [] };
-      const tags = extrairTags(t.slice(pos + MARCA_TAGS.length).replace(/<[^>]*>/g, ' '));
-      return { descricao: t.slice(0, pos), tags };
-    }
 
-    function primeiroTextoLongo(no, profundidade = 0) {
-      if (typeof no === 'string') return no.trim().length >= 40 ? no : '';
-      if (!no || typeof no !== 'object' || profundidade > 5) return '';
-      for (const [chave, valor] of Object.entries(no)) {
-        if (/^(model|id|object|system_fingerprint|usage|error|created)$/i.test(chave)) continue;
-        const achado = primeiroTextoLongo(valor, profundidade + 1);
-        if (achado) return achado;
-      }
-      return '';
-    }
 
-    function extrairTextoIA(r) {
-      if (typeof r === 'string') return r;
-      const c = r && (
-        r.choices?.[0]?.message?.content ?? r.choices?.[0]?.text ?? r.content?.[0]?.text ?? r.content ??
-        r.candidates?.[0]?.content?.parts?.[0]?.text ?? r.message?.content ?? r.message ??
-        r.text ?? r.response ?? r.result ?? r.output ?? r.reply ?? r.answer ?? r.data);
-      return typeof c === 'string' && c.trim() ? c : primeiroTextoLongo(r);   // último recurso: o primeiro texto longo da resposta
-    }
 
-    function textoIAparaHtml(bruto) {
-      let t = String(bruto || '').trim().replace(/^```(?:html)?\s*/i, '').replace(/\s*```$/, '').trim();
-      const negrito = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-      if (/<(h3|h4|p|ul|ol|li|div|br)\b/i.test(t)) {
-        t = t.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');            // veio HTML: só garante o negrito
-      } else {                                                    // veio texto puro: vira parágrafos, título e lista
-        let saida = '', emLista = false;
-        t.split(/\n+/).map((l) => l.trim()).filter(Boolean).forEach((l) => {
-          const item = l.match(/^[-•*]\s+(.*)$/);
-          if (item) {
-            if (!emLista) { saida += '<ul>'; emLista = true; }
-            saida += `<li>${negrito(item[1])}</li>`;
-            return;
-          }
-          if (emLista) { saida += '</ul>'; emLista = false; }
-          const titulo = l.match(/^#{1,4}\s+(.*)$/);
-          saida += titulo ? `<h3>${negrito(titulo[1])}</h3>` : `<p>${negrito(l)}</p>`;
-        });
-        if (emLista) saida += '</ul>';
-        t = saida;
-      }
-      return sanitizarDescricao(t);
-    }
 
-    // Formatos de pedido que os workers costumam aceitar. O site tenta um por vez e lembra qual funcionou em cada worker.
-    const IA_FORMATOS = [
-      { nome: 'chat com modelo', corpo: (m) => ({ model: IA_MODELO, messages: m, temperature: 0.4, max_tokens: 1000 }) },
-      { nome: 'chat sem modelo', corpo: (m) => ({ messages: m, temperature: 0.4, max_tokens: 1000 }) },
-      { nome: 'prompt único', corpo: (m, p) => ({ prompt: p }) },
-      { nome: 'sistema + prompt', corpo: (m) => ({ system: m[0].content, prompt: m[1].content }) }
-    ];
 
-    function lerFormatosIA() {
-      try { return JSON.parse(localStorage.getItem('almatie_ia_formatos_v2') || '{}'); } catch (e) { return {}; }
-    }
-    function guardarFormatoIA(urlWorker, indiceFormato) {
-      try { const f = lerFormatosIA(); f[urlWorker] = indiceFormato; localStorage.setItem('almatie_ia_formatos_v2', JSON.stringify(f)); } catch (e) { /* ignora */ }
-    }
 
-    async function chamarWorkerIA(url, corpo) {
-      const controle = new AbortController();
-      const limite = setTimeout(() => controle.abort(), 20000);
-      try {
-        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo), signal: controle.signal });
-        return { ok: r.ok, status: r.status, bruto: await r.text() };
-      } finally {
-        clearTimeout(limite);
-      }
-    }
 
-    async function gerarTextoPromocional(dados, aoTentar) {
-      const mensagens = montarMensagensIA(dados);
-      const prompt = mensagens.map((m) => m.content).join('\n\n');
-      const lembrados = lerFormatosIA();
-      const log = [`Site: ${location.origin}  ·  modelo enviado: ${IA_MODELO}`];
 
-      for (let i = 0; i < WORKERS_IA.length; i++) {
-        if (aoTentar) aoTentar(i + 1, WORKERS_IA.length);
-        const nome = new URL(WORKERS_IA[i]).hostname.split('.')[0];
-        const ordem = IA_FORMATOS.map((f, k) => k);
-        const lembrado = lembrados[WORKERS_IA[i]];
-        if (lembrado != null) ordem.sort((a, b) => (a === lembrado ? -1 : b === lembrado ? 1 : 0));
 
-        for (const k of ordem) {
-          const formato = IA_FORMATOS[k];
-          const prefixo = `${i + 1}) ${nome} · formato "${formato.nome}" · `;
-          let resp;
-          try {
-            resp = await chamarWorkerIA(WORKERS_IA[i], formato.corpo(mensagens, prompt));
-          } catch (e) {
-            log.push(prefixo + (e.name === 'AbortError' ? 'sem resposta em 20 segundos' : 'sem resposta: bloqueado pelo navegador (CORS) ou sem conexão'));
-            break;                                              // outro formato não resolveria: próximo worker
-          }
-          const trecho = resp.bruto.replace(/\s+/g, ' ').slice(0, 220);
-          if (!resp.ok) {
-            log.push(prefixo + `HTTP ${resp.status} · ${trecho}`);
-            if (resp.status >= 500 || resp.status === 429) break;
-            continue;                                           // erro 4xx: tenta outro formato no mesmo worker
-          }
-          let resposta;
-          try { resposta = JSON.parse(resp.bruto); } catch (e) { resposta = resp.bruto; }
-          if (resposta && typeof resposta === 'object' && resposta.error) {
-            log.push(prefixo + `erro na resposta · ${trecho}`);
-            continue;
-          }
-          const partes = separarDescricaoETags(extrairTextoIA(resposta));
-          const html = textoIAparaHtml(partes.descricao);
-          if (htmlParaTexto(html).trim().length < 40) {
-            log.push(prefixo + `respondeu, mas sem texto aproveitável · ${trecho}`);
-            break;
-          }
-          guardarFormatoIA(WORKERS_IA[i], k);
-          return { html: html + AVISO_PRODUTO_DIGITAL, tags: partes.tags };
-        }
-      }
-      const erro = new Error('Nenhuma IA respondeu. Veja os detalhes abaixo do editor.');
-      erro.detalhes = log.join('\n');
-      throw erro;
-    }
 
-    function mostrarDetalhesIA(texto) {
-      const caixa = document.getElementById('detalhesIA');
-      document.getElementById('logIA').textContent = texto || '';
-      caixa.classList.toggle('escondido', !texto);
-      caixa.open = !!texto;
-    }
 
-    async function criarTextoComIA() {
-      const titulo = document.getElementById('titulo').value.trim();
-      if (!titulo) { mostrarToast('Preencha o título antes de criar o texto com IA.', 'erro'); return; }
-
-      const promoAte = document.getElementById('promoAte').value;
-      const dados = {
-        titulo,
-        tipo: document.getElementById('selectTipo').value,
-        categoria: document.getElementById('selectCategoria').value,
-        subcategoria: document.getElementById('selectSubcategoria').value,
-        preco: document.getElementById('preco').value.trim(),
-        precoPromo: document.getElementById('precoPromo').value.trim(),
-        promoAte: promoAte ? formatarFimPromo(new Date(promoAte).getTime()) : '',
-        tags: extrairTags(document.getElementById('tagsProduto').value),
-        textoAtual: (obterEditor().innerText || '').trim().slice(0, 1500)
-      };
-      dados.premium = /premium/i.test([dados.titulo, dados.tipo, dados.categoria, dados.subcategoria, dados.textoAtual, dados.tags.join(' ')].join(' '));
-
-      const btn = document.getElementById('btnCriarTextoIA');
-      btn.disabled = true;
-      mostrarDetalhesIA('');
-      try {
-        const resultado = await gerarTextoPromocional(dados, (n, total) => { btn.textContent = n === 1 ? '✨ Criando…' : `✨ Tentando outra IA (${n}/${total})…`; });
-        textoAntesIA = obterEditor().innerHTML;
-        obterEditor().innerHTML = resultado.html;
-        if (filtrarTagsIA(resultado.tags, dados).length) {
-          const campoTags = document.getElementById('tagsProduto');
-          const todas = extrairTags([...dados.tags, ...filtrarTagsIA(resultado.tags, dados)].join(' ')).slice(0, 15);
-          campoTags.value = todas.map((t) => '#' + t).join(' ');
-        }
-        atualizarPlaceholderEditor();
-        document.getElementById('btnDesfazerIA').classList.remove('escondido');
-        mostrarToast('Texto criado! Revise e ajuste se quiser.', 'sucesso');
-      } catch (e) {
-        mostrarDetalhesIA(e.detalhes || '');
-        mostrarToast(e.message || 'Não foi possível criar o texto.', 'erro');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '✨ Criar com IA';
-      }
-    }
-
-    function voltarTextoAntesIA() {
-      if (textoAntesIA === null) return;
-      obterEditor().innerHTML = textoAntesIA;
-      textoAntesIA = null;
-      atualizarPlaceholderEditor();
-      document.getElementById('btnDesfazerIA').classList.add('escondido');
-    }
-
-    // MÁSCARA DE MOEDA (R$ 0,00)
-    function aplicarMascaraMoeda(input) {
-      input.addEventListener('input', () => {
-        let digitos = input.value.replace(/\D/g, '');
-        if (!digitos) {
-          input.value = '';
-          return;
-        }
-        while (digitos.length < 3) digitos = '0' + digitos;
-        const centavos = digitos.slice(-2);
-        let inteiro = digitos.slice(0, -2).replace(/^0+(?=\d)/, '');
-        inteiro = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        input.value = `${inteiro},${centavos}`;
-      });
-    }
-
-    // CLOUDINARY LOGO & FAVICON
-    const widgetLogo = cloudinary.createUploadWidget({ cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: false }, (err, res) => {
-      if (!err && res && res.event === "success") {
-        logoUrlTemp = res.info.secure_url;
-        atualizarPreviewElemento('previewLogo', 'textNoLogo', logoUrlTemp);
-      }
-    });
-
-    const widgetFavicon = cloudinary.createUploadWidget({ cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: false }, (err, res) => {
-      if (!err && res && res.event === "success") {
-        faviconUrlTemp = res.info.secure_url;
-        atualizarPreviewElemento('previewFavicon', 'textNoFavicon', faviconUrlTemp);
-      }
-    });
-
-    function atualizarPreviewElemento(imgId, textId, url) {
-      const img = document.getElementById(imgId);
-      const txt = document.getElementById(textId);
-      if (url) {
-        img.src = url;
-        img.classList.remove('escondido');
-        if (txt) txt.classList.add('escondido');
-      }
-    }
-
-    // TAXONOMIAS (TIPOS, CATEGORIAS, SUBCATEGORIAS)
-    async function carregarTaxonomias() {
-      try {
-        const querySnapshot = await getDocs(collection(db, "taxonomias"));
-        taxonomiasMemoria = [];
-        querySnapshot.forEach((docSnap) => {
-          taxonomiasMemoria.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        preencherSelectsTaxonomia();
-        renderizarTagsTaxonomias();
-      } catch (e) {
-        console.error("Erro ao carregar categorias:", e);
-      }
-    }
-
-    async function cadastrarTaxonomia() {
-      const tipo = document.getElementById('novoTipo').value.trim();
-      const categoria = document.getElementById('novaCategoria').value.trim();
-      const subcategoria = document.getElementById('novaSubcategoria').value.trim();
-
-      if (!tipo && !categoria && !subcategoria) {
-        mostrarToast("Preencha ao menos um campo para cadastrar!", "erro");
-        return;
-      }
-
-      try {
-        await addDoc(collection(db, "taxonomias"), { tipo, categoria, subcategoria });
-        document.getElementById('novoTipo').value = '';
-        document.getElementById('novaCategoria').value = '';
-        document.getElementById('novaSubcategoria').value = '';
-        mostrarToast("Opção cadastrada com sucesso!", "sucesso");
-        carregarTaxonomias();
-      } catch (e) {
-        mostrarToast("Erro ao cadastrar opção.", "erro");
-      }
-    }
-
-    function preencherSelectsTaxonomia() {
-      const selTipo = document.getElementById('selectTipo');
-      const selCat = document.getElementById('selectCategoria');
-      const selSub = document.getElementById('selectSubcategoria');
-
-      const tipos = [...new Set(taxonomiasMemoria.map(t => t.tipo).filter(Boolean))];
-      const categorias = [...new Set(taxonomiasMemoria.map(t => t.categoria).filter(Boolean))];
-      const subcategorias = [...new Set(taxonomiasMemoria.map(t => t.subcategoria).filter(Boolean))];
-
-      selTipo.innerHTML = '<option value="">Selecione o Tipo...</option>' + tipos.map(t => `<option value="${t}">${t}</option>`).join('');
-      selCat.innerHTML = '<option value="">Selecione a Categoria...</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
-      selSub.innerHTML = '<option value="">Selecione a Subcategoria...</option>' + subcategorias.map(s => `<option value="${s}">${s}</option>`).join('');
-    }
-
-    function renderizarTagsTaxonomias() {
-      const container = document.getElementById('listaTaxonomias');
-      container.innerHTML = '';
-      taxonomiasMemoria.forEach(item => {
-        const tag = document.createElement('span');
-        tag.className = 'badge-taxonomia';
-        tag.innerHTML = `${item.tipo || '—'} > ${item.categoria || '—'} > ${item.subcategoria || '—'} <button onclick="window.excluirTaxonomia('${item.id}')">✕</button>`;
-        container.appendChild(tag);
-      });
-    }
-
-    window.excluirTaxonomia = async (id) => {
-      if(confirm("Excluir esta categoria cadastrada?")) {
-        await deleteDoc(doc(db, "taxonomias", id));
-        carregarTaxonomias();
-      }
-    };
 
     // FIRESTORE & PRODUTOS
     async function carregarConfiguracoesLoja() {
@@ -1257,282 +571,27 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
         const docSnap = await getDoc(doc(db, "configuracoes", "geral"));
         if (docSnap.exists()) {
           const config = docSnap.data();
+          configLoja = config;
           if (config.logoUrl) {
-            logoUrlTemp = config.logoUrl;
             document.getElementById('siteLogo').src = config.logoUrl;
             document.getElementById('siteLogo').classList.remove('escondido');
-            atualizarPreviewElemento('previewLogo', 'textNoLogo', config.logoUrl);
           }
           if (config.faviconUrl) {
-            faviconUrlTemp = config.faviconUrl;
             document.getElementById('dynamicFavicon').href = config.faviconUrl;
-            atualizarPreviewElemento('previewFavicon', 'textNoFavicon', config.faviconUrl);
           }
         }
       } catch (e) { console.error(e); }
     }
 
-    async function salvarConfiguracoesLoja() {
-      try {
-        await setDoc(doc(db, "configuracoes", "geral"), {
-          logoUrl: logoUrlTemp,
-          faviconUrl: faviconUrlTemp,
-          atualizadoEm: new Date()
-        }, { merge: true });
-        mostrarToast("Identidade visual salva!", "sucesso");
-        carregarConfiguracoesLoja();
-      } catch (e) { mostrarToast("Erro ao salvar.", "erro"); }
-    }
 
-    const myWidget = cloudinary.createUploadWidget({
-        cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET, multiple: true, sources: ['local', 'url'], clientAllowedFormats: ["png", "jpeg", "jpg", "webp"]
-      }, (error, result) => { 
-        if (!error && result && result.event === "success") {
-          let urlOtimizada = result.info.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_1200/');
-          listaImagensAtuais.push(urlOtimizada);
-          renderizarGridImagens();
-        }
-      }
-    );
 
-    document.getElementById("btnAbrirWidgetCloudinary").onclick = () => myWidget.open();
 
-    function renderizarGridImagens() {
-      const grid = document.getElementById('gridImagens');
-      grid.innerHTML = `
-        <div class="box-add-imagem" id="btnAbrirWidgetCloudinary">
-          <span style="font-size: 1.5rem; color: var(--text-muted);">＋</span>
-          <p style="font-size: 0.75rem; color: var(--text-muted);">Adicionar Imagens</p>
-        </div>
-      `;
-      document.getElementById("btnAbrirWidgetCloudinary").onclick = () => myWidget.open();
 
-      listaImagensAtuais.forEach((url, index) => {
-        const div = document.createElement('div');
-        div.className = 'item-img-grid';
-        div.dataset.indice = index;
-        div.innerHTML = `<img src="${esc(url)}" alt="" draggable="false">
-          <span class="num-img ${index === 0 ? 'capa' : ''}">${index === 0 ? 'Capa' : index + 1}</span>
-          ${index > 0 ? `<button type="button" class="btn-primeira-img" title="Colocar em primeiro" aria-label="Colocar em primeiro" onclick="window.moverImagemPrimeira(${index})">⇧</button>` : ''}
-          <button type="button" class="btn-remover-img" aria-label="Remover imagem" onclick="window.removerImagemGrid(${index})">✕</button>`;
-        grid.appendChild(div);
-      });
-    }
 
-    window.moverImagemPrimeira = (index) => {
-      const [img] = listaImagensAtuais.splice(index, 1);
-      listaImagensAtuais.unshift(img);
-      renderizarGridImagens();
-      document.getElementById('gridImagens').scrollTop = 0;
-    };
 
-    // Arrastar para reordenar: com o mouse é só clicar e arrastar; no celular, segure a imagem um instante e arraste
-    function iniciarOrdenacaoImagens() {
-      const grid = document.getElementById('gridImagens');
-      let a = null;
-      const itens = () => Array.from(grid.querySelectorAll('.item-img-grid'));
 
-      function comecar() {
-        const r = a.item.getBoundingClientRect();
-        a.ativo = true;
-        a.dx = a.x - r.left;
-        a.dy = a.y - r.top;
-        const fantasma = a.item.cloneNode(true);
-        fantasma.classList.add('arrastando-fantasma');
-        fantasma.style.width = r.width + 'px';
-        fantasma.style.height = r.height + 'px';
-        document.body.appendChild(fantasma);
-        a.fantasma = fantasma;
-        a.item.classList.add('arrastando-origem');
-        document.body.classList.add('ordenando-imagens');
-        if (navigator.vibrate) navigator.vibrate(12);
-        mover();
-        a.rolagem = setInterval(rolar, 16);
-      }
 
-      function mover() {
-        a.fantasma.style.left = (a.x - a.dx) + 'px';
-        a.fantasma.style.top = (a.y - a.dy) + 'px';
-        const sob = document.elementFromPoint(a.x, a.y);
-        const alvo = sob && sob.closest('.item-img-grid');
-        if (alvo && alvo !== a.item && grid.contains(alvo)) {
-          const lista = itens();
-          if (lista.indexOf(alvo) > lista.indexOf(a.item)) alvo.after(a.item); else alvo.before(a.item);
-        }
-      }
 
-      function rolar() {   // perto da borda, a lista rola sozinha
-        const r = grid.getBoundingClientRect();
-        if (a.y < r.top + 36) grid.scrollTop -= 10;
-        else if (a.y > r.bottom - 36) grid.scrollTop += 10;
-        else return;
-        mover();
-      }
-
-      function terminar(confirmar) {
-        if (!a) return;
-        clearTimeout(a.timer);
-        clearInterval(a.rolagem);
-        window.removeEventListener('pointermove', aoMover);
-        window.removeEventListener('pointerup', aoSoltar);
-        window.removeEventListener('pointercancel', aoCancelar);
-        const ativo = a.ativo;
-        if (a.fantasma) a.fantasma.remove();
-        a.item.classList.remove('arrastando-origem');
-        document.body.classList.remove('ordenando-imagens');
-        if (ativo && confirmar) {
-          const ordem = itens().map((el) => Number(el.dataset.indice));
-          listaImagensAtuais = ordem.map((i) => listaImagensAtuais[i]);
-        }
-        a = null;
-        if (ativo) renderizarGridImagens();
-      }
-
-      function aoMover(e) {
-        if (!a || e.pointerId !== a.id) return;
-        a.x = e.clientX;
-        a.y = e.clientY;
-        if (!a.ativo) {
-          const distancia = Math.hypot(a.x - a.x0, a.y - a.y0);
-          if (a.tipo === 'mouse') { if (distancia > 6) comecar(); }
-          else if (distancia > 10) terminar(false);   // o dedo andou antes da espera: é rolagem, não arrasto
-          return;
-        }
-        mover();
-      }
-      const aoSoltar = (e) => { if (a && e.pointerId === a.id) terminar(true); };
-      const aoCancelar = (e) => { if (a && e.pointerId === a.id) terminar(false); };
-
-      grid.addEventListener('pointerdown', (e) => {
-        const item = e.target.closest('.item-img-grid');
-        if (!item || e.target.closest('button') || a) return;
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        a = { item, id: e.pointerId, tipo: e.pointerType, x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, ativo: false };
-        window.addEventListener('pointermove', aoMover);
-        window.addEventListener('pointerup', aoSoltar);
-        window.addEventListener('pointercancel', aoCancelar);
-        if (e.pointerType !== 'mouse') a.timer = setTimeout(() => { if (a && !a.ativo) comecar(); }, 280);
-      });
-      // Enquanto arrasta com o dedo, a tela não rola junto
-      grid.addEventListener('touchmove', (e) => { if (a && a.ativo) e.preventDefault(); }, { passive: false });
-      grid.addEventListener('contextmenu', (e) => { if (e.target.closest('.item-img-grid')) e.preventDefault(); });
-      window.addEventListener('keydown', (e) => { if (e.key === 'Escape') terminar(false); });
-    }
-
-    window.removerImagemGrid = (index) => {
-      listaImagensAtuais.splice(index, 1);
-      renderizarGridImagens();
-    };
-
-    async function salvarCarrossel() {
-      const docId = document.getElementById('editDocId').value;
-      const titulo = document.getElementById('titulo').value;
-      const tipo = document.getElementById('selectTipo').value || 'Geral';
-      const categoria = document.getElementById('selectCategoria').value || 'Geral';
-      const subcategoria = document.getElementById('selectSubcategoria').value || 'Geral';
-      const descricao = sanitizarDescricao(document.getElementById('editorDescricao').innerHTML);
-      const preco = document.getElementById('preco').value;
-      const precoPromo = document.getElementById('precoPromo').value.trim();
-      const promoAteTxt = document.getElementById('promoAte').value;
-      const tags = extrairTags(document.getElementById('tagsProduto').value);
-      const link = document.getElementById('linkCompra').value.trim();
-
-      // Ao editar, deixar o link em branco = manter o link atual
-      if (!titulo || (!docId && !link)) {
-        mostrarToast("Preencha ao menos o Título e o Link!", "erro");
-        return;
-      }
-
-      if (listaImagensAtuais.length === 0) {
-        mostrarToast("Adicione ao menos uma imagem!", "erro");
-        return;
-      }
-
-      if (precoPromo) {
-        if (precoParaNumero(precoPromo) <= 0 || precoParaNumero(precoPromo) >= precoParaNumero(preco)) {
-          mostrarToast("O valor promocional precisa ser menor que o valor normal.", "erro");
-          return;
-        }
-        if (promoAteTxt && new Date(promoAteTxt).getTime() <= Date.now()) {
-          mostrarToast("A data do fim da promoção precisa estar no futuro.", "erro");
-          return;
-        }
-      }
-
-      const dados = { titulo, tipo, categoria, classe: subcategoria, descricao, preco, precoPromo: precoPromo || '', promoAte: (precoPromo && promoAteTxt) ? new Date(promoAteTxt).getTime() : null, tags, imagens: listaImagensAtuais, destaque: document.getElementById('chkDestaque').checked, criadoEm: new Date() };
-
-      try {
-        const ref = docId ? doc(db, "produtos", docId) : doc(collection(db, "produtos"));
-        // 1º o link vai para o cofre do Worker; só se der certo o produto é publicado
-        if (link) await chamarWorkerAdmin('/admin/salvar-link', { produtoId: ref.id, link });
-        if (docId) {
-          await updateDoc(ref, dados);
-        } else {
-          await setDoc(ref, dados);
-        }
-        mostrarToast(docId ? "Carrossel atualizado!" : "Carrossel publicado!", "sucesso");
-        cancelarEdicao();
-        carregarProdutos();
-      } catch (e) { mostrarToast(e.message || "Erro ao salvar.", "erro"); }
-    }
-
-    function prepararEdicao(id) {
-      const p = produtosMemoria.find(item => item.id === id);
-      if (!p) return;
-
-      document.getElementById('editDocId').value = p.id;
-      document.getElementById('titulo').value = p.titulo;
-      document.getElementById('selectTipo').value = p.tipo || '';
-      document.getElementById('selectCategoria').value = p.categoria || '';
-      document.getElementById('selectSubcategoria').value = p.classe || '';
-      document.getElementById('editorDescricao').innerHTML = p.descricao || '';
-      document.getElementById('preco').value = p.preco;
-      document.getElementById('precoPromo').value = p.precoPromo || '';
-      document.getElementById('promoAte').value = p.promoAte ? paraCampoDataHora(Number(p.promoAte)) : '';
-      document.getElementById('tagsProduto').value = (p.tags || []).map((t) => '#' + t).join(' ');
-      atualizarInfoDesconto();
-      const campoLink = document.getElementById('linkCompra');
-      campoLink.value = '';
-      campoLink.placeholder = 'Carregando o link atual…';
-      chamarWorkerAdmin('/admin/ver-link', { produtoId: p.id })
-        .then((d) => { campoLink.value = d.link || ''; })
-        .catch(() => { campoLink.value = ''; })
-        .finally(() => { campoLink.placeholder = 'Em branco = manter o link atual'; });
-      document.getElementById('chkDestaque').checked = !!p.destaque;
-
-      listaImagensAtuais = [...(p.imagens || [])];
-      renderizarGridImagens();
-      atualizarPlaceholderEditor();
-
-      document.getElementById('btnSalvar').innerText = "Atualizar Carrossel";
-      document.getElementById('btnCancelarEdit').classList.remove('escondido');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function cancelarEdicao() {
-      document.getElementById('editDocId').value = '';
-      document.getElementById('titulo').value = '';
-      document.getElementById('selectTipo').value = '';
-      document.getElementById('selectCategoria').value = '';
-      document.getElementById('selectSubcategoria').value = '';
-      document.getElementById('editorDescricao').innerHTML = '';
-      document.getElementById('preco').value = '';
-      document.getElementById('precoPromo').value = '';
-      document.getElementById('promoAte').value = '';
-      document.getElementById('tagsProduto').value = '';
-      document.getElementById('infoDesconto').textContent = '';
-      textoAntesIA = null;
-      document.getElementById('btnDesfazerIA').classList.add('escondido');
-      document.getElementById('linkCompra').value = '';
-      document.getElementById('linkCompra').placeholder = 'https://seu-link.com';
-      document.getElementById('chkDestaque').checked = false;
-      listaImagensAtuais = [];
-      renderizarGridImagens();
-      atualizarPlaceholderEditor();
-
-      document.getElementById('btnSalvar').innerText = "Publicar Carrossel";
-      document.getElementById('btnCancelarEdit').classList.add('escondido');
-    }
 
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('btnLogin').addEventListener('click', () => {
@@ -1543,25 +602,9 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
       document.getElementById('btnFecharModal').addEventListener('click', fecharModalLogin);
       document.getElementById('modalOverlay').addEventListener('click', fecharModalLogin);
       document.getElementById('btnFazerLogin').addEventListener('click', fazerLogin);
-      document.getElementById('btnFazerLogout').addEventListener('click', () => signOut(auth));
-      document.getElementById('btnSalvar').addEventListener('click', salvarCarrossel);
-      document.getElementById('btnCancelarEdit').addEventListener('click', cancelarEdicao);
-      document.getElementById('btnUploadLogo').addEventListener('click', () => widgetLogo.open());
-      document.getElementById('btnUploadFavicon').addEventListener('click', () => widgetFavicon.open());
-      document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfiguracoesLoja);
-      document.getElementById('btnCadastrarTaxonomia').addEventListener('click', cadastrarTaxonomia);
-      document.getElementById('btnPedidos').addEventListener('click', carregarPedidos);
       iniciarInterfaceVitrine();
       document.getElementById('destaquesPrev').addEventListener('click', () => rolarDestaques(-1));
       document.getElementById('destaquesNext').addEventListener('click', () => rolarDestaques(1));
-
-      iniciarEditorTexto();
-      iniciarOrdenacaoImagens();
-
-      aplicarMascaraMoeda(document.getElementById('preco'));
-      aplicarMascaraMoeda(document.getElementById('precoPromo'));
-      document.getElementById('preco').addEventListener('input', atualizarInfoDesconto);
-      document.getElementById('precoPromo').addEventListener('input', atualizarInfoDesconto);
 
       document.getElementById('btnFecharGaleria').addEventListener('click', fecharGaleria);
       document.getElementById('modalGaleria').addEventListener('click', (e) => {
@@ -1579,74 +622,6 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
       carregarDadosIniciais();
     });
 
-    // ===== PEDIDOS (painel do admin) =====
-    async function carregarPedidos() {
-      const lista = document.getElementById('listaPedidos');
-      const resumo = document.getElementById('pedidosResumo');
-      const btn = document.getElementById('btnPedidos');
-      btn.disabled = true; btn.textContent = 'Carregando...';
-      try {
-        const dados = await chamarWorkerAdmin('/admin/pedidos', {});
-        lista.innerHTML = '';
-        const pagos = dados.pedidos.filter(p => p.pago).length;
-        const semEntrega = dados.pedidos.filter(p => p.pago && !p.entregue).length;
-        const divergentes = dados.pedidos.filter(p => p.divergente).length;
-        resumo.textContent = `${dados.total} pedido(s) no total. Nos ${dados.pedidos.length} mais recentes: ${pagos} pagos` +
-          (semEntrega ? `, ${semEntrega} pago(s) ainda sem entrega confirmada` : '') +
-          (divergentes ? `, ${divergentes} com valor divergente` : '') + '.';
-        if (!dados.pedidos.length) { lista.textContent = 'Nenhum pedido ainda.'; return; }
-
-        const rotulo = { approved: 'Pago', pending: 'Aguardando', in_process: 'Em análise', rejected: 'Recusado',
-                         cancelled: 'Cancelado', aguardando: 'Aguardando', refunded: 'Reembolsado', charged_back: 'Contestado' };
-        dados.pedidos.forEach((p) => {
-          const item = document.createElement('div');
-          item.className = 'pedido-item';
-
-          const topo = document.createElement('div');
-          topo.className = 'pedido-topo';
-          const titulo = document.createElement('strong');
-          titulo.textContent = p.titulo || 'Arte';
-          const valor = document.createElement('span');
-          valor.textContent = Number(p.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-          topo.append(titulo, valor);
-
-          const etiquetas = document.createElement('div');
-          etiquetas.className = 'pedido-etiquetas';
-          const add = (texto, classe) => { const e = document.createElement('span'); e.className = 'pedido-tag ' + classe; e.textContent = texto; etiquetas.appendChild(e); };
-          add(rotulo[p.status] || p.status || '—', p.pago ? 'ok' : 'neutro');
-          add(p.tipo === 'cartao' ? 'Cartão' : 'Pix', 'neutro');
-          if (p.pago) add(p.entregue ? 'Entregue' : 'Sem entrega confirmada', p.entregue ? 'ok' : 'alerta');
-          if (p.emailEnviado) add('E-mail enviado', 'ok');
-          if (p.divergente) add('Valor divergente', 'erro');
-
-          const info = document.createElement('div');
-          info.className = 'pedido-info';
-          const quando = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
-          info.textContent = [quando, p.email || 'e-mail ainda não informado', p.pagamentoId ? `Pedido nº ${p.pagamentoId}` : ''].filter(Boolean).join(' · ');
-
-          item.append(topo, etiquetas, info);
-
-          if (p.pago && p.email && dados.emailAtivo) {
-            const reenviar = document.createElement('button');
-            reenviar.type = 'button';
-            reenviar.className = 'btn-link';
-            reenviar.textContent = 'Reenviar e-mail com o link';
-            reenviar.addEventListener('click', async () => {
-              reenviar.disabled = true;
-              try { await chamarWorkerAdmin('/admin/reenviar-email', { ped: p.ped }); mostrarToast('E-mail reenviado.', 'sucesso'); }
-              catch (e) { mostrarToast(e.message || 'Não foi possível enviar.', 'erro'); }
-              reenviar.disabled = false;
-            });
-            item.appendChild(reenviar);
-          }
-          lista.appendChild(item);
-        });
-      } catch (e) {
-        mostrarToast(e.message || 'Não foi possível carregar os pedidos.', 'erro');
-      } finally {
-        btn.disabled = false; btn.textContent = 'Atualizar pedidos';
-      }
-    }
 
     function fecharModalLogin() {
       document.getElementById('boxLogin').classList.add('escondido');
@@ -1664,11 +639,6 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
       } catch (error) { document.getElementById('msgErro').innerText = "Credenciais inválidas."; }
     }
 
-    onAuthStateChanged(auth, (user) => {
-      usuarioAtual = user;
-      document.getElementById('painelAdmin').classList.toggle('escondido', !user);
-      renderizarVitrine();
-    });
 
     // =========================================================
     // VITRINE: BUSCA, FILTROS (PRODUTO > CATEGORIA > TEMA) E DESTAQUES
@@ -1985,13 +955,6 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
       window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), infoPreco(prod).atual);
     }
 
-    async function alternarDestaque(prod) {
-      try {
-        await updateDoc(doc(db, "produtos", prod.id), { destaque: !prod.destaque });
-        mostrarToast(prod.destaque ? "Destaque removido." : "Anúncio em destaque!", "sucesso");
-        carregarProdutos();
-      } catch (e) { mostrarToast("Erro ao alterar destaque.", "erro"); }
-    }
 
     // ----- Faixa "Em destaque" -----
     function criarCardDestaque(prod) {
@@ -2072,13 +1035,6 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
 
           <button type="button" class="btn-comprar">Comprar Arte</button>
 
-          ${usuarioAtual ? `
-            <div class="acoes-admin">
-              <button class="btn-editar">Editar</button>
-              <button class="btn-excluir">Excluir</button>
-              <button class="btn-destacar">${prod.destaque ? '★ Tirar dos destaques' : '☆ Destacar na loja'}</button>
-            </div>
-          ` : ''}
         </div>
       `;
 
@@ -2090,11 +1046,7 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
       card.querySelector('.carrossel-container').addEventListener('click', () => abrirGaleria(prod));
       card.querySelector('.btn-comprar').addEventListener('click', () => comprarProduto(prod));
 
-      if (usuarioAtual) {
-        card.querySelector('.btn-editar').addEventListener('click', () => prepararEdicao(prod.id));
-        card.querySelector('.btn-excluir').addEventListener('click', () => excluirCarrossel(prod.id));
-        card.querySelector('.btn-destacar').addEventListener('click', () => alternarDestaque(prod));
-      }
+      if (usuarioAtual && ganchos.cardAdmin) ganchos.cardAdmin(prod, card.querySelector('.card-body'));
       return card;
     }
 
@@ -2148,13 +1100,6 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
       if (dots[novoIdx]) dots[novoIdx].classList.add('ativo');
     }
 
-    async function excluirCarrossel(id) {
-      if (confirm("Remover este carrossel?")) {
-        await deleteDoc(doc(db, "produtos", id));
-        try { await chamarWorkerAdmin('/admin/apagar-link', { produtoId: id }); } catch (e) { console.error(e); }
-        carregarProdutos();
-      }
-    }
 
     // PWA — LOADER DE CARREGAMENTO E SERVICE WORKER
     let pageLoaderEscondido = false;
@@ -2173,7 +1118,6 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
       try {
         await Promise.all([
           carregarConfiguracoesLoja(),
-          carregarTaxonomias(),
           carregarProdutos()
         ]);
       } catch (erro) {
@@ -2193,6 +1137,72 @@ Responda apenas com o HTML, a linha ${MARCA_TAGS} e as tags, sem explicações e
         });
       }
     });
+
+    // =========================================================
+    // PAINEL DE ADMINISTRAÇÃO: o código fica no Worker e só chega a quem for o admin
+    // =========================================================
+    const ganchos = { cardAdmin: null };
+
+    function injetarCss(css) {
+      let tag = document.getElementById('painelAdminCss');
+      if (!tag) {
+        tag = document.createElement('style');
+        tag.id = 'painelAdminCss';
+        // entra antes do CSS público, para manter a mesma ordem de prioridade de antes da separação
+        const publico = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
+        document.head.insertBefore(tag, publico || null);
+      }
+      tag.textContent = css;
+    }
+
+    async function carregarPainelAdmin(user) {
+      if (painelAdminCarregado) return;
+      try {
+        const token = await user.getIdToken();
+        const r = await fetch(`${ADMIN_WORKER}/admin/painel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: '{}'
+        });
+        if (!r.ok) return;                                  // logou, mas não é o admin: nada é entregue
+        const painel = await r.json();
+        injetarCss(painel.css);
+        document.getElementById('painelAdminMontagem').innerHTML = painel.html;
+        const url = URL.createObjectURL(new Blob([painel.js], { type: 'text/javascript' }));
+        const modulo = await import(url);
+        URL.revokeObjectURL(url);
+        painelAdminCarregado = true;
+        await modulo.iniciar(window.Almatie);
+        renderizarVitrine();
+      } catch (e) {
+        console.error('Não foi possível abrir o painel:', e);
+        mostrarToast('Não foi possível abrir o painel de gestão.', 'erro');
+      }
+    }
+
+    window.Almatie = {
+      db, auth,
+      firestore: { collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc },
+      ADMIN_WORKER,
+      ganchos,
+      produtos: () => produtosMemoria,
+      configLoja: () => configLoja,
+      sair: () => signOut(auth),
+      esc, mostrarToast, sanitizarDescricao, precoParaNumero, formatarFimPromo, htmlParaTexto, normalizarTexto,
+      carregarProdutos, carregarConfiguracoesLoja, renderizarVitrine
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      usuarioAtual = user;
+      if (!user) {
+        if (painelAdminCarregado) { location.reload(); return; }   // saiu: limpa o painel da memória
+        renderizarVitrine();
+        return;
+      }
+      renderizarVitrine();
+      carregarPainelAdmin(user);
+    });
+
   </script>
   <script type="module" src="./pix-checkout.js"></script>
 
