@@ -308,22 +308,30 @@
     </button>
   </nav>
 
-  <div id="modalGaleria" class="modal-galeria-overlay escondido">
+  <div id="modalGaleria" class="modal-galeria-overlay escondido" role="dialog" aria-modal="true" aria-labelledby="galeriaTitulo">
     <div class="modal-galeria-container">
-      <button id="btnFecharGaleria" class="btn-fechar-galeria" title="Fechar">✕</button>
+      <button id="btnFecharGaleria" class="btn-fechar-galeria" title="Fechar (Esc)" aria-label="Fechar">✕</button>
 
       <div class="galeria-carrossel-wrap">
         <div class="galeria-carrossel" id="galeriaCarrosselImgs"></div>
-        <button class="btn-nav-galeria btn-prev-galeria" id="btnPrevGaleria">❮</button>
-        <button class="btn-nav-galeria btn-next-galeria" id="btnNextGaleria">❯</button>
-        <div class="galeria-dots" id="galeriaDots"></div>
+        <button class="btn-nav-galeria btn-prev-galeria" id="btnPrevGaleria" aria-label="Imagem anterior">❮</button>
+        <button class="btn-nav-galeria btn-next-galeria" id="btnNextGaleria" aria-label="Próxima imagem">❯</button>
+        <span class="galeria-contador" id="galeriaContador"></span>
+        <button type="button" class="btn-leitura-galeria" id="btnLeituraGaleria" aria-pressed="false">⤢ Ampliar texto</button>
       </div>
 
+      <aside class="galeria-miniaturas" id="galeriaMiniaturas" aria-label="Todas as imagens do anúncio">
+        <div class="galeria-miniaturas-topo"><strong>Todas as imagens</strong><span id="galeriaTotal"></span></div>
+        <div class="galeria-miniaturas-grade" id="galeriaGradeMini"></div>
+      </aside>
+
       <div class="galeria-info">
-        <h2 id="galeriaTitulo" class="galeria-titulo"></h2>
-        <div class="galeria-meta card-meta" id="galeriaMeta"></div>
-        <div class="galeria-descricao" id="galeriaDescricao"></div>
-        <div class="galeria-tags escondido" id="galeriaTags"></div>
+        <div class="galeria-texto">
+          <h2 id="galeriaTitulo" class="galeria-titulo"></h2>
+          <div class="galeria-meta card-meta" id="galeriaMeta"></div>
+          <div class="galeria-descricao" id="galeriaDescricao"></div>
+          <div class="galeria-tags escondido" id="galeriaTags"></div>
+        </div>
         <div class="galeria-acao">
           <div class="galeria-preco-box">
             <span class="preco-label" id="galeriaPrecoLabel">Valor</span>
@@ -401,29 +409,83 @@
       renderizarGaleriaImagens();
 
       document.getElementById('modalGaleria').classList.remove('escondido');
+      document.querySelector('#modalGaleria .galeria-info').scrollTop = 0;
+
+      // proporção inicial entre imagem e texto, conforme o tamanho do texto do anúncio
+      const contGaleria = document.querySelector('#modalGaleria .modal-galeria-container');
+      const tamanhoTexto = (document.getElementById('galeriaDescricao').textContent || '').trim().length;
+      contGaleria.dataset.texto = tamanhoTexto > 700 ? 'longo' : tamanhoTexto > 300 ? 'medio' : 'curto';
+      definirModoLeituraGaleria(false);
       document.body.style.overflow = 'hidden';
     }
 
+    // Monta a grade de miniaturas (uma vez, ao abrir) e mostra a imagem atual em tamanho grande
     function renderizarGaleriaImagens() {
-      const container = document.getElementById('galeriaCarrosselImgs');
-      const dotsContainer = document.getElementById('galeriaDots');
-      let slidesHTML = '';
-      let dotsHTML = '';
+      const grade = document.getElementById('galeriaGradeMini');
+      grade.innerHTML = '';
       galeriaImagens.forEach((url, idx) => {
-        slidesHTML += `<div class="galeria-slide ${idx === galeriaIndexAtual ? 'ativo' : ''}"><img src="${url}"></div>`;
-        dotsHTML += `<div class="dot ${idx === galeriaIndexAtual ? 'ativo' : ''}"></div>`;
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'galeria-mini';
+        b.setAttribute('aria-label', `Ver imagem ${idx + 1} de ${galeriaImagens.length}`);
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.alt = '';
+        img.src = miniatura(url, 240);
+        b.appendChild(img);
+        b.addEventListener('click', () => irParaImagemGaleria(idx));
+        grade.appendChild(b);
       });
-      container.innerHTML = slidesHTML;
       const temVarias = galeriaImagens.length > 1;
-      dotsContainer.innerHTML = temVarias ? dotsHTML : '';
       document.getElementById('btnPrevGaleria').style.display = temVarias ? 'flex' : 'none';
       document.getElementById('btnNextGaleria').style.display = temVarias ? 'flex' : 'none';
+      document.getElementById('galeriaMiniaturas').style.display = temVarias ? '' : 'none';
+      document.getElementById('galeriaTotal').textContent = `${galeriaImagens.length} fotos`;
+      atualizarImagemGaleria();
+    }
+
+    function atualizarImagemGaleria() {
+      const total = galeriaImagens.length;
+      const url = galeriaImagens[galeriaIndexAtual];
+      const palco = document.getElementById('galeriaCarrosselImgs');
+      palco.innerHTML = '';
+      if (url) {
+        const slide = document.createElement('div');
+        slide.className = 'galeria-slide ativo';
+        const img = document.createElement('img');
+        img.alt = `${document.getElementById('galeriaTitulo').textContent} — imagem ${galeriaIndexAtual + 1} de ${total}`;
+        img.src = miniatura(url, 1600);
+        slide.appendChild(img);
+        palco.appendChild(slide);
+        // deixa as vizinhas prontas para a troca ser instantânea
+        [1, -1].forEach((d) => { const v = galeriaImagens[(galeriaIndexAtual + d + total) % total]; if (v && total > 1) new Image().src = miniatura(v, 1600); });
+      }
+      document.getElementById('galeriaContador').textContent = total > 1 ? `${galeriaIndexAtual + 1} / ${total}` : '';
+      document.querySelectorAll('#galeriaGradeMini .galeria-mini').forEach((m, i) => {
+        const ativo = i === galeriaIndexAtual;
+        m.classList.toggle('ativo', ativo);
+        if (ativo) m.setAttribute('aria-current', 'true'); else m.removeAttribute('aria-current');
+        if (ativo) m.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      });
+    }
+
+    // alterna entre "imagem grande" e "texto com mais espaço"
+    function definirModoLeituraGaleria(ligado) {
+      document.querySelector('#modalGaleria .modal-galeria-container').classList.toggle('leitura', ligado);
+      const b = document.getElementById('btnLeituraGaleria');
+      b.textContent = ligado ? '⤡ Ver imagem maior' : '⤢ Ampliar texto';
+      b.setAttribute('aria-pressed', ligado ? 'true' : 'false');
+    }
+
+    function irParaImagemGaleria(idx) {
+      if (!galeriaImagens.length) return;
+      galeriaIndexAtual = (idx + galeriaImagens.length) % galeriaImagens.length;
+      atualizarImagemGaleria();
     }
 
     function mudarSlideGaleria(dir) {
-      if (!galeriaImagens.length) return;
-      galeriaIndexAtual = (galeriaIndexAtual + dir + galeriaImagens.length) % galeriaImagens.length;
-      renderizarGaleriaImagens();
+      irParaImagemGaleria(galeriaIndexAtual + dir);
     }
 
     function fecharGaleria() {
@@ -565,6 +627,9 @@
 
 
 
+
+
+
     // FIRESTORE & PRODUTOS
     async function carregarConfiguracoesLoja() {
       try {
@@ -610,6 +675,9 @@
       document.getElementById('modalGaleria').addEventListener('click', (e) => {
         if (e.target.id === 'modalGaleria') fecharGaleria();
       });
+      document.getElementById('btnLeituraGaleria').addEventListener('click', () => {
+        definirModoLeituraGaleria(!document.querySelector('#modalGaleria .modal-galeria-container').classList.contains('leitura'));
+      });
       document.getElementById('btnPrevGaleria').addEventListener('click', () => mudarSlideGaleria(-1));
       document.getElementById('btnNextGaleria').addEventListener('click', () => mudarSlideGaleria(1));
       document.addEventListener('keydown', (e) => {
@@ -617,6 +685,8 @@
         if (e.key === 'Escape') fecharGaleria();
         if (e.key === 'ArrowLeft') mudarSlideGaleria(-1);
         if (e.key === 'ArrowRight') mudarSlideGaleria(1);
+        if (e.key === 'Home') irParaImagemGaleria(0);
+        if (e.key === 'End') irParaImagemGaleria(galeriaImagens.length - 1);
       });
 
       carregarDadosIniciais();
