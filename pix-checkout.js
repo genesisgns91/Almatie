@@ -20,14 +20,14 @@ css.textContent = `
 .pix-produto{font-size:.9rem;color:#666;margin-bottom:14px}
 .pix-box label{display:block;text-align:left;font-size:.8rem;font-weight:600;margin:10px 0 4px}
 .pix-box input[type=text],.pix-box input[type=email]{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;font-size:15px;box-sizing:border-box}
-.pix-btn{display:block;width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;background:#BE3A78;color:#fff}
+.pix-btn{display:block;width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;background:var(--primary,#BE3A78);color:#fff}
 .pix-btn:disabled{opacity:.6;cursor:wait}
 .pix-btn-sec{background:#f1eef6;color:#1B1230;font-weight:600}
 .pix-link-cartao{display:inline-block;margin-top:14px;font-size:.8rem;color:#666;background:none;border:none;text-decoration:underline;cursor:pointer}
-.pix-cartao-destaque{color:#9C2C61!important;font-weight:700;font-size:.92rem;text-decoration:underline}
+.pix-cartao-destaque{color:var(--primary-hover,#9C2C61)!important;font-weight:700;font-size:.92rem;text-decoration:underline}
 .pix-erro{color:#c0392b;font-size:.85rem;margin-top:10px;min-height:1em}
 .pix-qr img{width:210px;height:210px;border:1px solid #eee;border-radius:10px;margin:8px auto}
-.pix-valor{font-size:1.4rem;font-weight:800;color:#BE3A78;margin:6px 0}
+.pix-valor{font-size:1.4rem;font-weight:800;color:var(--primary,#BE3A78);margin:6px 0}
 .pix-copia{width:100%;font-size:11px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fafafa;text-align:center;box-sizing:border-box}
 .pix-aguardando{font-size:.85rem;color:#666;margin-top:12px}
 .pix-ok-icone{font-size:48px}

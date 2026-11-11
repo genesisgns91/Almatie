@@ -6,6 +6,7 @@
   --primary: #BE3A78;          /* rosa framboesa-orquídea — tinta primária */
   --primary-hover: #9C2C61;
   --primary-soft: #F9E8F0;
+  --primary-rgb: 190, 58, 120;  /* mesmo rosa em RGB, para sombras e brilhos que acompanham o tema */
   --violet: #7E3C9F;           /* ameixa — par do rosa, vem do violeta da tinta do texto */
 
   --secondary-accent: #0E8FA3; /* ciano — tinta secundária, usada em gradientes/realces */
@@ -43,7 +44,7 @@
 
   /* Interatividade */
   --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
-  --focus-ring: 0 0 0 3px rgba(190, 58, 120, 0.35);
+  --focus-ring: 0 0 0 3px rgba(var(--primary-rgb), 0.35);
 
   /* Layout de app */
   --appbar-h: 76px;
@@ -155,7 +156,7 @@ p {
   width: min(62vw, 250px);
   height: min(62vw, 250px);
   border-radius: 50%;
-  border: 3px solid rgba(190, 58, 120, 0.15);
+  border: 3px solid rgba(var(--primary-rgb), 0.15);
   border-top-color: var(--primary);
   border-right-color: var(--secondary-accent);
   animation: pageLoaderGirar 1s linear infinite;
@@ -234,6 +235,7 @@ p {
   align-items: center;
   padding: calc(10px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-right, 0px)) 10px calc(24px + env(safe-area-inset-left, 0px));
   background: rgba(251, 248, 244, 0.88);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
   -webkit-backdrop-filter: saturate(1.4) blur(14px);
   backdrop-filter: saturate(1.4) blur(14px);
   border-bottom: 1px solid var(--border);

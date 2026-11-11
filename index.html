@@ -33,20 +33,25 @@
     .sf-area,.sf-area *,.sf-painel,.sf-painel *{box-sizing:border-box}
     .sf-area{font-family:var(--font-body);color:var(--sf-ink)}
     .sf-area button,.sf-painel button{font-family:inherit}
-    .sf-area :focus-visible,.sf-painel :focus-visible{outline:3px solid rgba(190,58,120,.4);outline-offset:2px}
+    .sf-area :focus-visible,.sf-painel :focus-visible{outline:3px solid rgba(var(--primary-rgb),.4);outline-offset:2px}
 
     /* Mensagem inicial discreta: mesmo banner da marca, porém compacto e com texto suave */
     .hero-loja.sf-hero{display:flex;align-items:center;justify-content:space-between;gap:14px;max-width:calc(min(1800px,94vw) - 32px);padding:14px 22px 15px;margin-top:16px;border-radius:var(--radius);box-shadow:var(--shadow-sm)}
     .hero-loja.sf-hero::before{width:150px;height:150px;right:-30px;top:-70px}
     .hero-loja.sf-hero::after{display:none}
     .hero-loja.sf-hero h2{font-family:var(--font-body);font-size:.95rem;font-weight:600;letter-spacing:0;line-height:1.4}
-    .hero-loja.sf-hero p{margin-top:2px;max-width:none;text-wrap:pretty;font-size:.8125rem;font-weight:400;line-height:1.5;color:rgba(255,255,255,.86)}
+    .hero-loja.sf-hero h2{color:var(--faixa-texto,#fff)}
+    .hero-loja.sf-hero p{margin-top:2px;max-width:none;text-wrap:pretty;font-size:.8125rem;font-weight:400;line-height:1.5;color:var(--faixa-texto,#fff);opacity:.9}
+    .hero-loja.sf-hero[hidden],.hero-atalhos[hidden],.brand span[hidden],.hero-texto p[hidden]{display:none}
 
     /* Atalhos discretos no canto da caixa rosa (Mockup e Instagram) */
     .hero-texto{min-width:0;position:relative;z-index:1}
     .hero-atalhos{position:relative;z-index:1;flex:none;display:flex;align-items:center;gap:8px}
-    .hero-atalho{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:44px;height:44px;padding:0 9px;border-radius:12px;background:rgba(255,255,255,.14);color:rgba(255,255,255,.92);text-decoration:none;transition:background-color .2s,transform .2s}
-    .hero-atalho:hover{background:rgba(255,255,255,.26)}
+    .hero-atalho{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:44px;height:44px;padding:0 9px;border-radius:12px;background:rgba(255,255,255,.14);background:color-mix(in srgb,var(--faixa-texto,#fff) 16%,transparent);color:var(--faixa-texto,#fff);text-decoration:none;transition:background-color .2s,transform .2s}
+    .hero-atalho:hover{background:rgba(255,255,255,.26);background:color-mix(in srgb,var(--faixa-texto,#fff) 28%,transparent)}
+    .hero-icone{display:inline-flex}
+    .hero-emoji{font-size:1.15rem!important;line-height:1;letter-spacing:0!important;opacity:1!important}
+    .hero-atalho img{width:20px;height:20px;object-fit:contain;display:block}
     .hero-atalho:active{transform:scale(.95)}
     .hero-atalho svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .hero-atalho span{font-size:.5625rem;font-weight:600;letter-spacing:.06em;line-height:1;opacity:.9}
@@ -109,7 +114,7 @@
     .sf-marca::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff;transform:scale(0);transition:transform .22s var(--sf-ease)}
     .sf-opcao input:checked~.sf-marca{background:var(--sf-brand);border-color:var(--sf-brand)}
     .sf-opcao input:checked~.sf-marca::after{transform:scale(1)}
-    .sf-opcao input:focus-visible~.sf-marca{box-shadow:0 0 0 4px rgba(190,58,120,.25)}
+    .sf-opcao input:focus-visible~.sf-marca{box-shadow:0 0 0 4px rgba(var(--primary-rgb),.25)}
     .sf-opcao-texto{flex:1;font-size:.9375rem;font-weight:500;overflow-wrap:anywhere}
     .sf-opcao input:checked~.sf-opcao-texto{font-weight:700}
     .sf-opcao em{min-width:22px;font-style:normal;font-size:.8125rem;text-align:right;color:var(--sf-mut);font-variant-numeric:tabular-nums}
@@ -631,12 +636,190 @@
 
 
     // FIRESTORE & PRODUTOS
+    // =========================================================
+    // IDENTIDADE E TEMA: nome, textos, cores e faixa do topo (editáveis no painel de gestão)
+    // =========================================================
+    const CONFIG_PADRAO = {
+      nomeLoja: 'Almatiê Art',
+      slogan: 'Artes digitais para sublimação',
+      tema: { primaria: '#BE3A78', secundaria: '#7E3C9F', fundo: '#FBF8F4', texto: '#1B1230' },
+      faixa: {
+        visivel: true,
+        titulo: 'Artes prontas para sublimar',
+        texto: 'Estampas exclusivas para canecas, camisetas, DTF e muito mais. Pagou no Pix, a arte é liberada na hora.',
+        corPropria: false,
+        corInicio: '#BE3A78',
+        corFim: '#7E3C9F',
+        corTexto: '#FFFFFF',
+        botoes: [
+          { rotulo: 'mockup', url: 'https://genesisgns91.github.io/Mockup/', icone: { tipo: 'preset', valor: 'caneca' } },
+          { rotulo: '', url: 'https://www.instagram.com/', icone: { tipo: 'preset', valor: 'instagram' } }
+        ]
+      }
+    };
+
+    // Ícones prontos para os botões da faixa (contorno simples, 24x24). Conteúdo fixo, escrito aqui: nada vem do banco.
+    const ICONES_PRESET = {
+      caneca:    { nome: 'Caneca (mockup)', svg: '<path d="M4.5 7h11v7.5a4.5 4.5 0 0 1-4.5 4.5h-2a4.5 4.5 0 0 1-4.5-4.5V7z"/><path d="M15.5 9h1.5a2.5 2.5 0 0 1 0 5h-1.5"/><path d="M3 21h14"/>' },
+      instagram: { nome: 'Instagram', svg: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor"/>' },
+      whatsapp:  { nome: 'WhatsApp', svg: '<path d="M3.5 20.5l1.4-4.3A8.5 8.5 0 1 1 8 19.3l-4.5 1.2z"/><path d="M9.2 8.8c0 3.2 2.7 5.9 5.9 5.9l1.1-1.3-2-1-.8.8c-1-.4-1.8-1.2-2.2-2.2l.8-.8-1-2-1.8.6z"/>' },
+      facebook:  { nome: 'Facebook', svg: '<path d="M14 8h2.5V5H14a3.5 3.5 0 0 0-3.5 3.5V11H8v3h2.5v6h3v-6H16l.5-3h-3V8.5A.5.5 0 0 1 14 8z"/>' },
+      tiktok:    { nome: 'TikTok', svg: '<path d="M14 4v10.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c.4 2.3 1.9 3.8 4.5 4"/>' },
+      youtube:   { nome: 'YouTube', svg: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/>' },
+      pinterest: { nome: 'Pinterest', svg: '<circle cx="12" cy="12" r="9"/><path d="M10.2 19.5l1.8-7.5"/><path d="M9.6 11.6c0-1.9 1.5-3 3-3 2 0 3 1.3 3 3 0 2-1.3 3.4-3 3.4-.9 0-1.5-.5-1.5-.5"/>' },
+      telegram:  { nome: 'Telegram', svg: '<path d="M21 4L3 11l6 2 2 6 3-4 5 3L21 4z"/><path d="M9 13l12-9"/>' },
+      email:     { nome: 'E-mail', svg: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/>' },
+      site:      { nome: 'Site / link', svg: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3.2 3 14.8 0 18"/><path d="M12 3c-3 3.2-3 14.8 0 18"/>' },
+      loja:      { nome: 'Loja', svg: '<path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>' },
+      camiseta:  { nome: 'Camiseta', svg: '<path d="M8 4L3 7l2.5 4 2-1V20h9V10l2 1L21 7l-5-3a4 4 0 0 1-8 0z"/>' },
+      paleta:    { nome: 'Arte / paleta', svg: '<path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-1.6-1.5-1.6-1.5-3 0-1 1-1.5 2-1.5H17a4 4 0 0 0 4-4c0-4-4-7.5-9-7.5z"/><circle cx="7.5" cy="11" r="1" fill="currentColor"/><circle cx="10" cy="7.5" r="1" fill="currentColor"/><circle cx="14.5" cy="7.5" r="1" fill="currentColor"/>' },
+      coracao:   { nome: 'Coração', svg: '<path d="M12 20s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 7.6 4.2 4.2 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>' },
+      estrela:   { nome: 'Estrela', svg: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8L12 3.5z"/>' },
+      telefone:  { nome: 'Telefone', svg: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>' },
+      local:     { nome: 'Localização', svg: '<path d="M12 21s-6-5.2-6-10a6 6 0 0 1 12 0c0 4.8-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/>' }
+    };
+
+    // ----- cores -----
+    const HEX_OK = /^#[0-9a-f]{6}$/i;
+    const hexValido = (h, padrao) => (typeof h === 'string' && HEX_OK.test(h.trim())) ? h.trim().toUpperCase() : padrao;
+    const hexParaRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const rgbParaHex = (rgb) => '#' + rgb.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+    const misturarCores = (a, b, t) => { const x = hexParaRgb(a), y = hexParaRgb(b); return rgbParaHex(x.map((v, i) => v + (y[i] - v) * t)); };
+    const escurecerCor = (h, t) => misturarCores(h, '#000000', t);
+    const clarearCor = (h, t) => misturarCores(h, '#FFFFFF', t);
+    const luminancia = (h) => { const [r, g, b] = hexParaRgb(h).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const contrasteCores = (a, b) => { const l1 = luminancia(a), l2 = luminancia(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+
+    // junta o que está salvo com os valores padrão (qualquer campo que falte volta ao padrão)
+    function mesclarConfig(salva) {
+      const s = salva || {};
+      const t = s.tema || {};
+      const f = s.faixa || {};
+      const P = CONFIG_PADRAO;
+      return {
+        ...s,
+        nomeLoja: (typeof s.nomeLoja === 'string' && s.nomeLoja.trim()) ? s.nomeLoja.trim().slice(0, 60) : P.nomeLoja,
+        slogan: typeof s.slogan === 'string' ? s.slogan.trim().slice(0, 120) : P.slogan,
+        tema: {
+          primaria: hexValido(t.primaria, P.tema.primaria), secundaria: hexValido(t.secundaria, P.tema.secundaria),
+          fundo: hexValido(t.fundo, P.tema.fundo), texto: hexValido(t.texto, P.tema.texto)
+        },
+        faixa: {
+          visivel: f.visivel !== false,
+          titulo: typeof f.titulo === 'string' ? f.titulo.slice(0, 120) : P.faixa.titulo,
+          texto: typeof f.texto === 'string' ? f.texto.slice(0, 300) : P.faixa.texto,
+          corPropria: f.corPropria === true,
+          corInicio: hexValido(f.corInicio, P.faixa.corInicio), corFim: hexValido(f.corFim, P.faixa.corFim),
+          corTexto: hexValido(f.corTexto, P.faixa.corTexto),
+          botoes: Array.isArray(f.botoes)
+            ? f.botoes.filter((b) => b && typeof b === 'object').slice(0, 8).map((b) => ({
+                rotulo: typeof b.rotulo === 'string' ? b.rotulo.slice(0, 14) : '',
+                url: typeof b.url === 'string' ? b.url.trim().slice(0, 500) : '',
+                icone: (b.icone && typeof b.icone === 'object') ? { tipo: String(b.icone.tipo || 'preset'), valor: String(b.icone.valor || '') } : { tipo: 'preset', valor: 'site' }
+              }))
+            : P.faixa.botoes.map((b) => ({ ...b, icone: { ...b.icone } }))
+        }
+      };
+    }
+
+    function aplicarTema(tema) {
+      const raiz = document.documentElement.style;
+      const P = CONFIG_PADRAO.tema;
+      const ehPadrao = ['primaria', 'secundaria', 'fundo', 'texto'].every((k) => tema[k].toLowerCase() === P[k].toLowerCase());
+      const variaveis = ['--primary', '--primary-hover', '--primary-soft', '--primary-rgb', '--violet', '--gradient-ink', '--bg', '--bg-alt', '--border', '--text', '--text-muted'];
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (ehPadrao) {                                   // tema original: não mexe em nada, vale o CSS de sempre
+        variaveis.forEach((v) => raiz.removeProperty(v));
+        if (meta) meta.setAttribute('content', P.fundo);
+        return;
+      }
+      const [r, g, b] = hexParaRgb(tema.primaria);
+      raiz.setProperty('--primary', tema.primaria);
+      raiz.setProperty('--primary-hover', escurecerCor(tema.primaria, 0.2));
+      raiz.setProperty('--primary-soft', clarearCor(tema.primaria, 0.88));
+      raiz.setProperty('--primary-rgb', `${r}, ${g}, ${b}`);
+      raiz.setProperty('--violet', tema.secundaria);
+      raiz.setProperty('--gradient-ink', `linear-gradient(135deg, ${tema.primaria} 0%, ${misturarCores(tema.primaria, tema.secundaria, 0.5)} 52%, ${tema.secundaria} 100%)`);
+      raiz.setProperty('--bg', tema.fundo);
+      raiz.setProperty('--bg-alt', escurecerCor(tema.fundo, 0.05));
+      raiz.setProperty('--border', escurecerCor(tema.fundo, 0.09));
+      raiz.setProperty('--text', tema.texto);
+      raiz.setProperty('--text-muted', misturarCores(tema.texto, tema.fundo, 0.42));
+      if (meta) meta.setAttribute('content', tema.fundo);
+    }
+
+    // só deixa passar endereços seguros nos botões da faixa
+    const urlSeguraBotao = (u) => /^(https?:\/\/|mailto:|tel:)\S+$/i.test(String(u || '').trim());
+
+    function criarIconeBotao(icone) {
+      const i = icone || {};
+      if (i.tipo === 'emoji' && i.valor) {
+        const s = document.createElement('span');
+        s.className = 'hero-emoji';
+        s.textContent = String(i.valor).slice(0, 4);
+        return s;
+      }
+      if (i.tipo === 'imagem' && /^https:\/\/\S+$/i.test(String(i.valor || ''))) {
+        const img = document.createElement('img');
+        img.src = i.valor;
+        img.alt = '';
+        img.loading = 'lazy';
+        return img;
+      }
+      const preset = Object.prototype.hasOwnProperty.call(ICONES_PRESET, i.valor) ? ICONES_PRESET[i.valor] : ICONES_PRESET.site;
+      const caixa = document.createElement('span');
+      caixa.className = 'hero-icone';
+      caixa.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${preset.svg}</svg>`;
+      return caixa;
+    }
+
+    // preenche uma faixa (a da loja ou a prévia do painel) com o texto, as cores e os botões
+    function montarFaixa(secao, faixa) {
+      secao.hidden = faixa.visivel === false;
+      secao.querySelector('.hero-texto h2').textContent = faixa.titulo;
+      const p = secao.querySelector('.hero-texto p');
+      p.textContent = faixa.texto;
+      p.hidden = !faixa.texto;
+      secao.style.background = faixa.corPropria ? `linear-gradient(135deg, ${faixa.corInicio} 0%, ${faixa.corFim} 100%)` : '';
+      secao.style.setProperty('--faixa-texto', faixa.corTexto);
+      const nav = secao.querySelector('.hero-atalhos');
+      nav.innerHTML = '';
+      faixa.botoes.filter((b) => urlSeguraBotao(b.url)).forEach((b) => {
+        const a = document.createElement('a');
+        a.className = 'hero-atalho';
+        a.href = b.url.trim();
+        if (/^https?:/i.test(a.href)) { a.target = '_blank'; a.rel = 'noopener'; }
+        const nome = b.rotulo || (b.icone && Object.prototype.hasOwnProperty.call(ICONES_PRESET, b.icone.valor) ? ICONES_PRESET[b.icone.valor].nome : 'Link');
+        a.title = nome;
+        a.setAttribute('aria-label', nome);
+        a.appendChild(criarIconeBotao(b.icone));
+        if (b.rotulo) { const r = document.createElement('span'); r.textContent = b.rotulo.slice(0, 14); a.appendChild(r); }
+        nav.appendChild(a);
+      });
+      nav.hidden = !nav.children.length;
+    }
+
+    function aplicarConfiguracoesVisuais(salva) {
+      const c = mesclarConfig(salva);
+      document.querySelector('.brand h1').textContent = c.nomeLoja;
+      const sub = document.querySelector('.brand span');
+      sub.textContent = c.slogan;
+      sub.hidden = !c.slogan;
+      document.title = c.nomeLoja;
+      const tituloApp = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (tituloApp) tituloApp.setAttribute('content', c.nomeLoja);
+      aplicarTema(c.tema);
+      montarFaixa(document.querySelector('.hero-loja:not(.cfg-previa)'), c.faixa);
+      return c;
+    }
+
     async function carregarConfiguracoesLoja() {
       try {
         const docSnap = await getDoc(doc(db, "configuracoes", "geral"));
         if (docSnap.exists()) {
           const config = docSnap.data();
           configLoja = config;
+          try { aplicarConfiguracoesVisuais(config); } catch (e) { console.error('Não foi possível aplicar a identidade visual:', e); }
           if (config.logoUrl) {
             document.getElementById('siteLogo').src = config.logoUrl;
             document.getElementById('siteLogo').classList.remove('escondido');
@@ -1259,7 +1442,11 @@
       configLoja: () => configLoja,
       sair: () => signOut(auth),
       esc, mostrarToast, sanitizarDescricao, precoParaNumero, formatarFimPromo, htmlParaTexto, normalizarTexto,
-      carregarProdutos, carregarConfiguracoesLoja, renderizarVitrine
+      carregarProdutos, carregarConfiguracoesLoja, renderizarVitrine,
+      // identidade e tema (usados pelo editor de identidade do painel)
+      configPadrao: () => JSON.parse(JSON.stringify(CONFIG_PADRAO)),
+      mesclarConfig, aplicarConfiguracoesVisuais, montarFaixa, criarIconeBotao, icones: ICONES_PRESET,
+      cores: { contraste: contrasteCores, hexValido }
     };
 
     onAuthStateChanged(auth, (user) => {
