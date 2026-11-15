@@ -1699,3 +1699,110 @@ input:focus, textarea:focus {
 /* Botão de IA na barra do editor */
 
 /* Detalhes do erro da IA */
+/* =========================================================
+   OFERTAS: linha "no Pix" sob o preço
+   ========================================================= */
+.preco-pix {
+  display: inline-block;
+  width: max-content;
+  max-width: 100%;
+  margin-top: 5px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: #E3F5EA;
+  color: #1E6B3A;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.preco-pix b { font-weight: 800; }
+.preco-pix em { font-style: normal; opacity: 0.85; }
+
+/* =========================================================
+   BALÃO DE CHAMADA (dica sobre um botão da faixa do topo)
+   ========================================================= */
+.balao-dica {
+  position: fixed;
+  z-index: 90;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(270px, calc(100vw - 20px));
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 6px 10px 14px;
+  background: #fff;
+  color: var(--text);
+  border: 2px solid var(--primary);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  font: 600 0.82rem/1.4 var(--font-body);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.balao-dica[data-lado="cima"] { transform: translateY(6px) scale(0.96); }
+.balao-dica.aberto {
+  opacity: 1;
+  transform: none;
+  animation: balao-pulo 2.4s ease-in-out 0.8s 3;
+}
+.balao-dica::before {                         /* setinha apontando para o botão */
+  content: "";
+  position: absolute;
+  left: var(--seta-x, 24px);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 2px solid var(--primary);
+  transform: translateX(-50%) rotate(45deg);
+}
+.balao-dica[data-lado="baixo"]::before { top: -8px; border-right: 0; border-bottom: 0; }
+.balao-dica[data-lado="cima"]::before { bottom: -8px; border-left: 0; border-top: 0; }
+.balao-texto { flex: 1; min-width: 0; padding-top: 3px; overflow-wrap: anywhere; }
+.balao-fechar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -6px -2px -6px 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.balao-fechar:hover { background: var(--primary-soft); color: var(--primary-hover); }
+.balao-dica.balao-estatico {                  /* usado só na prévia do painel */
+  position: relative;
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  animation: none;
+  margin-top: 10px;
+}
+@keyframes balao-pulo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .balao-dica, .balao-dica.aberto { transition: none; animation: none; }
+}
+
+/* Selos dos cards ("Destaque" e "Novo") e botão de compartilhar */
+.selos-card { position: absolute; top: 10px; left: 10px; z-index: 2; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; max-width: calc(100% - 60px); }
+.selos-card .selo-destaque, .selos-card .selo-novo { position: static; }
+.selo-novo {
+  padding: 4px 11px; border-radius: var(--radius-full); background: #16a34a; color: #fff;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em; box-shadow: var(--shadow); pointer-events: none;
+}
+.btn-compartilhar {
+  display: block; width: 100%; margin-top: 8px; padding: 6px; border: 0; background: transparent;
+  color: var(--cor-primaria, #BE3A78); font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline;
+}
+.btn-compartilhar:hover { opacity: .8; }
