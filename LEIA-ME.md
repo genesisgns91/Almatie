@@ -1,19 +1,38 @@
 # Almatiê Art — melhorias
 
-> **Esta é a ETAPA B (3ª entrega, a última do plano).** Ela contém tudo da etapa A + carrinho, cupons e painel de vendas. **Substitui os arquivos das entregas anteriores: publique todos de novo, na ordem abaixo.**
+> **Esta é a ETAPA C (4ª entrega).** Contém tudo das etapas A e B + descontos por pack e por forma de pagamento, cupons por forma de pagamento, nova tela de compra e painel redesenhado. **Substitui os arquivos das entregas anteriores: publique todos de novo, na ordem da seção "Ordem para publicar".**
 
-Tudo foi testado em navegador real (Playwright) com Firebase e Mercado Pago **simulados**. Não houve teste com o Mercado Pago/Google Drive de verdade: depois de publicar, faça uma compra-teste pequena (veja "Teste final").
+Tudo foi testado em navegador real (Playwright) com Firebase e Mercado Pago **simulados** (12 suítes, 0 falhas). Não houve teste com o Mercado Pago/Google Drive de verdade: depois de publicar, faça uma compra-teste pequena.
+
+## Novidades da etapa C
+
+### 1. Cadastro do anúncio, na ordem que você pediu
+Título → Tipo → Categoria → vitrine → valor → valor promocional → **forma de pagamento da promoção** (qualquer / só Pix / só cartão) → promoção válida até (com atalhos +1 dia, +7, +30, sem fim) → link de destino/checkout → testar link → tags → **leve também** → **cupom para a próxima compra**. Há também uma prévia "Como o cliente vê" (preço, Pix e cartão em tempo real), checklist (título, valor, link, imagem), campos inválidos marcados em vermelho e aviso de alterações não publicadas. O valor passou a ser obrigatório.
+
+### 2. Desconto de pagamento por pack
+Novo cartão **"Desconto por forma de pagamento só neste pack"** (ex.: 20% no Pix só nesta arte). Fica por último entre as ofertas do pack para manter a sua ordem exata; é fácil mover. **Regra:** o desconto próprio **substitui** o geral (Ofertas e Pix) apenas para aquele pack. Máximo 70%.
+
+### 3. Cupons por forma de pagamento
+- Cupom manual: "Qualquer forma / Somente Pix / Somente cartão". Se o cliente paga de outro jeito, o cupom **não é gasto** e ele vê o aviso.
+- Cupom do pack (próxima compra) também escolhe a forma de pagamento.
+- **Cupom por valor de compra** (aba Cupons): quem pagar a partir de R$ X ganha um cupom `VOLTA-…`. Vale o **valor realmente pago**. Se um pack do pedido já tem cupom próprio, **o do pack tem prioridade**.
+
+### 4. Nova tela "Comprar arte"
+E-mail e nome no topo; preço (com desconto) abaixo; botão **Pagar no Pix**; botão **Continuar comprando** (liga o carrinho, com **Limpar carrinho**); links discretos "prefiro pagar com cartão", "tenho um cupom", "já paguei e perdi meu link". Se for direto pagar, a tela seguinte mostra a oferta **"leve também"** (se o pack tiver) com foto: adicionar ou seguir sem complicação. **Carrinho e "leve também" agora convivem**: vale o **maior** desconto (nunca somados).
+
+### 5. Painel
+Cartões com chave liga/desliga, resumo das ofertas ativas, prévia com exemplos, botões segmentados, filtros e busca em Pedidos, estados vazios amigáveis.
 
 ## Importante: você ainda não tem domínio próprio
 O envio de e-mail (Resend) só funciona com domínio próprio, então **nada do que fiz depende de e-mail**. O link de download e o **cupom da próxima compra aparecem na própria tela** de "Pagamento confirmado" (com botão de copiar) e também em "Já paguei e perdi meu link". Se um dia configurar o e-mail, o cupom também vai junto no e-mail, sem mudar mais nada.
 
-## Novidades da etapa B
+## Novidades da etapa B (já entregue)
 
 ### 1. Carrinho (substitui o "leve também")
 - Ao abrir a compra de um pack aparece **"🛒 Quer levar mais artes?"** com um botão **"＋ Comprar mais artes"**. Não vai direto para o pagamento: o botão fecha a janela, guarda o pack no carrinho e mostra uma **barra "🛒 N artes no carrinho · Finalizar compra"** na parte de baixo do site. A pessoa continua navegando; ao tocar em "Comprar Arte" em outro pack, ele entra no carrinho. Para pagar, toca na barra.
 - Dentro do carrinho: lista dos packs com **✕ para remover**, dica de quanto falta para a próxima faixa ("Faltam 2 artes para 20% de desconto!") e o resumo com os totais de Pix e de cartão.
 - O carrinho fica **salvo no aparelho** da pessoa (sem login) e é esvaziado quando o pagamento é confirmado. Máximo **30 packs** por pedido.
-- **Com o carrinho ligado, ele substitui o "leve também"** (o "leve também" de cada anúncio fica guardado, mas não aparece). Desligando o carrinho, o "leve também" volta.
+- *(Mudou na etapa C: carrinho e "leve também" convivem; vale o maior desconto.)*
 - **Você configura** em *Ofertas e Pix → 🛒 Carrinho*: liga/desliga e até **4 faixas** "a partir de N artes: X%" (ex.: 3 artes 10%, 5 artes 20%, 10 artes 30%). O desconto vale para o **pedido inteiro**. Há uma prévia com exemplos. O desconto do Pix/cartão continua valendo por cima.
 - Cada pack do carrinho recebe **o seu próprio link** de download (tela de sucesso, "perdi meu link" e e-mail).
 
@@ -119,3 +138,9 @@ As Rules atuais têm `allow write: if signed()` em `produtos`, `configuracoes` e
 **Compra com 2 packs:** a tela de sucesso, o "perdi meu link" e o e-mail entregam **um link por pack**. Pedidos com 2 packs usam a referência `pix_<pedido>_<produto>+<extra>`; pedidos antigos continuam válidos; `/status-pagamento` e `/recuperar` ganharam `links` sem remover `link`.
 
 Não alterei `sw.js`, `app.js` e demais arquivos do zip.
+
+## Cuidados da etapa C
+- **Worker de pagamentos compartilhado com outros sites:** as regras novas só atuam quando o `CONFIG` do site liga `ofertas`/`cupons`. Com isso desligado, o comportamento é idêntico ao anterior. Os campos novos dos packs só são lidos com `CONFIG.ofertas === true`.
+- Publique o **Worker de pagamentos primeiro**, depois o do painel, depois o GitHub.
+- Os cartões novos do painel dependem de o Worker do painel estar publicado (rota de cupom devolve a forma de pagamento).
+- Cupom por valor depende do KV `LINKS` (mesma cota gratuita descrita acima).

@@ -587,13 +587,19 @@
       const original = precoParaNumero(prod.preco);
       const promo = precoParaNumero(prod.precoPromo);
       const ate = Number(prod.promoAte) || 0;
-      const ativa = promo > 0 && promo < original && (!ate || Date.now() < ate);
+      const vigente = promo > 0 && promo < original && (!ate || Date.now() < ate);
+      // promoção só para uma forma de pagamento (ex.: só no Pix): o preço de vitrine continua o cheio e a promoção aparece numa linha à parte
+      const metodo = (prod.promoMetodo === 'pix' || prod.promoMetodo === 'cartao') ? prod.promoMetodo : 'todos';
+      const ativa = vigente && metodo === 'todos';
       return {
         ativa,
+        vigente,
+        promoMetodo: metodo,
+        promoTexto: vigente && metodo !== 'todos' ? prod.precoPromo : '',
         atual: ativa ? prod.precoPromo : (prod.preco || '0,00'),
         original: prod.preco || '0,00',
-        desconto: ativa ? Math.round((1 - promo / original) * 100) : 0,
-        ate: ativa && ate ? ate : 0
+        desconto: vigente ? Math.round((1 - promo / original) * 100) : 0,
+        ate: vigente && ate ? ate : 0
       };
     }
 
@@ -613,8 +619,13 @@
       combo: { ativo: false, percentual: 20 },
       pix: { ativo: false, tipo: 'percentual', valor: 10, aplicarEm: 'pix' },
       cartao: { ativo: false, tipo: 'percentual', valor: 5 },
-      carrinho: { ativo: false, faixas: [{ minItens: 5, percentual: 10 }, { minItens: 10, percentual: 20 }] }
+      carrinho: { ativo: false, faixas: [{ minItens: 5, percentual: 10 }, { minItens: 10, percentual: 20 }] },
+      cupomValor: { ativo: false, minimo: 100, tipo: 'percentual', valor: 10, validadeDias: 30, metodo: 'todos' }
     };
+
+    // forma de pagamento a que algo se aplica: 'todos' | 'pix' | 'cartao'
+    const normalizarMetodo = (m) => (m === 'pix' || m === 'cartao') ? m : 'todos';
+    const metodoVale = (regraMetodo, metodo) => regraMetodo === 'todos' || regraMetodo === metodo;
 
     const emCentavos = (reais) => Math.round(reais * 100);
 
@@ -646,6 +657,28 @@
       return faixas.slice(0, 6);
     }
 
+    // desconto de pagamento DESTE pack (cadastro do anúncio): { ativo, metodo, tipo, valor }. Quando vale, substitui o desconto geral só para este pack.
+    function normalizarDescontoPagamentoItem(d) {
+      const s = (d && typeof d === 'object') ? d : {};
+      const r = normalizarRegraPagamento({ ativo: s.ativo, tipo: s.tipo, valor: s.valor }, 10);
+      return { ativo: r.ativo, metodo: normalizarMetodo(s.metodo), tipo: r.tipo, valor: r.valor };
+    }
+
+    // cupom automático por valor de compra: "compras a partir de R$ X ganham um cupom para a próxima compra"
+    function normalizarCupomValor(x) {
+      const s = (x && typeof x === 'object') ? x : {};
+      const n = (v, min, max, pad) => { const k = Number(v); return Number.isFinite(k) ? Math.min(max, Math.max(min, k)) : pad; };
+      const tipo = s.tipo === 'valor' ? 'valor' : 'percentual';
+      return {
+        ativo: s.ativo === true,
+        minimo: Math.round(n(s.minimo, 1, 99999, 100) * 100) / 100,
+        tipo,
+        valor: tipo === 'valor' ? Math.round(n(s.valor, 0.01, 999, 5) * 100) / 100 : Math.round(n(s.valor, 1, LIMITE_DESCONTO_PCT, 10) * 10) / 10,
+        validadeDias: Math.round(n(s.validadeDias, 1, 365, 30)),
+        metodo: normalizarMetodo(s.metodo)
+      };
+    }
+
     function normalizarOfertas(o) {
       const s = (o && typeof o === 'object') ? o : {};
       const c = (s.combo && typeof s.combo === 'object') ? s.combo : {};
@@ -656,7 +689,8 @@
         combo: { ativo: c.ativo === true, percentual: Math.round(num(c.percentual, 1, LIMITE_DESCONTO_PCT, 20)) },
         pix: { ...normalizarRegraPagamento(x, 10), aplicarEm: x.aplicarEm === 'todos' ? 'todos' : 'pix' },
         cartao: normalizarRegraPagamento(s.cartao, 5),
-        carrinho: { ativo: k.ativo === true, faixas: normalizarFaixasCarrinho(k.faixas) }
+        carrinho: { ativo: k.ativo === true, faixas: normalizarFaixasCarrinho(k.faixas) },
+        cupomValor: normalizarCupomValor(s.cupomValor)
       };
     }
 
@@ -667,7 +701,7 @@
       return {
         ativo: s.ativo === true,
         percentual: Math.round(Number.isFinite(n) ? Math.min(LIMITE_DESCONTO_PCT, Math.max(1, n)) : 20),
-        metodo: (s.metodo === 'pix' || s.metodo === 'cartao') ? s.metodo : 'todos'
+        metodo: normalizarMetodo(s.metodo)
       };
     }
 
@@ -677,8 +711,18 @@
       const n = Number(c.valor);
       if (!Number.isFinite(n) || n <= 0) return null;
       const tipo = c.tipo === 'valor' ? 'valor' : 'percentual';
-      return { tipo, valor: tipo === 'valor' ? Math.round(Math.min(999, n) * 100) / 100 : Math.round(Math.min(LIMITE_DESCONTO_PCT, Math.max(1, n)) * 10) / 10 };
+      return { tipo, valor: tipo === 'valor' ? Math.round(Math.min(999, n) * 100) / 100 : Math.round(Math.min(LIMITE_DESCONTO_PCT, Math.max(1, n)) * 10) / 10, metodo: normalizarMetodo(c.metodo) };
     }
+
+    // um pack na conta: { preco (centavos), promoPreco (centavos, 0 = sem promoção em vigor), promoMetodo, pag (desconto de pagamento do pack) }.
+    // Aceita também só o número em centavos. A promoção pode valer só para uma forma de pagamento.
+    function itemDoCalculo(x) {
+      const it = (typeof x === 'number') ? { preco: x } : (x || {});
+      const preco = Math.round(Number(it.preco)) || 0;
+      const promo = Math.round(Number(it.promoPreco)) || 0;
+      return { preco, promoPreco: (promo > 0 && promo < preco) ? promo : 0, promoMetodo: normalizarMetodo(it.promoMetodo), pag: normalizarDescontoPagamentoItem(it.pag) };
+    }
+    const precoDoItem = (it, metodo) => (it.promoPreco > 0 && metodoVale(it.promoMetodo, metodo)) ? it.promoPreco : it.preco;
 
     // regra de pagamento que vale para a forma escolhida (ou null). metodo: 'pix' | 'cartao'
     function regraDoMetodo(o, metodo) {
@@ -701,14 +745,19 @@
       return Math.max(0, Math.min(bruto, Math.floor(subtotal * LIMITE_DESCONTO_PCT / 100)));
     }
 
-    // A CONTA DO PEDIDO (tudo em centavos). precos[0] = pack principal; os demais = packs extras.
-    //  1) desconto "de itens": carrinho (por quantidade) OU "leve também" (2 packs) — nunca os dois;
-    //  2) cupom: NÃO soma com o desconto de itens, vale o maior dos dois (empate: fica o automático);
-    //  3) desconto do Pix/cartão por cima do que sobrou. Tudo limitado a 70% do valor dos packs.
-    function calcularPedidoCentavos(precos, leveTambem, metodo, ofertas, cupom) {
+    // A CONTA DO PEDIDO (tudo em centavos). itens[0] = pack principal; os demais = packs extras.
+    //  1) desconto "de itens": carrinho (por quantidade) ou "leve também" (2 packs) — vale o MAIOR dos dois, nunca somados;
+    //  2) cupom (só se for da forma de pagamento escolhida): NÃO soma com o desconto de itens, vale o maior (empate: fica o automático);
+    //  3) desconto de pagamento (Pix/cartão) por cima do que sobrou: o geral, ou o do próprio pack quando ele tem o seu (substitui o geral
+    //     só para aquele pack; o desconto de itens é repartido entre os packs na proporção do preço). Tudo limitado a 70% do valor dos packs.
+    function calcularPedidoCentavos(itensEntrada, leveTambem, metodo, ofertas, cupom) {
       const o = normalizarOfertas(ofertas);
       const lt = normalizarLeveTambem(leveTambem);
-      const cp = normalizarCupomCalculo(cupom);
+      const cp0 = normalizarCupomCalculo(cupom);
+      const cupomFora = !!cp0 && !metodoVale(cp0.metodo, metodo);      // cupom de outra forma de pagamento: não vale neste pedido
+      const cp = cupomFora ? null : cp0;
+      const itens = itensEntrada.map(itemDoCalculo);
+      const precos = itens.map((it) => precoDoItem(it, metodo));
       const qtd = precos.length;
       const p1 = precos[0];
       const p2 = precos.slice(1).reduce((t, x) => t + x, 0);
@@ -720,8 +769,10 @@
         if (o.carrinho.ativo) {
           const f = faixaDoCarrinho(o.carrinho, qtd);
           if (f) { descAuto = Math.round(base * f.percentual / 100); origemAuto = 'carrinho'; }
-        } else if (qtd === 2 && o.combo.ativo && lt.ativo && (lt.metodo === 'todos' || lt.metodo === metodo)) {
-          descAuto = Math.round(p2 * lt.percentual / 100); origemAuto = 'combo';
+        }
+        if (qtd === 2 && o.combo.ativo && lt.ativo && metodoVale(lt.metodo, metodo)) {
+          const d = Math.round(p2 * lt.percentual / 100);
+          if (d > descAuto) { descAuto = d; origemAuto = 'combo'; }
         }
       }
       descAuto = Math.min(descAuto, limite);
@@ -734,8 +785,20 @@
       const descItens = cupomVale ? descCupom : descAuto;
       const origemDesc = descItens > 0 ? (cupomVale ? 'cupom' : origemAuto) : '';
       const subtotal = base - descItens;
-      const descPix = Math.max(0, Math.min(descontoPagamentoCentavos(subtotal, regraDoMetodo(o, metodo)), limite - descItens));
-      return { qtd, p1, p2, base, descAuto, descCupom, cupomVale, descItens, origemDesc, subtotal, descPix, total: subtotal - descPix };
+
+      // reparte o desconto de itens entre os packs (o resto dos centavos vai para o primeiro)
+      const parte = precos.map((p) => (base > 0 ? Math.floor(descItens * p / base) : 0));
+      parte[0] += descItens - parte.reduce((t, x) => t + x, 0);
+      let somaGeral = 0, descProprio = 0, temProprio = false;
+      itens.forEach((it, i) => {
+        const sub = Math.max(0, precos[i] - parte[i]);
+        if (it.pag.ativo && metodoVale(it.pag.metodo, metodo)) {
+          temProprio = true;
+          descProprio += descontoPagamentoCentavos(sub, { ativo: true, tipo: it.pag.tipo, valor: it.pag.valor });
+        } else somaGeral += sub;
+      });
+      const descPix = Math.max(0, Math.min(descontoPagamentoCentavos(somaGeral, regraDoMetodo(o, metodo)) + descProprio, limite - descItens));
+      return { qtd, p1, p2, base, descAuto, descCupom, cupomVale, cupomFora, descItens, origemDesc, subtotal, descPix, temProprio, total: subtotal - descPix };
     }
     // >>> FIM OFERTAS <<<
 
@@ -749,12 +812,22 @@
     const ofertasAtuais = () => normalizarOfertas(configLoja && configLoja.ofertas);
     const centavosParaTexto = (c) => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const precoAtualCentavos = (prod) => emCentavos(precoParaNumero(infoPreco(prod).atual));
+    // o pack como entra na conta do pedido (o Worker monta igual a partir do cadastro)
+    function itemDoProduto(prod) {
+      const i = infoPreco(prod);
+      return {
+        preco: emCentavos(precoParaNumero(prod.preco)),
+        promoPreco: i.vigente ? emCentavos(precoParaNumero(prod.precoPromo)) : 0,
+        promoMetodo: i.promoMetodo,
+        pag: prod.descontoPagamento
+      };
+    }
 
     // monta o pedido: pack principal + extras (lista, 1 pack ou nada) + cupom opcional ({tipo, valor}).
     // O desconto do "leve também" vem do cadastro do pack principal.
     function calcularPedidoLoja(prod, extras, metodo, ofertas, cupom) {
       const lista = Array.isArray(extras) ? extras : (extras ? [extras] : []);
-      return calcularPedidoCentavos([prod, ...lista].map(precoAtualCentavos), prod && prod.leveTambem, metodo, ofertas || ofertasAtuais(), cupom);
+      return calcularPedidoCentavos([prod, ...lista].map(itemDoProduto), prod && prod.leveTambem, metodo, ofertas || ofertasAtuais(), cupom);
     }
 
     function textoRegra(regra, rotuloMetodo) {
@@ -763,20 +836,22 @@
     }
     const textoRegraPix = (pixCfg) => textoRegra(pixCfg, pixCfg.aplicarEm === 'pix' ? 'no Pix' : 'no pagamento');
 
-    // linhas pequenas sob o preço: "💠 R$ 6,21 no Pix (−10%)" e, se houver, "💳 R$ x no cartão (−5%)"
+    // linhas pequenas sob o preço: "💠 R$ 6,21 no Pix (−10%)" e, se houver, "💳 R$ x no cartão (−5%)".
+    // Vale a conta real (calcularPedidoCentavos) para 1 pack: já considera promoção por forma de pagamento e o desconto próprio do pack.
     function htmlLinhaPix(prod) {
       const o = ofertasAtuais();
-      const base = precoAtualCentavos(prod);
-      if (base <= 0) return '';
+      const item = itemDoProduto(prod);
+      if (item.preco <= 0) return '';
       const pill = (metodo, icone, rotulo) => {
+        const ref = precoDoItem(itemDoCalculo(item), 'todos');          // preço mostrado na vitrine (promoção geral, se houver); a promoção de uma forma só aparece na linha dela
+        const c = calcularPedidoCentavos([item], null, metodo, o, null);
+        if (ref <= 0 || c.total >= ref) return '';
         const regra = regraDoMetodo(o, metodo);
-        const desc = descontoPagamentoCentavos(base, regra);
-        if (desc <= 0) return '';
-        const sel = regra.tipo === 'valor' ? `−${centavosParaTexto(desc)}` : `−${String(regra.valor).replace('.', ',')}%`;
-        return `<span class="preco-pix" title="${esc(textoRegra(regra, rotulo))}">${icone} <b>${esc(centavosParaTexto(base - desc))}</b> ${rotulo} <em>(${esc(sel)})</em></span>`;
+        const sel = (!c.temProprio && regra && regra.tipo === 'valor') ? `−${centavosParaTexto(ref - c.total)}` : `−${Math.round((1 - c.total / ref) * 100)}%`;
+        return `<span class="preco-pix" title="${esc(`${centavosParaTexto(c.total)} ${rotulo}`)}">${icone} <b>${esc(centavosParaTexto(c.total))}</b> ${rotulo} <em>(${esc(sel)})</em></span>`;
       };
-      const todos = o.pix.ativo && o.pix.aplicarEm === 'todos' && !o.cartao.ativo;
-      return pill('pix', todos ? '🏷️' : '💠', todos ? 'no pagamento' : 'no Pix') + (todos ? '' : pill('cartao', '💳', 'no cartão'));
+      const todos = o.pix.ativo && o.pix.aplicarEm === 'todos' && !o.cartao.ativo && !itemDoCalculo(item).pag.ativo;
+      return todos ? pill('pix', '🏷️', 'no pagamento') : pill('pix', '💠', 'no Pix') + pill('cartao', '💳', 'no cartão');
     }
 
     function htmlPrecoBox(prod) {
@@ -1849,7 +1924,7 @@
       ofertas: ofertasAtuais,
       infoPreco, precoParaNumero, miniatura,
       calcularPedido: calcularPedidoLoja,
-      textoRegraPix, textoRegra, normalizarLeveTambem, regraDoMetodo, faixaDoCarrinho, centavosParaTexto
+      textoRegraPix, textoRegra, itemDoProduto, normalizarLeveTambem, regraDoMetodo, faixaDoCarrinho, centavosParaTexto
     };
 
     onAuthStateChanged(auth, (user) => {

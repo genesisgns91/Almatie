@@ -13,58 +13,108 @@ let overlay = null;
 // ---------- estilos ----------
 const css = document.createElement("style");
 css.textContent = `
-.pix-overlay{position:fixed;inset:0;background:rgba(27,18,48,.65);display:flex;align-items:center;justify-content:center;z-index:10000;padding:16px}
-.pix-box{background:#fff;border-radius:16px;max-width:420px;width:100%;max-height:92vh;overflow:auto;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.25);text-align:center;font-family:'Inter',sans-serif;color:#1B1230;position:relative}
-.pix-fechar{position:absolute;top:10px;right:12px;border:none;background:none;font-size:20px;cursor:pointer;color:#888}
+.pix-overlay{position:fixed;inset:0;background:rgba(27,18,48,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:10000;padding:14px;animation:pixFade .18s ease}
+.pix-box{background:#fff;border-radius:20px;max-width:430px;width:100%;max-height:94vh;overflow:auto;padding:22px 22px 18px;box-shadow:0 18px 50px rgba(0,0,0,.28);text-align:center;font-family:'Inter',sans-serif;color:#1B1230;position:relative;animation:pixSobe .24s cubic-bezier(.2,.9,.3,1.1)}
+.pix-fechar{position:absolute;top:10px;right:12px;width:32px;height:32px;border:none;background:#f4f1f8;border-radius:50%;font-size:15px;cursor:pointer;color:#6b6478;transition:background .15s,transform .15s;z-index:2}
+.pix-fechar:hover{background:#e9e4f1;transform:rotate(90deg)}
+.pix-tela{animation:pixTela .22s ease}
+@keyframes pixFade{from{opacity:0}to{opacity:1}}
+@keyframes pixSobe{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes pixTela{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+@keyframes pixPulso{0%{transform:scale(1)}40%{transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes pixTrem{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@keyframes pixGira{to{transform:rotate(360deg)}}
 .pix-box h3{margin:0 0 4px;font-size:1.2rem}
 .pix-produto{font-size:.9rem;color:#666;margin-bottom:14px}
+/* cabeçalho "Comprar arte" */
+.pix-cab{display:flex;align-items:center;gap:12px;text-align:left;margin:0 34px 16px 0}
+.pix-cab-img{width:52px;height:52px;border-radius:12px;object-fit:cover;background:#f4f1f8;border:1px solid #eee;flex:none}
+.pix-cab-txt{min-width:0;display:flex;flex-direction:column;gap:1px}
+.pix-cab-rot{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--primary,#BE3A78)}
+.pix-cab-nome{font-size:1rem;line-height:1.25;overflow-wrap:anywhere}
+/* campos com rótulo flutuante */
+.pix-campo{position:relative;margin-bottom:10px}
+.pix-campo input{width:100%;padding:20px 12px 7px;border:1.5px solid #ddd6e8;border-radius:12px;font-size:15px;box-sizing:border-box;background:#fff;color:#1B1230;transition:border-color .15s,box-shadow .15s}
+.pix-campo input:focus{outline:none;border-color:var(--primary,#BE3A78);box-shadow:0 0 0 3px var(--primary-soft,#F9E8F0)}
+.pix-campo label{position:absolute;left:13px;top:15px;margin:0;font-size:.9rem;font-weight:500;color:#8a8398;pointer-events:none;transition:all .15s ease;text-align:left}
+.pix-campo input:focus+label,.pix-campo input:not(:placeholder-shown)+label{top:6px;font-size:.68rem;font-weight:700;color:var(--primary-hover,#9C2C61)}
+.pix-campo.invalido input{border-color:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.12);animation:pixTrem .35s}
+/* preço */
+.pix-preco{margin:14px 0 6px;padding:14px 14px 10px;border-radius:14px;background:linear-gradient(180deg,#faf7fd,#f4f0fa);border:1px solid #ece6f4;text-align:left}
+.pix-preco-topo{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.78rem;color:#6b6478;font-weight:600}
+.pix-eco{background:#e3f6e9;color:#1E6B3A;border-radius:999px;padding:2px 9px;font-size:.72rem;font-weight:700;animation:pixPulso .4s}
+.pix-preco-valor{display:flex;align-items:baseline;gap:8px;margin:2px 0}
+.pix-preco-valor b{font-size:1.9rem;font-weight:800;color:var(--primary,#BE3A78);letter-spacing:-.5px}
+.pix-preco-valor s{font-size:.95rem;color:#9a93a8}
+.pix-preco-valor.pulsa b{animation:pixPulso .38s}
+.pix-preco-cartao{font-size:.78rem;color:#6b6478;margin:0 0 2px}
+.pix-det{margin-top:6px;font-size:.8rem}
+.pix-det summary{cursor:pointer;color:#6b6478;font-weight:600;list-style:none;padding:4px 0;user-select:none}
+.pix-det summary::-webkit-details-marker{display:none}
+.pix-det summary::after{content:" ▾";font-size:.7rem}
+.pix-det[open] summary::after{content:" ▴"}
+.pix-det-linhas{margin-top:4px}
+.pix-det-linhas div{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.pix-det-linhas .desc{color:#1E6B3A;font-weight:600}
+.pix-det-linhas .tot{margin-top:4px;padding-top:6px;border-top:1px solid #e3deea;font-weight:800}
+.pix-det-linhas .nome{min-width:0;overflow-wrap:anywhere}
+/* carrinho */
+.pix-carrinho{margin:8px 0 0;padding:10px 12px;border:1px solid #ece6f4;border-radius:12px;text-align:left;background:#fff}
+.pix-carrinho-topo{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:700}
+.pix-limpar{border:none;background:none;color:#b3402f;font-size:.76rem;font-weight:600;cursor:pointer;text-decoration:underline;padding:2px 0}
+.pix-cart-lista{display:flex;flex-direction:column;gap:6px;margin:8px 0 2px;max-height:150px;overflow:auto}
+.pix-cart-item{display:flex;align-items:center;gap:8px;font-size:.82rem}
+.pix-cart-img{width:34px;height:34px;border-radius:8px;object-fit:cover;flex:none;border:1px solid #eee;background:#fff}
+.pix-cart-item .nome{flex:1;min-width:0;overflow-wrap:anywhere}
+.pix-cart-rm{border:none;background:none;color:#a33;cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px}
+.pix-cart-rm:hover{background:#fbeaea}
+.pix-cart-dica{font-size:.76rem;color:#6b6478;margin:6px 0 0;line-height:1.35}
+/* botões */
+.pix-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;background:var(--primary,#BE3A78);color:#fff;font-family:inherit;transition:transform .12s,box-shadow .15s,filter .15s;box-shadow:0 4px 14px rgba(190,58,120,.28);text-decoration:none;box-sizing:border-box}
+.pix-btn:hover{filter:brightness(1.06)}
+.pix-btn:active{transform:scale(.98)}
+.pix-btn:disabled{opacity:.7;cursor:wait}
+.pix-btn.carregando::before{content:"";width:15px;height:15px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:pixGira .7s linear infinite}
+.pix-btn-sec{background:#fff;color:var(--primary-hover,#9C2C61);border:1.5px solid var(--primary,#BE3A78);box-shadow:none}
+.pix-btn-sec.carregando::before{border-color:rgba(156,44,97,.3);border-top-color:var(--primary-hover,#9C2C61)}
+.pix-btn[hidden]{display:none}
+.pix-erro{color:#c0392b;font-size:.85rem;margin-top:8px;min-height:1em}
+.pix-discreto{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:8px}
+.pix-discreto button,.pix-link-cartao{border:none;background:none;font-size:.8rem;color:#7a7388;text-decoration:underline;cursor:pointer;padding:6px 8px;font-family:inherit;border-radius:6px;transition:color .15s,background .15s}
+.pix-discreto button:hover,.pix-link-cartao:hover{color:var(--primary-hover,#9C2C61);background:#faf7fd}
+.pix-link-cartao{display:inline-block;margin-top:10px}
+/* cupom */
+.pix-cupom-cx{margin-top:8px;text-align:left;animation:pixTela .2s ease}
+.pix-cupom-linha{display:flex;gap:8px;align-items:stretch}
+.pix-cupom-linha input{flex:1;min-width:0;padding:11px 12px;border:1.5px solid #ddd6e8;border-radius:12px;font-size:15px;text-transform:uppercase;box-sizing:border-box}
+.pix-cupom-linha input:focus{outline:none;border-color:var(--primary,#BE3A78)}
+.pix-cupom-linha .pix-btn{width:auto;margin-top:0;padding:0 16px;font-size:14px}
+.pix-cupom-msg{font-size:.78rem;color:#666;text-align:left;margin-top:6px;line-height:1.35}.pix-cupom-msg.ok{color:#1E6B3A;font-weight:600}.pix-cupom-msg.erro{color:#c0392b}
+/* tela "leve também" */
+.pix-lt-selo{display:inline-block;background:var(--primary-soft,#F9E8F0);color:var(--primary-hover,#9C2C61);border-radius:999px;padding:4px 12px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+.pix-lt-img{width:150px;height:150px;border-radius:16px;object-fit:cover;background:#f4f1f8;border:1px solid #eee;margin:8px auto 10px;display:block;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.pix-lt-nome{display:block;font-size:1.02rem;line-height:1.3;overflow-wrap:anywhere}
+.pix-lt-preco{margin:6px 0 2px;font-size:.95rem;color:#555}
+.pix-lt-preco s{opacity:.65}
+.pix-lt-preco b{color:var(--primary-hover,#9C2C61);font-size:1.25rem;margin:0 4px}
+.pix-lt-preco em{font-style:normal;background:#e3f6e9;color:#1E6B3A;border-radius:999px;padding:2px 8px;font-size:.75rem;font-weight:800}
+.pix-lt-total{font-size:.82rem;color:#6b6478;margin-bottom:4px}
+/* QR, sucesso, recuperar (como antes) */
 .pix-box label{display:block;text-align:left;font-size:.8rem;font-weight:600;margin:10px 0 4px}
 .pix-box input[type=text],.pix-box input[type=email]{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;font-size:15px;box-sizing:border-box}
-.pix-btn{display:block;width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;background:var(--primary,#BE3A78);color:#fff}
-.pix-btn:disabled{opacity:.6;cursor:wait}
-.pix-btn-sec{background:#f1eef6;color:#1B1230;font-weight:600}
-.pix-link-cartao{display:inline-block;margin-top:14px;font-size:.8rem;color:#666;background:none;border:none;text-decoration:underline;cursor:pointer}
-.pix-cartao-destaque{color:var(--primary-hover,#9C2C61)!important;font-weight:700;font-size:.92rem;text-decoration:underline}
-.pix-erro{color:#c0392b;font-size:.85rem;margin-top:10px;min-height:1em}
+.pix-campo label{margin:0}
 .pix-qr img{width:210px;height:210px;border:1px solid #eee;border-radius:10px;margin:8px auto}
 .pix-valor{font-size:1.4rem;font-weight:800;color:var(--primary,#BE3A78);margin:6px 0}
 .pix-copia{width:100%;font-size:11px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fafafa;text-align:center;box-sizing:border-box}
 .pix-aguardando{font-size:.85rem;color:#666;margin-top:12px}
-.pix-ok-icone{font-size:48px}
+.pix-ok-icone{font-size:48px;animation:pixPulso .6s}
 .pix-passos{font-size:.8rem;color:#666;text-align:left;margin:10px 0 0;padding-left:18px}
-.pix-oferta{margin:4px 0 12px;padding:12px;border:2px dashed var(--primary,#BE3A78);border-radius:12px;background:var(--primary-soft,#F9E8F0);text-align:left}
-.pix-oferta-topo{font-size:.82rem;font-weight:700;line-height:1.35;margin-bottom:8px}
-.pix-oferta-corpo{display:flex;gap:10px;align-items:center}
-.pix-oferta-img{width:64px;height:64px;border-radius:8px;object-fit:cover;background:#fff;flex:none;border:1px solid #eee}
-.pix-oferta-info{min-width:0;display:flex;flex-direction:column;gap:2px}
-.pix-oferta-nome{font-size:.9rem;line-height:1.25;overflow-wrap:anywhere}
-.pix-oferta-preco{font-size:.85rem;color:#555}
-.pix-oferta-preco s{opacity:.7}
-.pix-oferta-preco b{color:var(--primary-hover,#9C2C61);font-size:1.05rem}
-.pix-oferta .pix-btn{margin-top:10px;padding:10px;font-size:14px}
-.pix-oferta .pix-btn.marcado{background:#1E6B3A}
-.pix-oferta .pix-link-cartao{margin-top:8px}
-.pix-resumo{margin:6px 0 2px;padding:10px 12px;border-radius:10px;background:#f7f5fa;font-size:.82rem;text-align:left}
-.pix-resumo div{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
-.pix-resumo .pix-res-desc{color:#1E6B3A;font-weight:600}
-.pix-resumo .pix-res-total{margin-top:4px;padding-top:6px;border-top:1px solid #e3deea;font-weight:800;font-size:.95rem}
-.pix-resumo .pix-res-nome{min-width:0;overflow-wrap:anywhere}
-.pix-resumo .pix-res-nota{display:block;margin-top:4px;font-size:.75rem;color:#666}
 .pix-links-lista{display:flex;flex-direction:column;gap:8px}
-.pix-cart-lista{display:flex;flex-direction:column;gap:6px;margin:6px 0;max-height:170px;overflow:auto}
-.pix-cart-item{display:flex;align-items:center;gap:8px;font-size:.82rem}
-.pix-cart-img{width:34px;height:34px;border-radius:6px;object-fit:cover;flex:none;border:1px solid #eee;background:#fff}
-.pix-cart-item .pix-res-nome{flex:1;min-width:0;overflow-wrap:anywhere}
-.pix-cart-rm{border:none;background:none;color:#a33;cursor:pointer;font-size:15px;padding:4px 6px}
-.pix-cart-dica{font-size:.78rem;color:#555;margin:6px 0;line-height:1.35}
-.pix-oferta .pix-btn.pix-btn-sec{background:#fff;border:1px solid var(--primary,#BE3A78);color:var(--primary-hover,#9C2C61)}
-.pix-cupom-linha{display:flex;gap:8px;align-items:stretch}.pix-cupom-linha .pix-btn{width:auto;margin-top:0;padding:0 14px;font-size:14px}
-.pix-cupom-linha input{text-transform:uppercase}
-.pix-cupom-msg{font-size:.78rem;color:#666;text-align:left;margin-top:6px;line-height:1.35}.pix-cupom-msg.ok{color:#1E6B3A;font-weight:600}.pix-cupom-msg.erro{color:#c0392b}
 .pix-cupom-novo{margin-top:12px;padding:12px;border:2px dashed #1E6B3A;background:#eefaf1;border-radius:10px;font-size:.85rem;color:#14401f;text-align:left}.pix-cupom-novo p{margin:6px 0}
-.pix-barra{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:84px;z-index:9000;border:none;border-radius:999px;padding:12px 20px;background:var(--primary,#BE3A78);color:#fff;font:700 14px 'Inter',sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.3);cursor:pointer;max-width:92vw}
+.pix-barra{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:84px;z-index:9000;border:none;border-radius:999px;padding:12px 20px;background:var(--primary,#BE3A78);color:#fff;font:700 14px 'Inter',sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.3);cursor:pointer;max-width:92vw;animation:pixSobe .25s ease}
 .pix-barra[hidden]{display:none}
 .pix-guardar{margin-top:14px;padding:12px;border:2px dashed #e0a800;background:#fff8e1;border-radius:10px;font-size:.85rem;color:#4a3b00;text-align:left}.pix-guardar p{margin:6px 0}.pix-guardar-codigo{font-weight:700;font-size:1rem;letter-spacing:.5px;margin:6px 0;word-break:break-all}.pix-guardar-btn{display:block;width:100%;margin-top:6px;padding:8px;border:1px solid #c9a227;background:#fff;border-radius:8px;cursor:pointer;font-weight:600;color:#4a3b00}
+@media (prefers-reduced-motion:reduce){.pix-overlay,.pix-box,.pix-tela,.pix-eco,.pix-barra,.pix-cupom-cx,.pix-ok-icone{animation:none!important}.pix-btn,.pix-campo input,.pix-campo label{transition:none}}
 `;
 document.head.appendChild(css);
 
@@ -171,7 +221,8 @@ function sugerirPack(base, naoRepetir) {
   return lista[lista.length - 1].p;
 }
 
-// ---------- carrinho (só aparece quando a pessoa toca em "Comprar mais"; fica salvo neste aparelho) ----------
+
+// ---------- carrinho (só existe quando o carrinho está ligado no painel; fica salvo neste aparelho) ----------
 const CHAVE_CARRINHO = "almatie_carrinho";
 const MAX_CARRINHO = 30;
 let carrinhoMem = null;
@@ -208,32 +259,32 @@ function abrirCarrinho() {
   const L = loja();
   if (!L || !L.produtos().length) return;
   const ids = lerCarrinho();
-  const prod = ids.map((id) => L.produtos().find((p) => p.id === id)).find((p) => p && L.calcularPedido(p, null, "pix").p1 > 0);
+  const prod = ids.map((id) => L.produtos().find((p) => p && p.id === id)).find((p) => p && L.calcularPedido(p, null, "pix").p1 > 0);
   if (!prod) { esvaziarCarrinho(); return; }
-  window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo));
+  window.iniciarCheckout(prod.id, encodeURIComponent(prod.titulo), undefined, { daBarra: true });
 }
 { let tentativas = 0; const t = setInterval(() => { atualizarBarra(); if (++tentativas >= 20) clearInterval(t); }, 800); }
 
-// monta o estado do checkout para este produto
+// ---------- estado do checkout ----------
+// itens: packs do pedido (o 1º é o principal); origem: o pack em que a pessoa tocou "Comprar arte"
 function sincronizar(ctx) {
   ctx.prod = ctx.itens[0] || null;
   if (ctx.prod) { ctx.produtoId = ctx.prod.id; ctx.titulo = ctx.prod.titulo; }
   ctx.extras = ctx.itens.slice(1);
 }
-function novoContexto(produtoId, titulo) {
+function novoContexto(produtoId, titulo, opcoes) {
   const L = loja();
   const prod = L ? (L.produtos().find((p) => p.id === produtoId) || null) : null;
-  const ctx = { itens: prod ? [prod] : [], produtoId, titulo, prod, extras: [], sugestao: null, jaSugeridos: [], cupom: null, cupomEmail: "", persistir: false };
+  const ctx = { itens: prod ? [prod] : [], produtoId, titulo, prod, origem: prod, extras: [], sugestao: null, jaSugeridos: [], ofertaVista: false,
+    cupom: null, cupomEmail: "", persistir: false, daBarra: !!(opcoes && opcoes.daBarra), email: lerStorage("almatie_email"), nome: lerStorage("almatie_nome") };
   if (!prod) return ctx;
   if (carrinhoLigado()) {
     const ids = lerCarrinho();
     if (ids.length) {                                  // já existe carrinho: o pack clicado entra nele
       if (!ids.includes(produtoId) && ids.length < MAX_CARRINHO) ids.push(produtoId);
-      const itens = ids.map((id) => L.produtos().find((p) => p.id === id)).filter((p) => p && L.calcularPedido(p, null, "pix").p1 > 0);
+      const itens = ids.map((id) => L.produtos().find((p) => p && p.id === id)).filter((p) => p && L.calcularPedido(p, null, "pix").p1 > 0);
       if (itens.length) { ctx.itens = itens; ctx.persistir = true; salvarCarrinho(itens.map((p) => p.id)); }
     }
-  } else if (L.ofertas().combo.ativo) {
-    ctx.sugestao = sugerirPack(prod, ctx.jaSugeridos);
   }
   sincronizar(ctx);
   return ctx;
@@ -271,189 +322,145 @@ function tituloDoPedido(ctx) {
   return ctx.extras.length === 1 ? `${ctx.titulo} + ${ctx.extras[0].titulo}` : `${ctx.titulo} + ${ctx.extras.length} packs`;
 }
 
-// ---------- etapas ----------
-function textoFaixas(L, qtd) {
-  const faixas = L.ofertas().carrinho.faixas;
-  if (!faixas.length) return "";
-  const prox = faixas.find((f) => f.minItens > qtd);
-  const todas = faixas.map((f) => `${f.minItens} artes: ${f.percentual}% de desconto`).join(" · ");
-  const falta = prox ? ` Faltam ${prox.minItens - qtd} ${prox.minItens - qtd === 1 ? "arte" : "artes"} para ${prox.percentual}% de desconto!` : " Você já ganhou o maior desconto! 🎉";
-  return `${todas}.${falta}`;
+const emailOk = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+const metodoTexto = (m) => (m === "pix" ? "no Pix" : (m === "cartao" ? "no cartão" : ""));
+
+// botão com "carregando": devolve a função que desfaz
+function ocupar(btn, texto) {
+  const antes = btn.textContent;
+  btn.disabled = true; btn.classList.add("carregando"); btn.textContent = texto;
+  return () => { btn.disabled = false; btn.classList.remove("carregando"); btn.textContent = antes; };
 }
 
-function desenharCarrinho(container, ctx, caixa) {
+// ---------- tela 1: "Comprar arte" (limpa: dados, preço, 2 botões e 3 links discretos) ----------
+function textoProximaFaixa(L, qtd) {
+  const prox = L.ofertas().carrinho.faixas.find((f) => f.minItens > qtd);
+  if (!prox) return L.ofertas().carrinho.faixas.length ? "Você já ganhou o maior desconto do carrinho! 🎉" : "";
+  const falta = prox.minItens - qtd;
+  return `Leve mais ${falta} ${falta === 1 ? "arte" : "artes"} e ganhe ${prox.percentual}% de desconto.`;
+}
+
+function desenharPreco(container, ctx, animar) {
   const L = loja();
-  const box = document.createElement("div");
-  box.className = "pix-oferta";
-  const topo = document.createElement("div");
-  topo.className = "pix-oferta-topo";
-  topo.textContent = ctx.itens.length > 1 ? `🛒 Seu carrinho (${ctx.itens.length} artes)` : "🛒 Quer levar mais artes?";
-  box.appendChild(topo);
+  const caixa = container.querySelector("#pixPreco");
+  const cab = container.querySelector(".pix-cab-nome");
+  const btnGerar = container.querySelector("#pixGerar");
+  const btnCartao = container.querySelector("#pixCartao");
+  const img = container.querySelector(".pix-cab-img");
+  cab.textContent = ctx.itens.length > 1 ? `${ctx.itens.length} artes no pedido` : ctx.titulo;
+  if (ctx.itens[0]) { img.src = L.miniatura((ctx.itens[0].imagens || [])[0] || "", 120); img.hidden = !(ctx.itens[0].imagens || []).length; }
+
+  const pix = calculo(ctx, "pix"), cartao = calculo(ctx, "cartao");
+  caixa.innerHTML = "";
+  if (!pix) { caixa.hidden = true; return; }
+  caixa.hidden = false;
+  const vitrine = ctx.itens.reduce((t, p) => t + L.calcularPedido(p, null, "todos").p1, 0);      // preço de vitrine (sem desconto de forma de pagamento)
+  const economia = Math.max(0, vitrine - pix.total);
+  const o = L.ofertas();
+  const lt = L.normalizarLeveTambem(ctx.prod && ctx.prod.leveTambem);
+
+  const topo = document.createElement("div"); topo.className = "pix-preco-topo";
+  const rot = document.createElement("span"); rot.textContent = "Total no Pix";
+  topo.appendChild(rot);
+  if (economia > 0) { const eco = document.createElement("span"); eco.className = "pix-eco"; eco.textContent = `Você economiza ${dinheiro(economia)}`; topo.appendChild(eco); }
+  const valor = document.createElement("div"); valor.className = "pix-preco-valor" + (animar ? " pulsa" : "");
+  if (economia > 0) { const s = document.createElement("s"); s.textContent = dinheiro(vitrine); valor.appendChild(s); }
+  const b = document.createElement("b"); b.textContent = dinheiro(pix.total); valor.appendChild(b);
+  caixa.append(topo, valor);
+
+  if (cartao && cartao.total !== pix.total) {
+    const p = document.createElement("div"); p.className = "pix-preco-cartao";
+    p.textContent = `No cartão de crédito: ${dinheiro(cartao.total)}`;
+    caixa.appendChild(p);
+  }
+
+  // detalhes (fechados): lista dos packs e de cada desconto
+  const det = document.createElement("details"); det.className = "pix-det";
+  const sum = document.createElement("summary"); sum.textContent = "Ver detalhes";
+  const linhas = document.createElement("div"); linhas.className = "pix-det-linhas";
+  const linha = (cls, nome, v) => { const d = document.createElement("div"); if (cls) d.className = cls; const a = document.createElement("span"); a.className = "nome"; a.textContent = nome; const c = document.createElement("span"); c.textContent = v; d.append(a, c); linhas.appendChild(d); };
+  ctx.itens.forEach((p) => linha("", p.titulo, dinheiro(L.calcularPedido(p, null, "todos").p1)));
+  const promo = vitrine - pix.base;
+  if (promo > 0) linha("desc", "Promoção no Pix", `−${dinheiro(promo)}`);
+  if (pix.descItens > 0) {
+    let nome = "Desconto";
+    if (pix.origemDesc === "carrinho") { const f = L.faixaDoCarrinho(o.carrinho, pix.qtd); nome = `Desconto do carrinho${f ? ` (−${f.percentual}%)` : ""}`; }
+    else if (pix.origemDesc === "combo") nome = `Desconto "leve também" (−${lt.percentual}%)`;
+    else if (ctx.cupom) nome = `Cupom ${ctx.cupom.codigo}`;
+    linha("desc", nome, `−${dinheiro(pix.descItens)}`);
+  }
+  if (pix.descPix > 0) linha("desc", "Desconto no Pix", `−${dinheiro(pix.descPix)}`);
+  linha("tot", "Total no Pix", dinheiro(pix.total));
+  det.append(sum, linhas);
+  caixa.appendChild(det);
+
+  const nota = container.querySelector("#pixCupomNota");
+  nota.textContent = "";
+  if (ctx.cupom) {
+    const rel = ctx.cupom.metodo === "cartao" ? cartao : pix;
+    if (!rel.cupomVale) nota.textContent = "Os descontos não são cumulativos: o desconto do pedido já é igual ou maior que o do cupom, então o cupom não será usado (e continua valendo para outra compra).";
+    else if (ctx.cupom.metodo !== "todos") nota.textContent = `Cupom válido só ${metodoTexto(ctx.cupom.metodo).replace("no ", "para pagamento no ").replace("para pagamento no cartão", "para pagamento no cartão de crédito")}.`;
+  }
+
+  btnGerar.textContent = `Pagar no Pix · ${dinheiro(pix.total)}`;
+  btnCartao.textContent = cartao && (cartao.total !== pix.total || cartao.total < vitrine) ? `Prefiro pagar com cartão de crédito (${dinheiro(cartao.total)})` : "Prefiro pagar com cartão de crédito";
+
+  desenharCarrinho(container, ctx);
+}
+
+// carrinho: botão "Continuar comprando" + (se houver 2 ou mais artes) lista com "Limpar carrinho"
+function desenharCarrinho(container, ctx) {
+  const L = loja();
+  const area = container.querySelector("#pixCarrinho");
+  const continuar = container.querySelector("#pixContinuar");
+  area.innerHTML = "";
+  const ligado = !!ctx.prod && carrinhoLigado();
+  continuar.hidden = !ligado || ctx.itens.length >= MAX_CARRINHO;
+  continuar.textContent = ctx.itens.length > 1 ? "＋ Selecionar mais itens" : "＋ Continuar comprando";
+  if (!ligado) return;
+  const dicaTxt = textoProximaFaixa(L, ctx.itens.length);
   if (ctx.itens.length > 1) {
-    const lista = document.createElement("div");
-    lista.className = "pix-cart-lista";
+    const box = document.createElement("div"); box.className = "pix-carrinho";
+    const topo = document.createElement("div"); topo.className = "pix-carrinho-topo";
+    const t = document.createElement("span"); t.textContent = `🛒 Seu carrinho · ${ctx.itens.length} artes`;
+    const limpar = document.createElement("button"); limpar.type = "button"; limpar.className = "pix-limpar"; limpar.textContent = "Limpar carrinho";
+    limpar.addEventListener("click", () => limparCarrinho(container, ctx));
+    topo.append(t, limpar);
+    const lista = document.createElement("div"); lista.className = "pix-cart-lista";
     ctx.itens.forEach((p, i) => {
-      const l = document.createElement("div");
-      l.className = "pix-cart-item";
-      const img = document.createElement("img");
-      img.className = "pix-cart-img"; img.alt = "";
-      img.src = L.miniatura((p.imagens || [])[0] || "", 96);
-      const nome = document.createElement("span");
-      nome.className = "pix-res-nome"; nome.textContent = p.titulo;
-      const preco = document.createElement("b");
-      preco.textContent = dinheiro(L.calcularPedido(p, null, "pix").p1);
-      const rm = document.createElement("button");
-      rm.type = "button"; rm.className = "pix-cart-rm"; rm.title = "Remover do carrinho"; rm.textContent = "✕";
+      const l = document.createElement("div"); l.className = "pix-cart-item";
+      const img = document.createElement("img"); img.className = "pix-cart-img"; img.alt = ""; img.src = L.miniatura((p.imagens || [])[0] || "", 96);
+      const nome = document.createElement("span"); nome.className = "nome"; nome.textContent = p.titulo;
+      const preco = document.createElement("b"); preco.textContent = dinheiro(L.calcularPedido(p, null, "todos").p1);
+      const rm = document.createElement("button"); rm.type = "button"; rm.className = "pix-cart-rm"; rm.title = "Remover do carrinho"; rm.textContent = "✕";
       rm.addEventListener("click", () => {
         ctx.itens.splice(i, 1);
         if (!ctx.itens.length) { esvaziarCarrinho(); fecharPeloUsuario(); return; }
         sincronizar(ctx);
         if (ctx.persistir) salvarCarrinho(ctx.itens.map((x) => x.id));
-        desenharOferta(container, ctx);
+        desenharPreco(container, ctx, true);
       });
-      l.append(img, nome, preco, rm);
-      lista.appendChild(l);
+      l.append(img, nome, preco, rm); lista.appendChild(l);
     });
-    box.appendChild(lista);
-  }
-  const dica = textoFaixas(L, ctx.itens.length);
-  if (dica) { const d = document.createElement("div"); d.className = "pix-cart-dica"; d.textContent = dica; box.appendChild(d); }
-  if (ctx.itens.length < MAX_CARRINHO) {
-    const mais = document.createElement("button");
-    mais.type = "button"; mais.className = "pix-btn pix-btn-sec"; mais.id = "pixComprarMais";
-    mais.textContent = "＋ Comprar mais artes";
-    mais.addEventListener("click", () => {
-      salvarCarrinho(ctx.itens.map((p) => p.id));
-      ctx.persistir = true;
-      fechar();
-      atualizarBarra();
-    });
-    box.appendChild(mais);
-  }
-  caixa.appendChild(box);
-}
-
-function desenharOferta(container, ctx) {
-  const caixa = container.querySelector("#pixOferta");
-  const resumo = container.querySelector("#pixResumo");
-  const btnGerar = container.querySelector("#pixGerar");
-  const btnCartao = container.querySelector("#pixCartao");
-  const L = loja();
-  caixa.innerHTML = "";
-  resumo.innerHTML = "";
-  container.querySelector(".pix-produto").textContent = ctx.itens.length > 1 ? `${ctx.itens.length} artes no pedido` : ctx.titulo;
-
-  // --- carrinho (substitui o "leve também") ---
-  if (ctx.prod && carrinhoLigado()) desenharCarrinho(container, ctx, caixa);
-
-  // --- caixa "leve também" ---
-  if (ctx.prod && ctx.sugestao && !carrinhoLigado() && L.ofertas().combo.ativo) {
-    // o desconto no 2º pack é definido no cadastro do pack que a pessoa está comprando
-    const lt = L.normalizarLeveTambem(ctx.prod.leveTambem);
-    const so = L.calcularPedido(ctx.prod, ctx.sugestao, lt.metodo === "cartao" ? "cartao" : "pix");
-    const pct = lt.percentual;
-    const cheio = so.p2, comDesc = so.p2 - so.descAuto;
-    const temDesc = so.descAuto > 0;
-    const so_no = lt.metodo === "pix" ? " pagando no Pix" : (lt.metodo === "cartao" ? " pagando no cartão" : "");
-    const box = document.createElement("div");
-    box.className = "pix-oferta";
-    box.innerHTML = `
-      <div class="pix-oferta-topo"></div>
-      <div class="pix-oferta-corpo">
-        <img class="pix-oferta-img" alt="">
-        <div class="pix-oferta-info"><strong class="pix-oferta-nome"></strong><span class="pix-oferta-preco"></span></div>
-      </div>
-      <button type="button" class="pix-btn" id="pixAddExtra"></button>
-      <button type="button" class="pix-link-cartao" id="pixOutroPack">Ver outro pack</button>`;
-    box.querySelector(".pix-oferta-topo").textContent = temDesc
-      ? `🎁 Leve também o pack "${ctx.sugestao.titulo}" por apenas +${dinheiro(comDesc)} e economize ${pct}% nessa compra${so_no}`
-      : `🎁 Leve também o pack "${ctx.sugestao.titulo}" por +${dinheiro(comDesc)}`;
-    const img = box.querySelector(".pix-oferta-img");
-    img.src = L.miniatura((ctx.sugestao.imagens || [])[0] || "", 160);
-    box.querySelector(".pix-oferta-nome").textContent = ctx.sugestao.titulo;
-    const preco = box.querySelector(".pix-oferta-preco");
-    if (temDesc) {
-      const riscado = document.createElement("s");
-      riscado.textContent = dinheiro(cheio);
-      const novo = document.createElement("b");
-      novo.textContent = ` +${dinheiro(comDesc)}`;
-      preco.append(riscado, novo, document.createTextNode(` (−${pct}%${so_no ? " " + so_no.trim() : ""})`));
-    } else {
-      const novo = document.createElement("b");
-      novo.textContent = `+${dinheiro(comDesc)}`;
-      preco.append(novo);
-    }
-    const add = box.querySelector("#pixAddExtra");
-    const marcado = ctx.extras.length > 0;
-    add.classList.toggle("marcado", marcado);
-    add.textContent = marcado ? "✓ Adicionado ao pedido (toque para remover)" : "＋ Adicionar ao meu pedido";
-    add.addEventListener("click", () => { ctx.itens = ctx.extras.length ? [ctx.prod] : [ctx.prod, ctx.sugestao]; sincronizar(ctx); desenharOferta(container, ctx); });
-    const outro = box.querySelector("#pixOutroPack");
-    outro.hidden = marcado;
-    outro.addEventListener("click", () => {
-      ctx.jaSugeridos.push(ctx.sugestao.id);
-      ctx.sugestao = sugerirPack(ctx.prod, ctx.jaSugeridos) || ctx.sugestao;
-      desenharOferta(container, ctx);
-    });
-    caixa.appendChild(box);
-  }
-
-  // --- resumo com os descontos (Pix e cartão podem ter descontos diferentes) ---
-  const pix = calculo(ctx, "pix");
-  const cartao = calculo(ctx, "cartao");
-  const msgCupom = container.querySelector("#pixCupomNota");
-  if (msgCupom) msgCupom.textContent = "";
-  if (pix && (ctx.extras.length || ctx.cupom || pix.descPix > 0 || cartao.descPix > 0)) {
-    const o = L.ofertas();
-    const linha = (cls, nome, valor) => {
-      const d = document.createElement("div");
-      if (cls) d.className = cls;
-      const a = document.createElement("span"); a.className = "pix-res-nome"; a.textContent = nome;
-      const b = document.createElement("span"); b.textContent = valor;
-      d.append(a, b);
-      resumo.appendChild(d);
-    };
-    const pct = (r) => (r.tipo === "valor" ? "" : ` (−${String(r.valor).replace(".", ",")}%)`);
-    const lt = L.normalizarLeveTambem(ctx.prod && ctx.prod.leveTambem);
-    const nomeDesc = (c) => {
-      if (c.origemDesc === "carrinho") { const f = L.faixaDoCarrinho(o.carrinho, c.qtd); return `Desconto do carrinho${f ? ` (−${f.percentual}%)` : ""}`; }
-      if (c.origemDesc === "combo") return `Desconto "leve também" (−${lt.percentual}%)`;
-      return `Cupom ${ctx.cupom ? ctx.cupom.codigo : ""}`.trim();
-    };
-    const igualItens = pix.descItens === cartao.descItens && pix.origemDesc === cartao.origemDesc;
-    const unico = pix.descPix === cartao.descPix && igualItens;   // mesmos descontos nas duas formas
-    ctx.itens.forEach((p) => linha("", p.titulo, dinheiro(L.calcularPedido(p, null, "pix").p1)));
-    if (igualItens) {
-      if (pix.descItens > 0) linha("pix-res-desc", nomeDesc(pix), `−${dinheiro(pix.descItens)}`);
-    } else {
-      if (pix.descItens > 0) linha("pix-res-desc", `${nomeDesc(pix)} – no Pix`, `−${dinheiro(pix.descItens)}`);
-      if (cartao.descItens > 0) linha("pix-res-desc", `${nomeDesc(cartao)} – no cartão`, `−${dinheiro(cartao.descItens)}`);
-    }
-    const regraPix = L.regraDoMetodo(o, "pix"), regraCartao = L.regraDoMetodo(o, "cartao");
-    if (unico) {
-      if (pix.descPix > 0) linha("pix-res-desc", `Desconto no pagamento${pct(regraPix)}`, `−${dinheiro(pix.descPix)}`);
-      linha("pix-res-total", "Total", dinheiro(pix.total));
-    } else {
-      if (pix.descPix > 0) linha("pix-res-desc", `Desconto no Pix${pct(regraPix)}`, `−${dinheiro(pix.descPix)}`);
-      if (cartao.descPix > 0) linha("pix-res-desc", `Desconto no cartão${pct(regraCartao)}`, `−${dinheiro(cartao.descPix)}`);
-      linha("pix-res-total", "Total no Pix", dinheiro(pix.total));
-      linha("pix-res-total", "Total no cartão de crédito", dinheiro(cartao.total));
-    }
-    if (ctx.cupom && !pix.cupomVale && !cartao.cupomVale && msgCupom) {
-      msgCupom.textContent = "Os descontos não são cumulativos: o desconto do pedido já é igual ou maior que o do cupom, então o cupom não será usado (e continua valendo para outra compra).";
-    }
-    resumo.hidden = false;
-    btnGerar.textContent = `Gerar QR Code Pix · ${dinheiro(pix.total)}`;
-    btnCartao.textContent = `Prefiro pagar com cartão de crédito · ${dinheiro(cartao.total)}`;
-  } else {
-    resumo.hidden = true;
-    btnGerar.textContent = "Gerar QR Code Pix";
-    btnCartao.textContent = "Prefiro pagar com cartão de crédito";
+    box.append(topo, lista);
+    if (dicaTxt) { const d = document.createElement("div"); d.className = "pix-cart-dica"; d.textContent = dicaTxt; box.appendChild(d); }
+    area.appendChild(box);
+  } else if (dicaTxt && L.ofertas().carrinho.faixas.length) {
+    const d = document.createElement("div"); d.className = "pix-cart-dica"; d.textContent = dicaTxt; area.appendChild(d);
   }
 }
 
-// campo "Tenho um cupom": confere no servidor (precisa do e-mail: 1 uso por e-mail)
-const emailOk = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+// "Limpar carrinho": zera o carrinho salvo. Se a pessoa veio de "Comprar arte", fica só com a arte em que tocou; se veio da barra, fecha.
+function limparCarrinho(container, ctx) {
+  esvaziarCarrinho();
+  ctx.persistir = false;
+  if (ctx.daBarra || !ctx.origem) { fecharPeloUsuario(); return; }
+  ctx.itens = [ctx.origem];
+  sincronizar(ctx);
+  desenharPreco(container, ctx, true);
+}
+
+// campo "Tenho um cupom" (confere no servidor; precisa do e-mail: 1 uso por e-mail)
 function ligarCupom(container, ctx) {
   const abrir = container.querySelector("#pixCupomAbrir");
   const cx = container.querySelector("#pixCupomCx");
@@ -464,124 +471,203 @@ function ligarCupom(container, ctx) {
   const rotulo = () => {
     cod.disabled = !!ctx.cupom;
     ok.textContent = ctx.cupom ? "Remover" : "Aplicar";
-    if (ctx.cupom) { msg.className = "pix-cupom-msg ok"; msg.textContent = `✓ Cupom ${ctx.cupom.codigo} aplicado`; }
+    if (ctx.cupom) {
+      const so = ctx.cupom.metodo === "pix" ? " (só no Pix)" : (ctx.cupom.metodo === "cartao" ? " (só no cartão)" : "");
+      msg.className = "pix-cupom-msg ok"; msg.textContent = `✓ Cupom ${ctx.cupom.codigo} aplicado${so}`;
+    }
   };
   abrir.addEventListener("click", () => { cx.hidden = !cx.hidden; if (!cx.hidden) cod.focus(); });
   email.addEventListener("input", () => {
     if (ctx.cupom && email.value.trim().toLowerCase() !== ctx.cupomEmail) {
       ctx.cupom = null; ctx.cupomEmail = "";
       msg.className = "pix-cupom-msg"; msg.textContent = "E-mail alterado: aplique o cupom de novo.";
-      rotulo(); desenharOferta(container, ctx);
+      rotulo(); desenharPreco(container, ctx, true);
     }
   });
-  ok.addEventListener("click", async () => {
+  const aplicar = async () => {
     if (ctx.cupom) {
       ctx.cupom = null; ctx.cupomEmail = ""; cod.value = ""; msg.textContent = "";
-      rotulo(); desenharOferta(container, ctx);
+      rotulo(); desenharPreco(container, ctx, true);
       return;
     }
     const codigo = cod.value.trim();
     const mail = email.value.trim();
     msg.className = "pix-cupom-msg";
     if (!codigo) { msg.textContent = "Digite o código do cupom."; return; }
-    if (!emailOk(mail)) { msg.textContent = "Digite seu e-mail acima primeiro (o cupom vale uma vez por e-mail)."; email.focus(); return; }
-    ok.disabled = true; msg.textContent = "Conferindo…";
+    if (!emailOk(mail)) { msg.textContent = "Preencha seu e-mail acima primeiro (o cupom vale uma vez por e-mail)."; marcarInvalido(email); return; }
+    const desfazer = ocupar(ok, "Conferindo…"); msg.textContent = "";
     try {
       const r = await fetch(`${WORKER}/cupom/validar`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo, email: mail }) });
       const dados = await r.json();
       const c = dados && dados.cupom;
       if (!r.ok || !c || typeof c.codigo !== "string" || !Number.isFinite(Number(c.valor))) throw new Error((dados && dados.error) || "Cupom inválido.");
-      ctx.cupom = { codigo: c.codigo, tipo: c.tipo === "valor" ? "valor" : "percentual", valor: Number(c.valor) };
+      ctx.cupom = { codigo: c.codigo, tipo: c.tipo === "valor" ? "valor" : "percentual", valor: Number(c.valor), metodo: (c.metodo === "pix" || c.metodo === "cartao") ? c.metodo : "todos" };
       ctx.cupomEmail = mail.toLowerCase();
-      rotulo(); desenharOferta(container, ctx);
+      desfazer(); rotulo(); desenharPreco(container, ctx, true);
     } catch (e) {
       ctx.cupom = null;
+      desfazer();
       msg.className = "pix-cupom-msg erro"; msg.textContent = e.message || "Não foi possível conferir o cupom.";
-    } finally { ok.disabled = false; }
-  });
+    }
+  };
+  ok.addEventListener("click", aplicar);
+  cod.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); aplicar(); } });
+}
+
+function marcarInvalido(input) {
+  const campo = input.closest(".pix-campo");
+  if (campo) { campo.classList.remove("invalido"); void campo.offsetWidth; campo.classList.add("invalido"); }
+  input.focus();
+  input.addEventListener("input", () => campo && campo.classList.remove("invalido"), { once: true });
 }
 
 function telaFormulario(container, ctx) {
   container.innerHTML = `
-    <h3>Pagar com Pix</h3>
-    <div class="pix-produto"></div>
-    <div id="pixOferta"></div>
-    <div class="pix-resumo" id="pixResumo" hidden></div>
-    <label for="pixEmail">Seu e-mail (para o comprovante)</label>
-    <input type="email" id="pixEmail" placeholder="voce@email.com" autocomplete="email">
-    <label for="pixNome">Seu nome (opcional)</label>
-    <input type="text" id="pixNome" placeholder="Seu nome" autocomplete="name">
-    <button class="pix-link-cartao" id="pixCupomAbrir" type="button">🎟️ Tenho um cupom</button>
-    <div id="pixCupomCx" hidden>
-      <div class="pix-cupom-linha"><input type="text" id="pixCupomCod" placeholder="Código do cupom" maxlength="24" autocomplete="off" autocapitalize="characters"><button type="button" class="pix-btn pix-btn-sec" id="pixCupomOk">Aplicar</button></div>
-      <div class="pix-cupom-msg" id="pixCupomMsg"></div>
-    </div>
-    <div class="pix-cupom-msg" id="pixCupomNota"></div>
-    <button class="pix-btn" id="pixGerar">Gerar QR Code Pix</button>
-    <div class="pix-erro" id="pixErro"></div>
-    <button class="pix-link-cartao pix-cartao-destaque" id="pixCartao">Prefiro pagar com cartão de crédito</button><br>
-    <button class="pix-link-cartao" id="pixRecuperar">Já paguei e perdi meu link</button>
-  `;
-  container.querySelector("#pixEmail").value = lerStorage("almatie_email");
-  container.querySelector("#pixNome").value = lerStorage("almatie_nome");
-
+    <div class="pix-tela">
+      <div class="pix-cab"><img class="pix-cab-img" alt=""><div class="pix-cab-txt"><span class="pix-cab-rot">Comprar arte</span><strong class="pix-cab-nome"></strong></div></div>
+      <div class="pix-campo"><input type="email" id="pixEmail" placeholder=" " autocomplete="email" inputmode="email"><label for="pixEmail">Seu e-mail (para receber a arte)</label></div>
+      <div class="pix-campo"><input type="text" id="pixNome" placeholder=" " autocomplete="name"><label for="pixNome">Seu nome (opcional)</label></div>
+      <div class="pix-preco" id="pixPreco" aria-live="polite"></div>
+      <div id="pixCarrinho"></div>
+      <button class="pix-btn pix-btn-sec" id="pixContinuar" type="button" hidden>＋ Continuar comprando</button>
+      <button class="pix-btn" id="pixGerar" type="button">Pagar no Pix</button>
+      <div class="pix-erro" id="pixErro" role="alert"></div>
+      <div class="pix-discreto">
+        <button type="button" id="pixCartao">Prefiro pagar com cartão de crédito</button>
+        <button type="button" id="pixCupomAbrir">Tenho um cupom</button>
+        <button type="button" id="pixRecuperar">Já paguei e perdi meu link</button>
+      </div>
+      <div class="pix-cupom-cx" id="pixCupomCx" hidden>
+        <div class="pix-cupom-linha"><input type="text" id="pixCupomCod" placeholder="Código do cupom" maxlength="24" autocomplete="off" autocapitalize="characters"><button type="button" class="pix-btn pix-btn-sec" id="pixCupomOk">Aplicar</button></div>
+        <div class="pix-cupom-msg" id="pixCupomMsg"></div>
+      </div>
+      <div class="pix-cupom-msg" id="pixCupomNota"></div>
+    </div>`;
+  const email = container.querySelector("#pixEmail"), nome = container.querySelector("#pixNome");
+  email.value = ctx.email || ""; nome.value = ctx.nome || "";
+  email.addEventListener("input", () => { ctx.email = email.value.trim(); });
+  nome.addEventListener("input", () => { ctx.nome = nome.value.trim(); });
   const erro = container.querySelector("#pixErro");
-  const btn = container.querySelector("#pixGerar");
   ligarCupom(container, ctx);
-  desenharOferta(container, ctx);
+  desenharPreco(container, ctx, false);
 
-  btn.addEventListener("click", async () => {
-    const email = container.querySelector("#pixEmail").value.trim();
-    const nome = container.querySelector("#pixNome").value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-      erro.textContent = "Digite um e-mail válido.";
-      return;
-    }
-    gravarStorage("almatie_email", email);
-    gravarStorage("almatie_nome", nome);
+  // valida os dados de topo; devolve true se pode seguir
+  const dadosOk = () => {
+    ctx.email = email.value.trim(); ctx.nome = nome.value.trim();
+    if (!emailOk(ctx.email)) { erro.textContent = "Digite um e-mail válido para receber a arte."; marcarInvalido(email); return false; }
+    gravarStorage("almatie_email", ctx.email);
+    gravarStorage("almatie_nome", ctx.nome);
     erro.textContent = "";
-    btn.disabled = true;
-    const rotuloGerar = btn.textContent;
-    btn.textContent = "Gerando Pix...";
-    try {
-      const r = await fetch(`${WORKER}/criar-pix`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(corpoPedido(ctx, { email, nome })),
-      });
-      const dados = await r.json();
-      if (!r.ok || !dados.qr_code) throw new Error(dados.error || "Falha ao gerar o Pix.");
-      conferirValor(ctx, "pix", dados.valor);      // se o valor cobrado não for o prometido, não mostra o QR
-      telaQrCode(container, dados, tituloDoPedido(ctx));
-    } catch (e) {
-      erro.textContent = e.message || "Falha de conexão. Tente novamente.";
-      btn.disabled = false;
-      btn.textContent = rotuloGerar;
-    }
+    return true;
+  };
+  const seguir = async (botao, textoBusy, metodo) => {
+    if (!dadosOk()) return;
+    const desfazer = ocupar(botao, textoBusy);
+    try { await seguirParaPagamento(container, ctx, metodo); }
+    catch (e) { erro.textContent = (e && e.message) || "Falha de conexão. Tente novamente."; desfazer(); }
+  };
+  const gerar = container.querySelector("#pixGerar"), cartao = container.querySelector("#pixCartao");
+  gerar.addEventListener("click", () => seguir(gerar, "Gerando Pix...", "pix"));
+  cartao.addEventListener("click", () => seguir(cartao, "Abrindo pagamento...", "cartao"));
+  email.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); nome.focus(); } });
+  nome.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); gerar.click(); } });
+
+  container.querySelector("#pixContinuar").addEventListener("click", () => {
+    salvarCarrinho(ctx.itens.map((p) => p.id));      // a barra "🛒 N artes · Finalizar compra" volta quando a janela fecha
+    ctx.persistir = true;
+    fechar();
+    atualizarBarra();
   });
-
   container.querySelector("#pixRecuperar").addEventListener("click", () => telaRecuperar(container, ctx));
+}
 
-  container.querySelector("#pixCartao").addEventListener("click", async (e) => {
-    const botao = e.currentTarget;
-    const rotuloCartao = botao.textContent;
-    botao.textContent = "Abrindo pagamento...";
-    try {
-      const r = await fetch(`${WORKER}/criar-pagamento`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(corpoPedido(ctx, {})),
-      });
-      const dados = await r.json();
-      if (!dados.init_point) throw new Error();
-      conferirValor(ctx, "cartao", dados.valor);   // idem: só segue se o valor bater com o combinado
-      window.location.href = dados.init_point;
-    } catch (err) {
-      botao.textContent = rotuloCartao;
-      erro.textContent = (err && err.message) ? err.message : "Não foi possível abrir o pagamento com cartão.";
+// ---------- tela 2: "leve também" (só se o pack tem a opção ligada e a pessoa não escolheu continuar comprando) ----------
+function sugestaoDaOferta(ctx, metodo) {
+  const L = loja();
+  if (!L || !ctx.prod || ctx.itens.length !== 1 || ctx.ofertaVista) return null;
+  if (!L.ofertas().combo.ativo || !L.normalizarLeveTambem(ctx.prod.leveTambem).ativo) return null;
+  if (!ctx.sugestao) ctx.sugestao = sugerirPack(ctx.prod, ctx.jaSugeridos);
+  if (!ctx.sugestao) return null;
+  const c = L.calcularPedido(ctx.prod, ctx.sugestao, metodo, undefined, ctx.cupom);
+  return c.origemDesc === "combo" ? ctx.sugestao : null;        // só oferece quando o desconto do "leve também" realmente vale neste pedido
+}
+
+async function seguirParaPagamento(container, ctx, metodo) {
+  if (sugestaoDaOferta(ctx, metodo)) { telaOferta(container, ctx, metodo); return; }
+  await enviarPedido(container, ctx, metodo);
+}
+
+async function enviarPedido(container, ctx, metodo) {
+  if (metodo === "pix") {
+    const r = await fetch(`${WORKER}/criar-pix`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpoPedido(ctx, { email: ctx.email, nome: ctx.nome })) });
+    const dados = await r.json();
+    if (!r.ok || !dados.qr_code) throw new Error(dados.error || "Falha ao gerar o Pix.");
+    conferirValor(ctx, "pix", dados.valor);      // se o valor cobrado não for o prometido, não mostra o QR
+    telaQrCode(container, dados, tituloDoPedido(ctx));
+    return;
+  }
+  const r = await fetch(`${WORKER}/criar-pagamento`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpoPedido(ctx, {})) });
+  const dados = await r.json();
+  if (!dados.init_point) throw new Error(dados.error || "Não foi possível abrir o pagamento com cartão.");
+  conferirValor(ctx, "cartao", dados.valor);     // idem: só segue se o valor bater com o combinado
+  window.location.href = dados.init_point;
+}
+
+function telaOferta(container, ctx, metodo) {
+  const L = loja();
+  const sug = ctx.sugestao;
+  const so = L.calcularPedido(ctx.prod, sug, metodo, undefined, ctx.cupom);          // com o 2º pack
+  const sem = L.calcularPedido(ctx.prod, null, metodo, undefined, ctx.cupom);          // só o pack atual
+  const cheio = L.calcularPedido(sug, null, metodo).total;                              // o 2º pack sozinho, nesta forma de pagamento
+  const adicional = so.total - sem.total;
+  const pct = L.normalizarLeveTambem(ctx.prod.leveTambem).percentual;
+  container.innerHTML = `
+    <div class="pix-tela">
+      <span class="pix-lt-selo">🎁 Oferta para este pedido</span>
+      <h3>Leve também e economize</h3>
+      <img class="pix-lt-img" alt="">
+      <strong class="pix-lt-nome"></strong>
+      <div class="pix-lt-preco"></div>
+      <div class="pix-lt-total"></div>
+      <button class="pix-btn" id="pixLtAdd" type="button">＋ Adicionar e continuar</button>
+      <div class="pix-erro" id="pixLtErro" role="alert"></div>
+      <div class="pix-discreto">
+        <button type="button" id="pixLtPular">Não, obrigada. Continuar sem adicionar</button>
+        <button type="button" id="pixLtOutro">Ver outro pack</button>
+      </div>
+    </div>`;
+  container.querySelector(".pix-lt-img").src = L.miniatura((sug.imagens || [])[0] || "", 320);
+  container.querySelector(".pix-lt-nome").textContent = sug.titulo;
+  const preco = container.querySelector(".pix-lt-preco");
+  const s = document.createElement("s"); s.textContent = dinheiro(cheio);
+  const b = document.createElement("b"); b.textContent = `+${dinheiro(adicional)}`;
+  const em = document.createElement("em"); em.textContent = `−${pct}%`;
+  preco.append(s, b, em);
+  container.querySelector(".pix-lt-total").textContent = `Seu total ${metodoTexto(metodo)} passa de ${dinheiro(sem.total)} para ${dinheiro(so.total)}.`;
+  const erro = container.querySelector("#pixLtErro");
+  const add = container.querySelector("#pixLtAdd"), pular = container.querySelector("#pixLtPular");
+  const rotuloFinal = metodo === "pix" ? "Gerando Pix..." : "Abrindo pagamento...";
+  const andar = async (botao, adicionar) => {
+    ctx.ofertaVista = true;
+    if (adicionar) { ctx.itens = [ctx.prod, sug]; sincronizar(ctx); }
+    const desfazer = ocupar(botao, rotuloFinal);
+    pular.disabled = add.disabled = true;
+    try { await enviarPedido(container, ctx, metodo); }
+    catch (e) {
+      erro.textContent = (e && e.message) || "Falha de conexão. Tente novamente.";
+      desfazer(); pular.disabled = add.disabled = false;
+      if (adicionar) { ctx.itens = [ctx.prod]; sincronizar(ctx); ctx.ofertaVista = false; }
     }
+  };
+  add.addEventListener("click", () => andar(add, true));
+  pular.addEventListener("click", () => andar(pular, false));
+  container.querySelector("#pixLtOutro").addEventListener("click", () => {
+    ctx.jaSugeridos.push(sug.id);
+    ctx.sugestao = sugerirPack(ctx.prod, ctx.jaSugeridos) || sug;
+    telaOferta(container, ctx, metodo);
   });
 }
+
 
 function telaRecuperar(container, ctx) {
   container.innerHTML = `
@@ -739,7 +825,8 @@ function caixaCupomNovo(c) {
   const t = document.createElement("strong"); t.textContent = "🎁 Cupom para sua próxima compra";
   const cod = document.createElement("div"); cod.className = "pix-guardar-codigo"; cod.textContent = c.codigo;
   const p = document.createElement("p");
-  p.textContent = `${quanto} de desconto${ate ? `, válido até ${ate}` : ""}, uso único. Use o mesmo e-mail desta compra no campo "Tenho um cupom". Guarde este código!`;
+  const so = c.metodo === "pix" ? " pagando no Pix" : (c.metodo === "cartao" ? " pagando no cartão de crédito" : "");
+  p.textContent = `${quanto} de desconto${so}${ate ? `, válido até ${ate}` : ""}, uso único. Use o mesmo e-mail desta compra no campo "Tenho um cupom". Guarde este código!`;
   const b = document.createElement("button"); b.type = "button"; b.className = "pix-guardar-btn"; b.textContent = "Copiar código do cupom";
   b.addEventListener("click", () => copiarTexto(c.codigo, b));
   caixa.append(t, cod, p, b);
@@ -785,11 +872,11 @@ function telaSucesso(container, link, pedidoId, links, cupomNovo) {
 }
 
 // ---------- ponto de entrada ----------
-window.iniciarCheckout = function (produtoId, tituloEncoded /*, precoStr (ignorado: o preço vem do servidor) */) {
+window.iniciarCheckout = function (produtoId, tituloEncoded, precoStr /* ignorado: o preço vem do servidor */, opcoes) {
   let titulo = "";
   try { titulo = decodeURIComponent(tituloEncoded); } catch { titulo = tituloEncoded; }
   const container = criarModal();
-  telaFormulario(container, novoContexto(produtoId, titulo));
+  telaFormulario(container, novoContexto(produtoId, titulo, opcoes));
 };
 
 // ---------- volta do pagamento com cartão (Mercado Pago devolve o cliente ao site) ----------
