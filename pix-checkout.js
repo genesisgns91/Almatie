@@ -34,10 +34,9 @@ css.textContent = `
 .pix-cab-nome{font-size:1rem;line-height:1.25;overflow-wrap:anywhere}
 /* campos com rótulo flutuante */
 .pix-campo{position:relative;margin-bottom:10px}
-.pix-campo input{width:100%;padding:20px 12px 7px;border:1.5px solid #ddd6e8;border-radius:12px;font-size:15px;box-sizing:border-box;background:#fff;color:#1B1230;transition:border-color .15s,box-shadow .15s}
+.pix-campo input{width:100%;padding:14px 14px;border:1.5px solid #ddd6e8;border-radius:12px;font-size:15px;box-sizing:border-box;background:#fff;color:#1B1230;transition:border-color .15s,box-shadow .15s}
 .pix-campo input:focus{outline:none;border-color:var(--primary,#BE3A78);box-shadow:0 0 0 3px var(--primary-soft,#F9E8F0)}
-.pix-campo label{position:absolute;left:13px;top:15px;margin:0;font-size:.9rem;font-weight:500;color:#8a8398;pointer-events:none;transition:all .15s ease;text-align:left}
-.pix-campo input:focus+label,.pix-campo input:not(:placeholder-shown)+label{top:6px;font-size:.68rem;font-weight:700;color:var(--primary-hover,#9C2C61)}
+.pix-campo input::placeholder{color:#8a8398;font-weight:500}
 .pix-campo.invalido input{border-color:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.12);animation:pixTrem .35s}
 /* preço */
 .pix-preco{margin:14px 0 6px;padding:14px 14px 10px;border-radius:14px;background:linear-gradient(180deg,#faf7fd,#f4f0fa);border:1px solid #ece6f4;text-align:left}
@@ -86,6 +85,7 @@ css.textContent = `
 .pix-erro{color:#c0392b;font-size:.85rem;margin-top:8px;min-height:1em}
 .pix-discreto{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:8px}
 .pix-discreto button,.pix-link-cartao{border:none;background:none;font-size:.8rem;color:#7a7388;text-decoration:underline;cursor:pointer;padding:6px 8px;font-family:inherit;border-radius:6px;transition:color .15s,background .15s}
+.pix-discreto #pixCartao,.pix-link-cartao{color:var(--primary-hover,#9C2C61);font-weight:700;font-size:.86rem}
 .pix-discreto button:hover,.pix-link-cartao:hover{color:var(--primary-hover,#9C2C61);background:#faf7fd}
 .pix-link-cartao{display:inline-block;margin-top:10px}
 /* cupom */
@@ -107,7 +107,6 @@ css.textContent = `
 /* QR, sucesso, recuperar (como antes) */
 .pix-box label{display:block;text-align:left;font-size:.8rem;font-weight:600;margin:10px 0 4px}
 .pix-box input[type=text],.pix-box input[type=email]{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;font-size:15px;box-sizing:border-box}
-.pix-campo label{margin:0}
 .pix-qr img{width:210px;height:210px;border:1px solid #eee;border-radius:10px;margin:8px auto}
 .pix-valor{font-size:1.4rem;font-weight:800;color:var(--primary,#BE3A78);margin:6px 0}
 .pix-copia{width:100%;font-size:11px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fafafa;text-align:center;box-sizing:border-box}
@@ -448,12 +447,12 @@ function desenharPreco(container, ctx, animar) {
   }
 
   btnGerar.textContent = `Pagar no Pix · ${dinheiro(pix.total)}`;
-  btnCartao.textContent = cartao && (cartao.total !== pix.total || cartao.total < vitrine) ? `Prefiro pagar com cartão de crédito (${dinheiro(cartao.total)})` : "Prefiro pagar com cartão de crédito";
+  btnCartao.textContent = cartao && (cartao.total !== pix.total || cartao.total < vitrine) ? `Pagar com cartão de crédito (${dinheiro(cartao.total)})` : "Pagar com cartão de crédito";
 
   desenharCarrinho(container, ctx);
 }
 
-// carrinho: botão "Continuar comprando" + (se houver 2 ou mais artes) lista com "Limpar carrinho"
+// carrinho: botão "Continuar comprando" + lista com "Limpar carrinho" (com 2 ou mais artes, ou sempre que há algo no carrinho salvo)
 function desenharCarrinho(container, ctx) {
   const L = loja();
   const area = container.querySelector("#pixCarrinho");
@@ -464,10 +463,10 @@ function desenharCarrinho(container, ctx) {
   continuar.textContent = ctx.itens.length > 1 ? "＋ Selecionar mais itens" : "＋ Continuar comprando";
   if (!ligado) return;
   const dicaTxt = textoProximaFaixa(L, ctx.itens.length);
-  if (ctx.itens.length > 1) {
+  if (ctx.itens.length > 1 || ctx.daBarra || lerCarrinho().length > 0) {
     const box = document.createElement("div"); box.className = "pix-carrinho";
     const topo = document.createElement("div"); topo.className = "pix-carrinho-topo";
-    const t = document.createElement("span"); t.textContent = `🛒 Seu carrinho · ${ctx.itens.length} artes`;
+    const t = document.createElement("span"); t.textContent = `🛒 Seu carrinho · ${ctx.itens.length} ${ctx.itens.length === 1 ? "arte" : "artes"}`;
     const limpar = document.createElement("button"); limpar.type = "button"; limpar.className = "pix-limpar"; limpar.textContent = "🗑 Limpar carrinho";
     limpar.addEventListener("click", () => limparCarrinho(container, ctx));
     topo.append(t, limpar);
@@ -570,15 +569,15 @@ function telaFormulario(container, ctx) {
   container.innerHTML = `
     <div class="pix-tela">
       <div class="pix-cab"><img class="pix-cab-img" alt=""><div class="pix-cab-txt"><span class="pix-cab-rot">Comprar arte</span><strong class="pix-cab-nome"></strong></div></div>
-      <div class="pix-campo"><input type="email" id="pixEmail" placeholder=" " autocomplete="email" inputmode="email"><label for="pixEmail">Seu e-mail (para receber a arte)</label></div>
-      <div class="pix-campo"><input type="text" id="pixNome" placeholder=" " autocomplete="name"><label for="pixNome">Seu nome (opcional)</label></div>
+      <div class="pix-campo"><input type="email" id="pixEmail" placeholder="Seu e-mail" aria-label="Seu e-mail" autocomplete="email" inputmode="email"></div>
+      <div class="pix-campo"><input type="text" id="pixNome" placeholder="Seu nome" aria-label="Seu nome" autocomplete="name"></div>
       <div class="pix-preco" id="pixPreco" aria-live="polite"></div>
       <div id="pixCarrinho"></div>
       <button class="pix-btn pix-btn-sec" id="pixContinuar" type="button" hidden>＋ Continuar comprando</button>
       <button class="pix-btn" id="pixGerar" type="button">Pagar no Pix</button>
       <div class="pix-erro" id="pixErro" role="alert"></div>
       <div class="pix-discreto">
-        <button type="button" id="pixCartao">Prefiro pagar com cartão de crédito</button>
+        <button type="button" id="pixCartao">Pagar com cartão de crédito</button>
         <button type="button" id="pixCupomAbrir">Tenho um cupom</button>
         <button type="button" id="pixRecuperar">Já paguei e perdi meu link</button>
       </div>
