@@ -61,7 +61,8 @@ css.textContent = `
 /* carrinho */
 .pix-carrinho{margin:8px 0 0;padding:10px 12px;border:1px solid #ece6f4;border-radius:12px;text-align:left;background:#fff}
 .pix-carrinho-topo{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:700}
-.pix-limpar{border:none;background:none;color:#b3402f;font-size:.76rem;font-weight:600;cursor:pointer;text-decoration:underline;padding:2px 0}
+.pix-limpar{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #f0c9c2;background:#fff5f3;color:#b3402f;font-size:.78rem;font-weight:700;cursor:pointer;padding:6px 11px;border-radius:999px;font-family:inherit;transition:background .15s,border-color .15s}
+.pix-limpar:hover{background:#ffe8e4;border-color:#e5a79d}
 .pix-cart-lista{display:flex;flex-direction:column;gap:6px;margin:8px 0 2px;max-height:150px;overflow:auto}
 .pix-cart-item{display:flex;align-items:center;gap:8px;font-size:.82rem}
 .pix-cart-img{width:34px;height:34px;border-radius:8px;object-fit:cover;flex:none;border:1px solid #eee;background:#fff}
@@ -75,6 +76,10 @@ css.textContent = `
 .pix-btn:active{transform:scale(.98)}
 .pix-btn:disabled{opacity:.7;cursor:wait}
 .pix-btn.carregando::before{content:"";width:15px;height:15px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:pixGira .7s linear infinite}
+.pix-btn-neutro{background:#fff;color:#5b5370;border:1.5px solid #e4def0;box-shadow:none;font-weight:600}
+.pix-btn-neutro:hover{background:#faf8fd;filter:none;border-color:#d4cbe6}
+.pix-btn-neutro.carregando::before{border-color:rgba(91,83,112,.3);border-top-color:#5b5370}
+.sf-barra{position:relative}
 .pix-btn-sec{background:#fff;color:var(--primary-hover,#9C2C61);border:1.5px solid var(--primary,#BE3A78);box-shadow:none}
 .pix-btn-sec.carregando::before{border-color:rgba(156,44,97,.3);border-top-color:var(--primary-hover,#9C2C61)}
 .pix-btn[hidden]{display:none}
@@ -111,8 +116,16 @@ css.textContent = `
 .pix-passos{font-size:.8rem;color:#666;text-align:left;margin:10px 0 0;padding-left:18px}
 .pix-links-lista{display:flex;flex-direction:column;gap:8px}
 .pix-cupom-novo{margin-top:12px;padding:12px;border:2px dashed #1E6B3A;background:#eefaf1;border-radius:10px;font-size:.85rem;color:#14401f;text-align:left}.pix-cupom-novo p{margin:6px 0}
-.pix-barra{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:84px;z-index:9000;border:none;border-radius:999px;padding:12px 20px;background:var(--primary,#BE3A78);color:#fff;font:700 14px 'Inter',sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.3);cursor:pointer;max-width:92vw;animation:pixSobe .25s ease}
-.pix-barra[hidden]{display:none}
+.sf-carrinho{position:relative;flex:none;display:grid;place-items:center;width:48px;height:48px;border:1px solid #e6e0ee;border-radius:50%;background:#fff;color:var(--primary-hover,#9C2C61);cursor:pointer;box-shadow:0 1px 3px rgba(40,20,60,.08);transition:transform .15s,box-shadow .15s,border-color .15s,background .15s}
+.sf-carrinho:hover{border-color:var(--primary,#BE3A78);box-shadow:0 3px 10px rgba(190,58,120,.18)}
+.sf-carrinho:active{transform:scale(.94)}
+.sf-carrinho.cheio{background:var(--primary,#BE3A78);border-color:var(--primary,#BE3A78);color:#fff}
+.sf-carrinho[hidden]{display:none}
+.sf-carrinho-n{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#fff;color:var(--primary-hover,#9C2C61);border:2px solid var(--primary,#BE3A78);font:800 11px/16px 'Inter',system-ui,sans-serif;text-align:center;box-sizing:border-box}
+.sf-carrinho-n[hidden]{display:none}
+.sf-carrinho.pula{animation:pixPula .45s ease}
+@keyframes pixPula{0%{transform:scale(1)}35%{transform:scale(1.22) rotate(-8deg)}70%{transform:scale(.96)}100%{transform:scale(1)}}
+.pix-carrinho-aviso{position:absolute;right:0;top:calc(100% + 8px);z-index:50;width:min(280px,86vw);padding:12px 14px;border-radius:12px;background:#2b2140;color:#fff;font:500 .82rem/1.4 'Inter',system-ui,sans-serif;box-shadow:0 10px 28px rgba(30,15,50,.28);animation:pixSobe .2s ease}
 .pix-guardar{margin-top:14px;padding:12px;border:2px dashed #e0a800;background:#fff8e1;border-radius:10px;font-size:.85rem;color:#4a3b00;text-align:left}.pix-guardar p{margin:6px 0}.pix-guardar-codigo{font-weight:700;font-size:1rem;letter-spacing:.5px;margin:6px 0;word-break:break-all}.pix-guardar-btn{display:block;width:100%;margin-top:6px;padding:8px;border:1px solid #c9a227;background:#fff;border-radius:8px;cursor:pointer;font-weight:600;color:#4a3b00}
 @media (prefers-reduced-motion:reduce){.pix-overlay,.pix-box,.pix-tela,.pix-eco,.pix-barra,.pix-cupom-cx,.pix-ok-icone{animation:none!important}.pix-btn,.pix-campo input,.pix-campo label{transition:none}}
 `;
@@ -206,10 +219,15 @@ function pontuarParecido(base, p) {
 }
 
 // sorteia um pack que combine com o que a pessoa está comprando (quanto mais parecido, mais chance)
-function sugerirPack(base, naoRepetir) {
+function sugerirPack(base, naoRepetir, metodo, cupom) {
   const L = loja();
   if (!L) return null;
   const todos = L.produtos().filter((p) => p.id !== base.id && (p.imagens || []).length && L.calcularPedido(p, null, "pix").p1 > 0);
+  // só sugere pack em que o desconto do "leve também" realmente vale (maior que o Pix/cartão, promoção ou cupom que ele já teria)
+  if (metodo) {
+    const uteis = todos.filter((p) => L.calcularPedido(base, p, metodo, undefined, cupom, p.id).descCombo > 0);
+    todos.length = 0; todos.push(...uteis);
+  }
   if (!todos.length) return null;
   let pool = todos.filter((p) => !naoRepetir.includes(p.id));
   if (!pool.length) { naoRepetir.length = 0; pool = todos; }
@@ -241,19 +259,39 @@ function salvarCarrinho(ids) {
 const esvaziarCarrinho = () => salvarCarrinho([]);
 const carrinhoLigado = () => { const L = loja(); return !!(L && L.ofertas().carrinho.ativo); };
 
+// ícone do carrinho ao lado da busca (aparece quando o carrinho está ligado); o número mostra quantas artes estão nele
 let barra = null;
+const SVG_CARRINHO = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.1a1.6 1.6 0 0 0 1.6-1.2L20.5 8H6.1"/></svg>';
+function fecharAvisoCarrinho() { const a = document.getElementById("pixCarrinhoAviso"); if (a) a.remove(); }
 function atualizarBarra() {
-  const ids = carrinhoLigado() ? lerCarrinho() : [];
-  if (!ids.length || overlay) { if (barra) barra.hidden = true; return; }
-  if (!barra) {
+  const ligado = carrinhoLigado();
+  const ids = ligado ? lerCarrinho() : [];
+  if (!ligado) { if (barra) barra.hidden = true; return; }
+  if (!barra || !barra.isConnected) {
+    const busca = document.getElementById("blocoBusca");
+    if (!busca || !busca.parentElement) return;
     barra = document.createElement("button");
     barra.type = "button";
-    barra.className = "pix-barra";
-    barra.addEventListener("click", abrirCarrinho);
-    document.body.appendChild(barra);
+    barra.className = "sf-carrinho";
+    barra.setAttribute("aria-label", "Ver meu carrinho");
+    barra.innerHTML = `${SVG_CARRINHO}<span class="sf-carrinho-n" hidden></span>`;
+    barra.addEventListener("click", () => {
+      if (lerCarrinho().length) { fecharAvisoCarrinho(); abrirCarrinho(); return; }
+      if (document.getElementById("pixCarrinhoAviso")) { fecharAvisoCarrinho(); return; }
+      const av = document.createElement("div"); av.id = "pixCarrinhoAviso"; av.className = "pix-carrinho-aviso"; av.setAttribute("role", "status");
+      av.textContent = "Seu carrinho está vazio. Toque em “Comprar Arte” e depois em “Continuar comprando” para juntar várias artes.";
+      barra.parentElement.appendChild(av);
+      setTimeout(fecharAvisoCarrinho, 5000);
+    });
+    busca.parentElement.appendChild(barra);
   }
-  barra.textContent = `🛒 ${ids.length} ${ids.length === 1 ? "arte" : "artes"} no carrinho · Finalizar compra`;
   barra.hidden = false;
+  const n = barra.querySelector(".sf-carrinho-n");
+  const antes = Number(n.textContent) || 0;
+  n.textContent = String(ids.length); n.hidden = !ids.length;
+  barra.setAttribute("aria-label", ids.length ? `Ver meu carrinho (${ids.length} ${ids.length === 1 ? "arte" : "artes"})` : "Ver meu carrinho (vazio)");
+  barra.classList.toggle("cheio", ids.length > 0);
+  if (ids.length > antes) { barra.classList.remove("pula"); void barra.offsetWidth; barra.classList.add("pula"); }
 }
 function abrirCarrinho() {
   const L = loja();
@@ -290,9 +328,13 @@ function novoContexto(produtoId, titulo, opcoes) {
   return ctx;
 }
 
+// o desconto do "leve também" só existe quando a pessoa aceitou a oferta (e o pedido continua sendo esses 2 packs)
+function leveAtual(ctx) {
+  return (ctx.leveId && ctx.itens.length === 2 && ctx.itens[1].id === ctx.leveId) ? ctx.leveId : "";
+}
 function calculo(ctx, metodo) {
   const L = loja();
-  return (L && ctx.prod) ? L.calcularPedido(ctx.prod, ctx.extras, metodo, undefined, ctx.cupom) : null;
+  return (L && ctx.prod) ? L.calcularPedido(ctx.prod, ctx.extras, metodo, undefined, ctx.cupom, leveAtual(ctx)) : null;
 }
 
 // só confere o valor quando existe oferta no meio (sem oferta o comportamento é o de sempre)
@@ -305,14 +347,21 @@ function conferirValor(ctx, metodo, valorServidor) {
   if (!precisaConferir(ctx, metodo)) return;
   const esperado = calculo(ctx, metodo).total;
   const recebido = Math.round(Number(valorServidor) * 100);
-  if (!Number.isFinite(recebido) || Math.abs(recebido - esperado) > 1) {
-    throw new Error("O valor do pagamento não confere com a oferta mostrada. Atualize a página e tente de novo.");
+  if (!Number.isFinite(recebido)) throw new Error("Não foi possível calcular o valor do pedido. Tente novamente.");
+  // o servidor é quem cobra. Se cobrar MENOS ou o mesmo, segue. Se for MAIS, avisa com o valor novo e só segue se a pessoa tocar de novo.
+  if (recebido > esperado + 1) {
+    ctx.aceito = ctx.aceito || {};
+    if (ctx.aceito[metodo] !== recebido) {
+      ctx.aceito[metodo] = recebido;
+      throw new Error(`O valor do pedido foi atualizado para ${dinheiro(recebido)} (promoções do momento). Se estiver de acordo, toque em pagar de novo.`);
+    }
   }
 }
 
 function corpoPedido(ctx, extras) {
   const corpo = { produtoId: ctx.produtoId, ...extras };
   if (ctx.extras.length) corpo.extras = ctx.extras.map((p) => p.id);
+  if (leveAtual(ctx)) corpo.leve = leveAtual(ctx);
   if (ctx.cupom) { corpo.cupom = ctx.cupom.codigo; corpo.email = ctx.cupomEmail; }
   return corpo;
 }
@@ -354,7 +403,7 @@ function desenharPreco(container, ctx, animar) {
   caixa.innerHTML = "";
   if (!pix) { caixa.hidden = true; return; }
   caixa.hidden = false;
-  const vitrine = ctx.itens.reduce((t, p) => t + L.calcularPedido(p, null, "todos").p1, 0);      // preço de vitrine (sem desconto de forma de pagamento)
+  const vitrine = pix.cheio;                                                        // soma dos preços cheios dos packs
   const economia = Math.max(0, vitrine - pix.total);
   const o = L.ofertas();
   const lt = L.normalizarLeveTambem(ctx.prod && ctx.prod.leveTambem);
@@ -379,17 +428,13 @@ function desenharPreco(container, ctx, animar) {
   const sum = document.createElement("summary"); sum.textContent = "Ver detalhes";
   const linhas = document.createElement("div"); linhas.className = "pix-det-linhas";
   const linha = (cls, nome, v) => { const d = document.createElement("div"); if (cls) d.className = cls; const a = document.createElement("span"); a.className = "nome"; a.textContent = nome; const c = document.createElement("span"); c.textContent = v; d.append(a, c); linhas.appendChild(d); };
-  ctx.itens.forEach((p) => linha("", p.titulo, dinheiro(L.calcularPedido(p, null, "todos").p1)));
-  const promo = vitrine - pix.base;
-  if (promo > 0) linha("desc", "Promoção no Pix", `−${dinheiro(promo)}`);
-  if (pix.descItens > 0) {
-    let nome = "Desconto";
-    if (pix.origemDesc === "carrinho") { const f = L.faixaDoCarrinho(o.carrinho, pix.qtd); nome = `Desconto do carrinho${f ? ` (−${f.percentual}%)` : ""}`; }
-    else if (pix.origemDesc === "combo") nome = `Desconto "leve também" (−${lt.percentual}%)`;
-    else if (ctx.cupom) nome = `Cupom ${ctx.cupom.codigo}`;
-    linha("desc", nome, `−${dinheiro(pix.descItens)}`);
-  }
-  if (pix.descPix > 0) linha("desc", "Desconto no Pix", `−${dinheiro(pix.descPix)}`);
+  ctx.itens.forEach((p) => linha("", p.titulo, dinheiro(L.calcularPedido(p, null, "todos").cheio)));
+  const sm = pix.soma;
+  if (sm.promo > 0) linha("desc", "Promoção", `−${dinheiro(sm.promo)}`);
+  if (sm.pagamento > 0) linha("desc", "Desconto no Pix", `−${dinheiro(sm.pagamento)}`);
+  if (sm.carrinho > 0) { const f = L.faixaDoCarrinho(o.carrinho, pix.qtd); linha("desc", `Desconto do carrinho${f ? ` (−${f.percentual}%)` : ""}`, `−${dinheiro(sm.carrinho)}`); }
+  if (sm.combo > 0) linha("desc", `Desconto "leve também" (−${lt.percentual}%)`, `−${dinheiro(sm.combo)}`);
+  if (sm.cupom > 0) linha("desc", ctx.cupom ? `Cupom ${ctx.cupom.codigo}` : "Cupom", `−${dinheiro(sm.cupom)}`);
   linha("tot", "Total no Pix", dinheiro(pix.total));
   det.append(sum, linhas);
   caixa.appendChild(det);
@@ -398,7 +443,7 @@ function desenharPreco(container, ctx, animar) {
   nota.textContent = "";
   if (ctx.cupom) {
     const rel = ctx.cupom.metodo === "cartao" ? cartao : pix;
-    if (!rel.cupomVale) nota.textContent = "Os descontos não são cumulativos: o desconto do pedido já é igual ou maior que o do cupom, então o cupom não será usado (e continua valendo para outra compra).";
+    if (!rel.cupomVale) nota.textContent = "Os descontos não se acumulam: cada arte recebe só o maior desconto, e aqui o desconto que ela já tem é igual ou maior que o do cupom. Por isso o cupom não será usado (e continua valendo para outra compra).";
     else if (ctx.cupom.metodo !== "todos") nota.textContent = `Cupom válido só ${metodoTexto(ctx.cupom.metodo).replace("no ", "para pagamento no ").replace("para pagamento no cartão", "para pagamento no cartão de crédito")}.`;
   }
 
@@ -423,7 +468,7 @@ function desenharCarrinho(container, ctx) {
     const box = document.createElement("div"); box.className = "pix-carrinho";
     const topo = document.createElement("div"); topo.className = "pix-carrinho-topo";
     const t = document.createElement("span"); t.textContent = `🛒 Seu carrinho · ${ctx.itens.length} artes`;
-    const limpar = document.createElement("button"); limpar.type = "button"; limpar.className = "pix-limpar"; limpar.textContent = "Limpar carrinho";
+    const limpar = document.createElement("button"); limpar.type = "button"; limpar.className = "pix-limpar"; limpar.textContent = "🗑 Limpar carrinho";
     limpar.addEventListener("click", () => limparCarrinho(container, ctx));
     topo.append(t, limpar);
     const lista = document.createElement("div"); lista.className = "pix-cart-lista";
@@ -586,10 +631,11 @@ function sugestaoDaOferta(ctx, metodo) {
   const L = loja();
   if (!L || !ctx.prod || ctx.itens.length !== 1 || ctx.ofertaVista) return null;
   if (!L.ofertas().combo.ativo || !L.normalizarLeveTambem(ctx.prod.leveTambem).ativo) return null;
-  if (!ctx.sugestao) ctx.sugestao = sugerirPack(ctx.prod, ctx.jaSugeridos);
+  if (ctx.sugestaoMetodo !== metodo) { ctx.sugestao = null; ctx.sugestaoMetodo = metodo; }
+  if (!ctx.sugestao) ctx.sugestao = sugerirPack(ctx.prod, ctx.jaSugeridos, metodo, ctx.cupom);
   if (!ctx.sugestao) return null;
-  const c = L.calcularPedido(ctx.prod, ctx.sugestao, metodo, undefined, ctx.cupom);
-  return c.origemDesc === "combo" ? ctx.sugestao : null;        // só oferece quando o desconto do "leve também" realmente vale neste pedido
+  const c = L.calcularPedido(ctx.prod, ctx.sugestao, metodo, undefined, ctx.cupom, ctx.sugestao.id);
+  return c.descCombo > 0 ? ctx.sugestao : null;        // só oferece quando o desconto do "leve também" realmente vale neste pedido
 }
 
 async function seguirParaPagamento(container, ctx, metodo) {
@@ -616,11 +662,11 @@ async function enviarPedido(container, ctx, metodo) {
 function telaOferta(container, ctx, metodo) {
   const L = loja();
   const sug = ctx.sugestao;
-  const so = L.calcularPedido(ctx.prod, sug, metodo, undefined, ctx.cupom);          // com o 2º pack
+  const so = L.calcularPedido(ctx.prod, sug, metodo, undefined, ctx.cupom, sug.id);          // com o 2º pack (aceitando a oferta)
   const sem = L.calcularPedido(ctx.prod, null, metodo, undefined, ctx.cupom);          // só o pack atual
   const cheio = L.calcularPedido(sug, null, metodo).total;                              // o 2º pack sozinho, nesta forma de pagamento
   const adicional = so.total - sem.total;
-  const pct = L.normalizarLeveTambem(ctx.prod.leveTambem).percentual;
+  const pct = cheio > 0 ? Math.max(1, Math.round((1 - (so.total - sem.total) / cheio) * 100)) : 0;
   container.innerHTML = `
     <div class="pix-tela">
       <span class="pix-lt-selo">🎁 Oferta para este pedido</span>
@@ -630,9 +676,9 @@ function telaOferta(container, ctx, metodo) {
       <div class="pix-lt-preco"></div>
       <div class="pix-lt-total"></div>
       <button class="pix-btn" id="pixLtAdd" type="button">＋ Adicionar e continuar</button>
+      <button class="pix-btn pix-btn-neutro" id="pixLtPular" type="button">Continuar sem adicionar</button>
       <div class="pix-erro" id="pixLtErro" role="alert"></div>
       <div class="pix-discreto">
-        <button type="button" id="pixLtPular">Não, obrigada. Continuar sem adicionar</button>
         <button type="button" id="pixLtOutro">Ver outro pack</button>
       </div>
     </div>`;
@@ -649,21 +695,21 @@ function telaOferta(container, ctx, metodo) {
   const rotuloFinal = metodo === "pix" ? "Gerando Pix..." : "Abrindo pagamento...";
   const andar = async (botao, adicionar) => {
     ctx.ofertaVista = true;
-    if (adicionar) { ctx.itens = [ctx.prod, sug]; sincronizar(ctx); }
+    if (adicionar) { ctx.itens = [ctx.prod, sug]; ctx.leveId = sug.id; sincronizar(ctx); }
     const desfazer = ocupar(botao, rotuloFinal);
     pular.disabled = add.disabled = true;
     try { await enviarPedido(container, ctx, metodo); }
     catch (e) {
       erro.textContent = (e && e.message) || "Falha de conexão. Tente novamente.";
       desfazer(); pular.disabled = add.disabled = false;
-      if (adicionar) { ctx.itens = [ctx.prod]; sincronizar(ctx); ctx.ofertaVista = false; }
+      if (adicionar) { ctx.itens = [ctx.prod]; ctx.leveId = ""; sincronizar(ctx); ctx.ofertaVista = false; }
     }
   };
   add.addEventListener("click", () => andar(add, true));
   pular.addEventListener("click", () => andar(pular, false));
   container.querySelector("#pixLtOutro").addEventListener("click", () => {
     ctx.jaSugeridos.push(sug.id);
-    ctx.sugestao = sugerirPack(ctx.prod, ctx.jaSugeridos) || sug;
+    ctx.sugestao = sugerirPack(ctx.prod, ctx.jaSugeridos, metodo, ctx.cupom) || sug;
     telaOferta(container, ctx, metodo);
   });
 }

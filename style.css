@@ -622,19 +622,30 @@ input:focus, textarea:focus {
 .card-body {
   padding: 14px 16px 16px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
     "descricao  descricao"
+    "rotulo     comprar"
     "preco      comprar"
+    "validade   validade"
+    "pix        pix"
     "admin      admin";
   align-items: center;
-  row-gap: 12px;
+  row-gap: 0;
   column-gap: 10px;
   flex: 1;
 }
+/* o bloco de preço "se abre" na grade do card: rótulo + valor ao lado do botão, e a linha do Pix/cartão inteira embaixo (sem quebrar em duas) */
+.card-body > .card-preco-box { display: contents; }
+.card-body > .card-descricao-wrap { margin-bottom: 12px; }
+.card-body .preco-label { grid-area: rotulo; align-self: end; }
+.card-body .card-preco { grid-area: preco; align-self: start; }
+.card-body .preco-validade { grid-area: validade; margin-top: 6px; }
+.card-body .preco-pix { grid-area: pix; justify-self: start; margin-top: 10px; white-space: nowrap; }
+.card-body > .card-admin, .card-body > [class*="admin"] { grid-area: admin; margin-top: 12px; }
 
 .card-descricao-wrap { grid-area: descricao; }
-.card-preco-box { grid-area: preco; }
+.card-preco-box { grid-area: preco; min-width: 0; }
 
 .btn-comprar {
   grid-area: comprar;
@@ -1167,6 +1178,7 @@ input:focus, textarea:focus {
   }
   .galeria-preco-box .card-preco { font-size: 1.5rem; }
   .btn-comprar-galeria { flex: 1; width: auto; min-height: 50px; }
+  .btn-compartilhar-galeria { position: relative; top: auto; right: auto; flex: none; width: 50px; height: 50px; }
 }
 
 /* CAMPO DE VALOR COM MÁSCARA DE MOEDA */
@@ -1386,10 +1398,11 @@ input:focus, textarea:focus {
 .destaque-rodape {
   margin-top: auto;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
+.destaque-rodape .btn-comprar { width: 100%; min-height: 44px; }
 
 /* Selo de destaque (faixa e cards da grade) */
 .selo-destaque {
@@ -1802,7 +1815,16 @@ input:focus, textarea:focus {
   font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em; box-shadow: var(--shadow); pointer-events: none;
 }
 .btn-compartilhar {
-  display: block; width: 100%; margin-top: 8px; padding: 6px; border: 0; background: transparent;
-  color: var(--cor-primaria, #BE3A78); font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline;
+  position: relative; display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0; border-radius: 50%;
+  border: 1px solid rgba(20, 12, 40, 0.12); background: rgba(255, 255, 255, 0.94); color: var(--text-muted, #6b6480);
+  cursor: pointer; box-shadow: 0 1px 4px rgba(20, 12, 40, 0.14); transition: color .15s, transform .15s, box-shadow .15s;
 }
-.btn-compartilhar:hover { opacity: .8; }
+.btn-compartilhar:hover { color: var(--primary, #BE3A78); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(20, 12, 40, 0.2); }
+.btn-compartilhar:active { transform: scale(.94); }
+.btn-compartilhar-card { position: absolute; right: 10px; bottom: 10px; z-index: 3; }
+.btn-compartilhar-galeria { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; background: #fff; border-color: var(--border, #e6e0ee); box-shadow: none; }
+.btn-compartilhar.mostra-dica::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); right: 0; padding: 5px 10px; border-radius: 8px;
+  background: #2b2140; color: #fff; font: 600 .72rem/1.2 var(--font-body, 'Inter', sans-serif); white-space: nowrap; pointer-events: none;
+}
+@media (max-width: 480px) { .btn-compartilhar-card { right: 8px; bottom: 8px; } }

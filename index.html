@@ -345,7 +345,7 @@
             <span id="galeriaPixWrap"></span>
           </div>
           <button type="button" id="galeriaBtnComprar" class="btn-comprar btn-comprar-galeria">Comprar Arte</button>
-          <button type="button" id="galeriaBtnCompartilhar" class="btn-compartilhar">🔗 Compartilhar</button>
+          <button type="button" id="galeriaBtnCompartilhar" class="btn-compartilhar btn-compartilhar-galeria" aria-label="Compartilhar esta arte" title="Compartilhar"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 10.8 7.4-4.4M8.3 13.2l7.4 4.4"/></svg></button>
         </div>
       </div>
     </div>
@@ -720,7 +720,7 @@
       const it = (typeof x === 'number') ? { preco: x } : (x || {});
       const preco = Math.round(Number(it.preco)) || 0;
       const promo = Math.round(Number(it.promoPreco)) || 0;
-      return { preco, promoPreco: (promo > 0 && promo < preco) ? promo : 0, promoMetodo: normalizarMetodo(it.promoMetodo), pag: normalizarDescontoPagamentoItem(it.pag) };
+      return { preco, promoPreco: (promo > 0 && promo < preco) ? promo : 0, promoMetodo: normalizarMetodo(it.promoMetodo), pag: normalizarDescontoPagamentoItem(it.pag), leve: it.leve === true };
     }
     const precoDoItem = (it, metodo) => (it.promoPreco > 0 && metodoVale(it.promoMetodo, metodo)) ? it.promoPreco : it.preco;
 
@@ -746,10 +746,14 @@
     }
 
     // A CONTA DO PEDIDO (tudo em centavos). itens[0] = pack principal; os demais = packs extras.
-    //  1) desconto "de itens": carrinho (por quantidade) ou "leve também" (2 packs) — vale o MAIOR dos dois, nunca somados;
-    //  2) cupom (só se for da forma de pagamento escolhida): NÃO soma com o desconto de itens, vale o maior (empate: fica o automático);
-    //  3) desconto de pagamento (Pix/cartão) por cima do que sobrou: o geral, ou o do próprio pack quando ele tem o seu (substitui o geral
-    //     só para aquele pack; o desconto de itens é repartido entre os packs na proporção do preço). Tudo limitado a 70% do valor dos packs.
+    // REGRA DE OURO: nenhum desconto soma com outro. Cada pack recebe UM só desconto: o MAIOR entre
+    //   - a promoção do pack (se vale para a forma de pagamento escolhida),
+    //   - o desconto de pagamento (Pix/cartão): o do próprio pack, quando ele tem, senão o geral,
+    //   - o desconto do carrinho (por quantidade de packs, só com 2 ou mais),
+    //   - o "leve também" (só no 2º pack, só se o cliente aceitou a oferta e o 1º pack a tem ligada),
+    //   - o cupom (só se for da forma de pagamento escolhida).
+    // Empate: vale o automático (o cupom não é gasto). Os descontos de um pack (menos a promoção que você mesma definiu) nunca passam de 70% do preço dele.
+    // O que é "valor fixo" (R$) é repartido entre os packs na proporção do preço antes de comparar.
     function calcularPedidoCentavos(itensEntrada, leveTambem, metodo, ofertas, cupom) {
       const o = normalizarOfertas(ofertas);
       const lt = normalizarLeveTambem(leveTambem);
@@ -757,48 +761,78 @@
       const cupomFora = !!cp0 && !metodoVale(cp0.metodo, metodo);      // cupom de outra forma de pagamento: não vale neste pedido
       const cp = cupomFora ? null : cp0;
       const itens = itensEntrada.map(itemDoCalculo);
-      const precos = itens.map((it) => precoDoItem(it, metodo));
-      const qtd = precos.length;
-      const p1 = precos[0];
+      const qtd = itens.length;
+      const cheio = itens.reduce((t, it) => t + it.preco, 0);
+      const teto = (preco) => Math.floor(preco * LIMITE_DESCONTO_PCT / 100);
+      const precos = itens.map((it) => precoDoItem(it, metodo));      // preço do pack só com a promoção (referência de vitrine)
+      const p1 = precos[0] || 0;
       const p2 = precos.slice(1).reduce((t, x) => t + x, 0);
-      const base = p1 + p2;
-      const limite = Math.floor(base * LIMITE_DESCONTO_PCT / 100);
 
-      let descAuto = 0, origemAuto = '';
-      if (qtd > 1) {
-        if (o.carrinho.ativo) {
-          const f = faixaDoCarrinho(o.carrinho, qtd);
-          if (f) { descAuto = Math.round(base * f.percentual / 100); origemAuto = 'carrinho'; }
-        }
-        if (qtd === 2 && o.combo.ativo && lt.ativo && metodoVale(lt.metodo, metodo)) {
-          const d = Math.round(p2 * lt.percentual / 100);
-          if (d > descAuto) { descAuto = d; origemAuto = 'combo'; }
-        }
-      }
-      descAuto = Math.min(descAuto, limite);
+      // reparte um valor fixo entre os packs indicados (na proporção do preço; sobra de centavos para o primeiro)
+      const repartir = (total, indices) => {
+        const soma = indices.reduce((t, i) => t + itens[i].preco, 0);
+        const parte = itens.map(() => 0);
+        if (soma <= 0 || total <= 0) return parte;
+        const t = Math.min(total, teto(soma));
+        indices.forEach((i) => { parte[i] = Math.floor(t * itens[i].preco / soma); });
+        parte[indices[0]] += t - indices.reduce((s, i) => s + parte[i], 0);
+        return parte;
+      };
 
-      let descCupom = 0;
-      if (cp) descCupom = cp.tipo === 'valor' ? emCentavos(cp.valor) : Math.round(base * cp.valor / 100);
-      descCupom = Math.max(0, Math.min(descCupom, limite));
-
-      const cupomVale = descCupom > descAuto;
-      const descItens = cupomVale ? descCupom : descAuto;
-      const origemDesc = descItens > 0 ? (cupomVale ? 'cupom' : origemAuto) : '';
-      const subtotal = base - descItens;
-
-      // reparte o desconto de itens entre os packs (o resto dos centavos vai para o primeiro)
-      const parte = precos.map((p) => (base > 0 ? Math.floor(descItens * p / base) : 0));
-      parte[0] += descItens - parte.reduce((t, x) => t + x, 0);
-      let somaGeral = 0, descProprio = 0, temProprio = false;
+      // 1) promoção
+      const dPromo = itens.map((it, i) => Math.max(0, it.preco - precos[i]));
+      // 2) desconto de pagamento (Pix/cartão): próprio do pack ou geral
+      const regraGeral = metodo === 'todos' ? null : regraDoMetodo(o, metodo);
+      const proprio = itens.map((it) => metodo !== 'todos' && it.pag.ativo && metodoVale(it.pag.metodo, metodo));
+      const dPag = itens.map(() => 0);
+      let temProprio = false;
       itens.forEach((it, i) => {
-        const sub = Math.max(0, precos[i] - parte[i]);
-        if (it.pag.ativo && metodoVale(it.pag.metodo, metodo)) {
+        if (proprio[i]) {
           temProprio = true;
-          descProprio += descontoPagamentoCentavos(sub, { ativo: true, tipo: it.pag.tipo, valor: it.pag.valor });
-        } else somaGeral += sub;
+          dPag[i] = it.pag.tipo === 'valor' ? Math.min(emCentavos(it.pag.valor), teto(it.preco)) : Math.round(it.preco * it.pag.valor / 100);
+        }
       });
-      const descPix = Math.max(0, Math.min(descontoPagamentoCentavos(somaGeral, regraDoMetodo(o, metodo)) + descProprio, limite - descItens));
-      return { qtd, p1, p2, base, descAuto, descCupom, cupomVale, cupomFora, descItens, origemDesc, subtotal, descPix, temProprio, total: subtotal - descPix };
+      if (regraGeral && regraGeral.ativo) {
+        const idx = itens.map((_, i) => i).filter((i) => !proprio[i]);
+        if (regraGeral.tipo === 'valor') {
+          const parte = repartir(emCentavos(regraGeral.valor), idx);
+          idx.forEach((i) => { dPag[i] = parte[i]; });
+        } else idx.forEach((i) => { dPag[i] = Math.round(itens[i].preco * regraGeral.valor / 100); });
+      }
+      // 3) carrinho
+      const dCarrinho = itens.map(() => 0);
+      if (qtd > 1 && o.carrinho.ativo) {
+        const f = faixaDoCarrinho(o.carrinho, qtd);
+        if (f) itens.forEach((it, i) => { dCarrinho[i] = Math.round(it.preco * f.percentual / 100); });
+      }
+      // 4) "leve também": só o 2º pack, só quando o cliente aceitou a oferta
+      const dCombo = itens.map(() => 0);
+      if (qtd === 2 && itens[1].leve && o.combo.ativo && lt.ativo && metodoVale(lt.metodo, metodo)) {
+        dCombo[1] = Math.round(itens[1].preco * lt.percentual / 100);
+      }
+      // 5) cupom
+      let dCupom = itens.map(() => 0);
+      if (cp) {
+        if (cp.tipo === 'valor') dCupom = repartir(emCentavos(cp.valor), itens.map((_, i) => i));
+        else itens.forEach((it, i) => { dCupom[i] = Math.round(it.preco * cp.valor / 100); });
+      }
+
+      // cada pack fica com o maior; em empate vale o primeiro da lista (o cupom é o último)
+      const ordem = [['promo', dPromo], ['pagamento', dPag], ['carrinho', dCarrinho], ['combo', dCombo], ['cupom', dCupom]];
+      const soma = { promo: 0, pagamento: 0, carrinho: 0, combo: 0, cupom: 0 };
+      const porItem = [];
+      itens.forEach((it, i) => {
+        let melhor = 0, tipo = '';
+        for (const [nome, lista] of ordem) { const d = nome === 'promo' ? lista[i] : Math.min(lista[i], teto(it.preco)); if (d > melhor) { melhor = d; tipo = nome; } }
+        soma[tipo || 'promo'] += melhor;
+        porItem.push({ desconto: melhor, tipo, total: it.preco - melhor });
+      });
+      const descontoTotal = porItem.reduce((t, x) => t + x.desconto, 0);
+      const total = cheio - descontoTotal;
+      const itensDesc = soma.carrinho + soma.combo + soma.cupom;
+      const origemDesc = soma.cupom > 0 ? 'cupom' : (soma.combo > 0 ? 'combo' : (soma.carrinho > 0 ? 'carrinho' : ''));
+      return { qtd, p1, p2, base: p1 + p2, cheio, descontoTotal, porItem, soma, descCupom: soma.cupom, cupomVale: soma.cupom > 0, cupomFora,
+        descCombo: soma.combo, descCarrinho: soma.carrinho, descPromo: soma.promo, descItens: itensDesc, origemDesc, descPix: soma.pagamento, temProprio, total };
     }
     // >>> FIM OFERTAS <<<
 
@@ -825,9 +859,9 @@
 
     // monta o pedido: pack principal + extras (lista, 1 pack ou nada) + cupom opcional ({tipo, valor}).
     // O desconto do "leve também" vem do cadastro do pack principal.
-    function calcularPedidoLoja(prod, extras, metodo, ofertas, cupom) {
+    function calcularPedidoLoja(prod, extras, metodo, ofertas, cupom, leveId) {
       const lista = Array.isArray(extras) ? extras : (extras ? [extras] : []);
-      return calcularPedidoCentavos([prod, ...lista].map(itemDoProduto), prod && prod.leveTambem, metodo, ofertas || ofertasAtuais(), cupom);
+      return calcularPedidoCentavos([prod, ...lista].map((p) => ({ ...itemDoProduto(p), leve: !!leveId && p !== prod && p.id === leveId })), prod && prod.leveTambem, metodo, ofertas || ofertasAtuais(), cupom);
     }
 
     function textoRegra(regra, rotuloMetodo) {
@@ -1354,9 +1388,7 @@
     async function compartilharArte(p, botao) {
       const url = urlDaArte(p);
       const texto = `Olha essa arte: ${p.titulo || ''}`;
-      const rotulo = botao ? (botao.dataset.rotulo || botao.textContent) : '';
-      if (botao) botao.dataset.rotulo = rotulo;
-      const aviso = (t) => { if (!botao) return; botao.textContent = t; setTimeout(() => { botao.textContent = rotulo; }, 2200); };
+      const aviso = (t) => { if (!botao) return; botao.dataset.tip = t; botao.classList.add('mostra-dica'); setTimeout(() => { botao.classList.remove('mostra-dica'); }, 2200); };
       if (navigator.share) {
         try { await navigator.share({ title: p.titulo || 'Arte', text: texto, url }); return; }
         catch (e) { if (e && e.name === 'AbortError') return; /* sem suporte real: tenta copiar */ }
@@ -1745,6 +1777,7 @@
             <div class="dots-container">${dotsHTML}</div>
           ` : ''}
           <span class="icone-expandir" title="Ver galeria completa">⤢</span>
+          <button type="button" class="btn-compartilhar btn-compartilhar-card" aria-label="Compartilhar esta arte" title="Compartilhar"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 10.8 7.4-4.4M8.3 13.2l7.4 4.4"/></svg></button>
         </div>
         <div class="card-body">
           <div class="card-descricao-wrap">
@@ -1753,7 +1786,6 @@
           ${htmlPrecoBox(prod)}
 
           <button type="button" class="btn-comprar">Comprar Arte</button>
-          <button type="button" class="btn-compartilhar" aria-label="Compartilhar esta arte">🔗 Compartilhar</button>
 
         </div>
       `;
@@ -1765,7 +1797,7 @@
 
       card.querySelector('.carrossel-container').addEventListener('click', () => abrirGaleria(prod));
       card.querySelector('.btn-comprar').addEventListener('click', () => comprarProduto(prod));
-      card.querySelector('.btn-compartilhar').addEventListener('click', (e) => compartilharArte(prod, e.currentTarget));
+      card.querySelector('.btn-compartilhar').addEventListener('click', (e) => { e.stopPropagation(); compartilharArte(prod, e.currentTarget); });
 
       if (usuarioAtual && ganchos.cardAdmin) ganchos.cardAdmin(prod, card.querySelector('.card-body'));
       return card;
