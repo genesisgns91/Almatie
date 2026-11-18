@@ -126,7 +126,7 @@ css.textContent = `
 @keyframes pixPula{0%{transform:scale(1)}35%{transform:scale(1.22) rotate(-8deg)}70%{transform:scale(.96)}100%{transform:scale(1)}}
 .pix-carrinho-aviso{position:absolute;right:0;top:calc(100% + 8px);z-index:50;width:min(280px,86vw);padding:12px 14px;border-radius:12px;background:#2b2140;color:#fff;font:500 .82rem/1.4 'Inter',system-ui,sans-serif;box-shadow:0 10px 28px rgba(30,15,50,.28);animation:pixSobe .2s ease}
 .pix-guardar{margin-top:14px;padding:12px;border:2px dashed #e0a800;background:#fff8e1;border-radius:10px;font-size:.85rem;color:#4a3b00;text-align:left}.pix-guardar p{margin:6px 0}.pix-guardar-codigo{font-weight:700;font-size:1rem;letter-spacing:.5px;margin:6px 0;word-break:break-all}.pix-guardar-btn{display:block;width:100%;margin-top:6px;padding:8px;border:1px solid #c9a227;background:#fff;border-radius:8px;cursor:pointer;font-weight:600;color:#4a3b00}
-@media (prefers-reduced-motion:reduce){.pix-overlay,.pix-box,.pix-tela,.pix-eco,.pix-barra,.pix-cupom-cx,.pix-ok-icone{animation:none!important}.pix-btn,.pix-campo input,.pix-campo label{transition:none}}
+@media (prefers-reduced-motion:reduce){.pix-overlay,.pix-box,.pix-tela,.pix-eco,.pix-barra,.pix-cupom-cx,.pix-ok-icone{animation:none!important}.pix-btn,.pix-campo input{transition:none}}
 `;
 document.head.appendChild(css);
 
@@ -140,7 +140,9 @@ function fechar() {
   pararPolling();
   if (overlay) overlay.remove();
   overlay = null;
-  document.body.style.overflow = "";
+  // se a galeria de uma arte continua aberta por baixo, a página não volta a rolar
+  const galeria = document.getElementById("modalGaleria");
+  document.body.style.overflow = galeria && !galeria.classList.contains("escondido") ? "hidden" : "";
   atualizarBarra();
 }
 
@@ -155,18 +157,32 @@ function limparRetorno() {
 function fecharPeloUsuario() {
   fechar();
   limparRetorno();
+  if (abertoPor && abertoPor.isConnected) { try { abertoPor.focus({ preventScroll: true }); } catch { /* ignora */ } }
+  abertoPor = null;
 }
 
+// Esc fecha a janela de compra (e o foco volta para quem a abriu)
+let abertoPor = null;
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && overlay) { e.stopPropagation(); fecharPeloUsuario(); }
+}, true);
+
 function criarModal() {
+  const anterior = document.activeElement;
   fechar();
+  abertoPor = anterior && anterior !== document.body ? anterior : abertoPor;
   overlay = document.createElement("div");
   overlay.className = "pix-overlay";
-  overlay.innerHTML = `<div class="pix-box"><button class="pix-fechar" title="Fechar">✕</button><div id="pixConteudo"></div></div>`;
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Comprar arte");
+  overlay.innerHTML = `<div class="pix-box" tabindex="-1"><button type="button" class="pix-fechar" title="Fechar" aria-label="Fechar">✕</button><div id="pixConteudo"></div></div>`;
   overlay.addEventListener("click", (e) => { if (e.target === overlay) fecharPeloUsuario(); });
   overlay.querySelector(".pix-fechar").addEventListener("click", fecharPeloUsuario);
   document.body.appendChild(overlay);
   document.body.style.overflow = "hidden";
   atualizarBarra();
+  overlay.querySelector(".pix-box").focus({ preventScroll: true });
   return overlay.querySelector("#pixConteudo");
 }
 

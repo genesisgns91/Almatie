@@ -1,12 +1,17 @@
 // Service Worker da Almatiê Art
-// Necessário para o navegador considerar o site "instalável" como app,
-// além de permitir um cache básico dos arquivos de casca (shell) do site.
+// - torna o site instalável como app e deixa a "casca" (HTML, CSS, JS, ícones) disponível offline;
+// - só guarda arquivos do PRÓPRIO site. Nada de outros endereços (Firebase, Mercado Pago, Workers,
+//   Cloudinary): assim dados de pedido, status de pagamento e links com senha nunca ficam em cache.
+// - rede primeiro: o visitante sempre vê a versão mais nova; o cache só entra quando está offline.
 
-const CACHE_NAME = 'almatie-art-v1';
+const CACHE_NAME = 'almatie-art-v2';
 const ARQUIVOS_ESSENCIAIS = [
   './',
   './index.html',
   './style.css',
+  './loja.js',
+  './pix-checkout.js',
+  './firebase-config.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -24,30 +29,28 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((chaves) =>
-      Promise.all(
-        chaves
-          .filter((chave) => chave !== CACHE_NAME)
-          .map((chave) => caches.delete(chave))
-      )
+      Promise.all(chaves.filter((chave) => chave !== CACHE_NAME).map((chave) => caches.delete(chave)))
     )
   );
   self.clients.claim();
 });
 
-// Estratégia: tenta a rede primeiro (site sempre atualizado, já que os
-// produtos vêm do Firestore); se falhar (offline), usa o cache como apoio.
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;            // deixa o navegador cuidar de tudo que é externo
+  if (url.searchParams.has('ped') || url.searchParams.has('senha')) return;   // retorno de pagamento: nunca em cache
 
   event.respondWith(
-    fetch(event.request)
+    fetch(req)
       .then((resposta) => {
-        const respostaClone = resposta.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, respostaClone).catch(() => {});
-        });
+        if (resposta && resposta.ok && resposta.type === 'basic') {
+          const copia = resposta.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copia)).catch(() => {});
+        }
         return resposta;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(req).then((guardado) => guardado || (req.mode === 'navigate' ? caches.match('./index.html') : undefined)))
   );
 });
