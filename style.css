@@ -541,32 +541,46 @@ input:focus, textarea:focus {
 }
 
 .card-body {
-  padding: 14px 16px 16px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "descricao  descricao"
-    "rotulo     comprar"
-    "preco      comprar"
-    "validade   validade"
-    "pix        pix"
-    "admin      admin";
-  align-items: center;
-  row-gap: 0;
-  column-gap: 10px;
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
   flex: 1;
 }
-/* o bloco de preço "se abre" na grade do card: rótulo + valor ao lado do botão, e a linha do Pix/cartão inteira embaixo (sem quebrar em duas) */
-.card-body > .card-preco-box { display: contents; }
-.card-body > .card-descricao-wrap { margin-bottom: 12px; }
-.card-body .preco-label { grid-area: rotulo; align-self: end; }
-.card-body .card-preco { grid-area: preco; align-self: start; }
-.card-body .preco-validade { grid-area: validade; margin-top: 6px; }
-.card-body .preco-pix { grid-area: pix; justify-self: start; margin-top: 10px; white-space: nowrap; }
-.card-body > [class*="admin"]{ grid-area: admin; margin-top: 12px; }
+/* parte de cima: quantidade de artes + texto curto (inteiro, sem corte). Ocupa o espaço que sobrar, então o preço e o botão
+   ficam sempre alinhados no pé do card, mesmo com textos de tamanhos diferentes */
+.card-info { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 9px; padding-bottom: 14px; min-width: 0; }
+.chip-qtd {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: var(--radius-full);
+  background: var(--secondary-soft); color: var(--secondary-accent);
+  font-size: 0.78rem; font-weight: 600; line-height: 1.3;
+}
+.chip-qtd b { font-weight: 800; }
+.card-resumo { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); overflow-wrap: anywhere; }
 
-.card-descricao-wrap { grid-area: descricao; }
-.card-preco-box { grid-area: preco; min-width: 0; }
+/* pé do card: preço (e promoção) à esquerda, botão à direita; faixa do Pix/cartão ocupa a linha de baixo */
+.card-compra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "rotulo"
+    "preco"
+    "validade"
+    "pix"
+    "comprar";
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+/* o bloco de preço "se abre" na grade do pé do card */
+.card-compra > .card-preco-box { display: contents; }
+.card-compra .preco-label { grid-area: rotulo; align-self: end; }
+.card-compra .card-preco { grid-area: preco; align-self: start; }
+.card-compra .preco-validade { grid-area: validade; margin-top: 6px; }
+.card-compra .precos-metodo { grid-area: pix; }
+.card-compra .btn-comprar { width: 100%; margin-top: 12px; min-height: 46px; }
+.card-body > [class*="admin"]{ margin-top: 12px; }
+
+.card-preco-box { min-width: 0; }
 
 .btn-comprar {
   grid-area: comprar;
@@ -632,13 +646,8 @@ input:focus, textarea:focus {
 
 /* Header e Título do Card */
 .card-header {
-  height: 112px;
-  padding: 14px 16px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  padding: 14px 16px 0;
   background: var(--surface);
-  overflow: hidden;
 }
 
 /* A arte vem primeiro: é ela que vende */
@@ -657,14 +666,6 @@ input:focus, textarea:focus {
   flex-shrink: 0;
 }
 
-.card-meta {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  overflow: hidden;
-}
-
 .badge-tag {
   font-size: 0.62rem;
   padding: 2px 7px;
@@ -677,32 +678,6 @@ input:focus, textarea:focus {
 .badge-tipo { background: var(--secondary-soft); color: var(--secondary-accent); }
 .badge-cat { background: var(--primary-soft); color: var(--primary-hover); }
 .badge-sub { background: var(--bg-alt); color: var(--text-muted); }
-
-/* Espaço da Descrição Formatada — altura fixa, sem scroll, com reticências */
-.card-descricao-wrap {
-  height: 68px;
-  overflow: hidden;
-}
-
-.card-descricao {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  line-height: 1.48;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.card-descricao ul, .card-descricao ol {
-  padding-left: 16px;
-  margin: 2px 0;
-}
-
-.card-descricao p {
-  color: inherit;
-  margin: 0;
-}
 
 /* Destaque do Preço — compacto, ao lado do botão de compra */
 .card-preco-box {
@@ -1404,12 +1379,13 @@ input:focus, textarea:focus {
     gap: 18px;
   }
   .card-carrossel { border-radius: 20px; box-shadow: 0 2px 10px -2px rgba(27, 18, 48, 0.12); }
-  .card-header { height: auto; padding: 14px 16px 0; }
+  .card-header { padding: 14px 16px 0; }
   .card-titulo { font-size: 1.08rem; }
   .badge-tag { font-size: 0.68rem; padding: 3px 9px; }
-  .card-descricao-wrap { height: auto; }
-  .card-descricao { font-size: 0.85rem; }
-  .card-body { padding: 12px 16px 16px; row-gap: 14px; }
+  .card-resumo { font-size: 0.92rem; }
+  .card-body { padding: 10px 16px 16px; }
+  .card-compra { padding-top: 14px; }
+  .card-compra .btn-comprar { margin-top: 14px; }
   .card-preco { font-size: 1.45rem; }
   .btn-comprar { min-height: 46px; padding: 0 26px; font-size: 0.9rem; }
   .btn-comprar:active { transform: scale(0.97); }
@@ -1542,8 +1518,6 @@ input:focus, textarea:focus {
 /* ===== Painel do admin: pedidos e vendas ===== */
 
 /* ===== Descrição formatada (títulos, links) ===== */
-.card-descricao h3, .card-descricao h4 { font-family: var(--font-body); font-size: inherit; font-weight: 700; margin: 0; color: var(--text); }
-.card-descricao a { color: inherit; text-decoration: none; pointer-events: none; }
 .galeria-descricao h3, .galeria-descricao h4 { font-family: var(--font-body); font-size: 1.2em; font-weight: 700; margin: 14px 0 6px; color: var(--text); }
 .galeria-descricao > :first-child { margin-top: 0; }
 .galeria-descricao a { color: var(--primary-hover); text-decoration: underline; }
@@ -1562,11 +1536,11 @@ input:focus, textarea:focus {
 .preco-label s { color: var(--text-muted); text-decoration: line-through; text-decoration-thickness: 1.5px; }
 .pill-desc {
   font-style: normal;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  background: var(--primary-soft);
-  color: var(--primary-hover);
-  padding: 2px 7px;
+  background: #E0452F;
+  color: #fff;
+  padding: 3px 8px;
   border-radius: var(--radius-full);
 }
 .preco-validade { margin-top: 3px; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); }
@@ -1592,21 +1566,39 @@ input:focus, textarea:focus {
 /* =========================================================
    OFERTAS: linha "no Pix" sob o preço
    ========================================================= */
+.precos-metodo { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
 .preco-pix {
-  display: inline-block;
-  width: max-content;
-  max-width: 100%;
-  margin-top: 5px;
-  padding: 3px 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%;
+  padding: 8px 10px 8px 12px;
   border-radius: 12px;
-  background: #E3F5EA;
-  color: #1E6B3A;
-  font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1.3;
+  background: linear-gradient(135deg, #E6F7EC, #D2F0DC);
+  border: 1px solid #A6DBB9;
+  color: #14572F;
+  font-size: 0.84rem; font-weight: 600; line-height: 1.25;
 }
-.preco-pix b { font-weight: 800; }
-.preco-pix em { font-style: normal; opacity: 0.85; }
+.preco-pix-txt { min-width: 0; }
+.preco-pix b { font-size: 1.04rem; font-weight: 800; }
+.preco-pix em {
+  flex: none; font-style: normal; font-weight: 800; font-size: 0.74rem; letter-spacing: 0.01em;
+  background: #1E8A4C; color: #fff; padding: 3px 9px; border-radius: var(--radius-full);
+}
+/* cartão: mais discreto que o Pix */
+.preco-pix.cartao { background: var(--bg-alt); border-color: var(--border); color: var(--text-muted); font-size: 0.78rem; }
+.preco-pix.cartao b { font-size: 0.9rem; color: var(--text); }
+.preco-pix.cartao em { background: var(--text-muted); }
+
+/* selo de promoção sobre a imagem */
+.selo-promo {
+  position: absolute; left: 10px; bottom: 10px; z-index: 2;
+  padding: 7px 13px; border-radius: var(--radius-full);
+  background: #E0452F; color: #fff;
+  font: 800 0.8rem/1 var(--font-body); letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(224, 69, 47, 0.4);
+  pointer-events: none;
+}
+.selo-promo.pix { background: #1E8A4C; box-shadow: 0 4px 12px rgba(30, 138, 76, 0.4); }
+.selo-promo.cartao { background: var(--secondary-accent); box-shadow: 0 4px 12px rgba(30, 20, 50, 0.3); }
 
 /* =========================================================
    BALÃO DE CHAMADA (dica sobre um botão da faixa do topo)

@@ -31,13 +31,15 @@ function abrirGaleria(prod) {
 
   document.getElementById('galeriaTitulo').innerText = prod.titulo || '';
 
-  let metaHTML = '';
+  let metaHTML = htmlQtdArtes(prod);
   if (prod.tipo) metaHTML += `<span class="badge-tag badge-tipo">${esc(prod.tipo)}</span>`;
   metaHTML += `<span class="badge-tag badge-cat">${esc(prod.categoria || 'Geral')}</span>`;
   if (prod.classe) metaHTML += `<span class="badge-tag badge-sub">${esc(prod.classe)}</span>`;
   document.getElementById('galeriaMeta').innerHTML = metaHTML;
 
-  document.getElementById('galeriaDescricao').innerHTML = prod._desc ?? sanitizarDescricao(prod.descricao);
+  // descrição completa; se o pack só tem o texto curto, ele aparece aqui também
+  const descCompleta = prod._desc ?? sanitizarDescricao(prod.descricao);
+  document.getElementById('galeriaDescricao').innerHTML = htmlParaTexto(descCompleta).trim() ? descCompleta : esc(String(prod.resumo || '').trim());
 
   const tagsBox = document.getElementById('galeriaTags');
   tagsBox.innerHTML = '';
@@ -523,22 +525,60 @@ function textoRegra(regra, rotuloMetodo) {
 }
 const textoRegraPix = (pixCfg) => textoRegra(pixCfg, pixCfg.aplicarEm === 'pix' ? 'no Pix' : 'no pagamento');
 
-// linhas pequenas sob o preço: "💠 R$ 6,21 no Pix (−10%)" e, se houver, "💳 R$ x no cartão (−5%)".
-// Vale a conta real (calcularPedidoCentavos) para 1 pack: já considera promoção por forma de pagamento e o desconto próprio do pack.
-function htmlLinhaPix(prod) {
+// Descontos por forma de pagamento deste pack, já com a conta real (calcularPedidoCentavos) para 1 pack:
+// considera a promoção por forma de pagamento e o desconto próprio do pack.
+// Devolve só o que realmente baixa o preço mostrado na vitrine: [{metodo, icone, rotulo, total, pct, sel}]
+function descontosPorMetodo(prod) {
   const o = ofertasAtuais();
   const item = itemDoProduto(prod);
-  if (item.preco <= 0) return '';
-  const pill = (metodo, icone, rotulo) => {
-    const ref = precoDoItem(itemDoCalculo(item), 'todos');          // preço mostrado na vitrine (promoção geral, se houver); a promoção de uma forma só aparece na linha dela
-    const c = calcularPedidoCentavos([item], null, metodo, o, null);
-    if (ref <= 0 || c.total >= ref) return '';
-    const regra = regraDoMetodo(o, metodo);
-    const sel = (!c.temProprio && regra && regra.tipo === 'valor') ? `−${centavosParaTexto(ref - c.total)}` : `−${Math.round((1 - c.total / ref) * 100)}%`;
-    return `<span class="preco-pix" title="${esc(`${centavosParaTexto(c.total)} ${rotulo}`)}">${icone} <b>${esc(centavosParaTexto(c.total))}</b> ${rotulo} <em>(${esc(sel)})</em></span>`;
-  };
+  if (item.preco <= 0) return [];
+  const ref = precoDoItem(itemDoCalculo(item), 'todos');          // preço mostrado na vitrine (promoção geral, se houver); a promoção de uma forma só aparece na linha dela
+  if (ref <= 0) return [];
   const todos = o.pix.ativo && o.pix.aplicarEm === 'todos' && !o.cartao.ativo && !itemDoCalculo(item).pag.ativo;
-  return todos ? pill('pix', '🏷️', 'no pagamento') : pill('pix', '💠', 'no Pix') + pill('cartao', '💳', 'no cartão');
+  const formas = todos ? [['pix', '🏷️', 'no pagamento']] : [['pix', '💠', 'no Pix'], ['cartao', '💳', 'no cartão']];
+  return formas.map(([metodo, icone, rotulo]) => {
+    const c = calcularPedidoCentavos([item], null, metodo, o, null);
+    if (c.total >= ref) return null;
+    const regra = regraDoMetodo(o, metodo);
+    const pct = Math.round((1 - c.total / ref) * 100);
+    const sel = (!c.temProprio && regra && regra.tipo === 'valor') ? `−${centavosParaTexto(ref - c.total)}` : `−${pct}%`;
+    return { metodo, icone, rotulo, total: c.total, pct, sel };
+  }).filter(Boolean);
+}
+
+// faixa(s) em destaque sob o preço: "💠 R$ 6,21 no Pix  −10%" (o Pix vem em verde forte; o cartão, mais discreto)
+function htmlLinhaPix(prod) {
+  const ds = descontosPorMetodo(prod);
+  if (!ds.length) return '';
+  return `<div class="precos-metodo">${ds.map((d) => `<span class="preco-pix ${d.metodo}" title="${esc(`${centavosParaTexto(d.total)} ${d.rotulo}`)}"><span class="preco-pix-txt">${d.icone} <b>${esc(centavosParaTexto(d.total))}</b> ${d.rotulo}</span><em>${esc(d.sel)}</em></span>`).join('')}</div>`;
+}
+
+// selo sobre a imagem: o desconto que mais chama atenção neste pack ("🔥 −25%" ou "💠 −10% no Pix")
+function htmlSeloPromo(prod) {
+  const i = infoPreco(prod);
+  if (i.ativa) return `<span class="selo-promo" title="Promoção">🔥 −${i.desconto}% OFF</span>`;
+  const melhor = descontosPorMetodo(prod).sort((a, b) => b.pct - a.pct)[0];
+  if (!melhor) return '';
+  return `<span class="selo-promo ${melhor.metodo}" title="${esc(`${centavosParaTexto(melhor.total)} ${melhor.rotulo}`)}">${melhor.icone} ${esc(melhor.sel)} ${melhor.rotulo === 'no pagamento' ? 'OFF' : melhor.rotulo}</span>`;
+}
+
+// ----- O que aparece no card x o que aparece ao abrir -----
+// Card: título · quantidade de artes · texto curto (inteiro, sem corte) · preço/promoção · botão.
+// Ao abrir: descrição completa, tipo/categoria/classe e tags.
+function qtdArtesDe(p) { const n = parseInt(p && p.qtdArtes, 10); return n > 0 && n < 100000 ? n : 0; }
+function htmlQtdArtes(p) {
+  const n = qtdArtesDe(p);
+  return n ? `<span class="chip-qtd">🎨 <b>${n}</b> ${n === 1 ? 'arte' : 'artes'}</span>` : '';
+}
+// texto curto cadastrado; em packs antigos (sem o campo) usa o começo da descrição, limpo e terminado em palavra inteira
+function resumoDoCard(p) {
+  const r = String((p && p.resumo) || '').replace(/\s+/g, ' ').trim();
+  if (r) return r;
+  const html = String((p && (p._desc ?? p.descricao)) || '').replace(/<\/(p|div|li|h\d)>|<br\s*\/?>/gi, ' ');
+  const t = htmlParaTexto(html).replace(/\s+/g, ' ').trim();
+  if (t.length <= 120) return t;
+  const corte = t.slice(0, 120);
+  return corte.slice(0, Math.max(corte.lastIndexOf(' '), 60)).replace(/[\s,.;:\-–]+$/, '') + '…';
 }
 
 function htmlPrecoBox(prod) {
@@ -1079,7 +1119,7 @@ async function carregarProdutos() {
     querySnapshot.forEach((docSnap) => {
       const p = { id: docSnap.id, ...docSnap.data() };
       p._desc = sanitizarDescricao(p.descricao);
-      p._busca = normalizarTexto([p.titulo, p.tipo, p.categoria, p.classe, (p.tags || []).join(' '), htmlParaTexto(p._desc)].join(' '));
+      p._busca = normalizarTexto([p.titulo, p.resumo, p.tipo, p.categoria, p.classe, (p.tags || []).join(' '), htmlParaTexto(p._desc)].join(' '));
       produtosMemoria.push(p);
     });
     produtosMemoria.sort((a, b) => dataDoProduto(b) - dataDoProduto(a)); // mais novos primeiro
@@ -1388,6 +1428,7 @@ function criarCardDestaque(prod) {
     <div class="destaque-imagem">
       <img alt="" loading="lazy">
       ${htmlSelos(prod)}
+      ${htmlSeloPromo(prod)}
     </div>
     <div class="destaque-info">
       <h3 class="destaque-titulo"></h3>
@@ -1432,18 +1473,15 @@ function criarCard(prod) {
 
   const card = document.createElement('div');
   card.className = 'card-carrossel';
+  const resumo = resumoDoCard(prod);
   card.innerHTML = `
     <div class="card-header">
       <h3 class="card-titulo">${esc(prod.titulo)}</h3>
-      <div class="card-meta">
-        ${prod.tipo ? `<span class="badge-tag badge-tipo">${esc(prod.tipo)}</span>` : ''}
-        <span class="badge-tag badge-cat">${esc(prod.categoria || 'Geral')}</span>
-        ${prod.classe ? `<span class="badge-tag badge-sub">${esc(prod.classe)}</span>` : ''}
-      </div>
     </div>
     <div class="carrossel-container">
       ${slidesHTML}
       ${htmlSelos(prod)}
+      ${htmlSeloPromo(prod)}
       ${prod.imagens && prod.imagens.length > 1 ? `
         <button class="btn-nav btn-prev">❮</button>
         <button class="btn-nav btn-next">❯</button>
@@ -1453,13 +1491,14 @@ function criarCard(prod) {
       <button type="button" class="btn-compartilhar btn-compartilhar-card" aria-label="Compartilhar esta arte" title="Compartilhar"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 10.8 7.4-4.4M8.3 13.2l7.4 4.4"/></svg></button>
     </div>
     <div class="card-body">
-      <div class="card-descricao-wrap">
-        <div class="card-descricao">${prod._desc ?? sanitizarDescricao(prod.descricao)}</div>
+      <div class="card-info">
+        ${htmlQtdArtes(prod)}
+        ${resumo ? `<p class="card-resumo">${esc(resumo)}</p>` : ''}
       </div>
-      ${htmlPrecoBox(prod)}
-
-      <button type="button" class="btn-comprar">Comprar Arte</button>
-
+      <div class="card-compra">
+        ${htmlPrecoBox(prod)}
+        <button type="button" class="btn-comprar">Comprar Arte</button>
+      </div>
     </div>
   `;
 
@@ -1627,7 +1666,7 @@ window.Almatie = {
 window.AlmatieLoja = {
   produtos: () => produtosMemoria,
   ofertas: ofertasAtuais,
-  infoPreco, precoParaNumero, miniatura,
+  infoPreco, precoParaNumero, miniatura, resumoDoCard, htmlQtdArtes, htmlSeloPromo, htmlPrecoBox,
   calcularPedido: calcularPedidoLoja,
   textoRegraPix, textoRegra, itemDoProduto, normalizarLeveTambem, regraDoMetodo, faixaDoCarrinho, centavosParaTexto
 };
