@@ -1250,6 +1250,7 @@ input:focus, textarea:focus {
   overflow: hidden;
 }
 
+.destaque-info .chip-qtd { align-self: flex-start; }
 .destaque-rodape {
   margin-top: auto;
   display: flex;
@@ -1828,7 +1829,12 @@ body.sf-trava{overflow:hidden}
 
 /* ===== Celular: hero com margens de app e filtros em folha inferior (bottom sheet) ===== */
 @media (max-width:640px){
-  .hero-loja.sf-hero{max-width:none;margin:12px 14px 0;padding:14px 18px 15px;border-radius:20px}
+  .hero-loja.sf-hero{max-width:none;margin:12px 14px 0;padding:16px 16px 16px;border-radius:20px;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;text-align:center}
+  .hero-texto{width:100%}
+  /* botões da faixa: texto em cima, botões embaixo em grade centralizada, no máximo 5 por linha */
+  .hero-atalhos{flex:none;width:100%;max-width:292px;flex-wrap:wrap;justify-content:center;gap:8px}
+  .hero-atalho{flex:0 0 calc((100% - 32px) / 5);max-width:52px;min-width:0;padding:0 2px;overflow:hidden}
+  .hero-atalho span{max-width:100%;overflow:hidden;text-overflow:clip;white-space:nowrap}
   .sf-barra{gap:8px}
   .sf-btn-filtros{padding:0 14px}
   .sf-area .sf-busca .sf-campo{font-size:1rem}

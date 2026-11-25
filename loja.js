@@ -1432,6 +1432,7 @@ function criarCardDestaque(prod) {
     </div>
     <div class="destaque-info">
       <h3 class="destaque-titulo"></h3>
+      ${htmlQtdArtes(prod)}
       <div class="destaque-rodape">
         ${htmlPrecoBox(prod)}
         <button type="button" class="btn-comprar">Comprar Arte</button>
