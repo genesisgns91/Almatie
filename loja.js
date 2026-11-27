@@ -93,7 +93,7 @@ function renderizarGaleriaImagens() {
     img.loading = 'lazy';
     img.decoding = 'async';
     img.alt = '';
-    img.src = miniatura(url, 240);
+    img.src = miniatura(url, 200);
     b.appendChild(img);
     b.addEventListener('click', () => irParaImagemGaleria(idx));
     grade.appendChild(b);
@@ -116,11 +116,12 @@ function atualizarImagemGaleria() {
     slide.className = 'galeria-slide ativo';
     const img = document.createElement('img');
     img.alt = `${document.getElementById('galeriaTitulo').textContent} — imagem ${galeriaIndexAtual + 1} de ${total}`;
-    img.src = miniatura(url, 1600);
+    img.src = miniatura(url, 1280);
     slide.appendChild(img);
+    slide.insertAdjacentHTML('beforeend', htmlMarcaDagua());
     palco.appendChild(slide);
     // deixa as vizinhas prontas para a troca ser instantânea
-    [1, -1].forEach((d) => { const v = galeriaImagens[(galeriaIndexAtual + d + total) % total]; if (v && total > 1) new Image().src = miniatura(v, 1600); });
+    [1, -1].forEach((d) => { const v = galeriaImagens[(galeriaIndexAtual + d + total) % total]; if (v && total > 1) new Image().src = miniatura(v, 1280); });
   }
   document.getElementById('galeriaContador').textContent = total > 1 ? `${galeriaIndexAtual + 1} / ${total}` : '';
   document.querySelectorAll('#galeriaGradeMini .galeria-mini').forEach((m, i) => {
@@ -990,6 +991,7 @@ async function carregarConfiguracoesLoja() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+  ativarProtecaoImagens();
   document.getElementById('btnLogin').addEventListener('click', abrirModalLogin);
 
   document.getElementById('btnFecharModal').addEventListener('click', fecharModalLogin);
@@ -1151,12 +1153,38 @@ let timerTroca = null;
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-// Cards usam versão menor da imagem (Cloudinary); a galeria continua com a original
-function miniatura(url, largura = 720) {
+// Imagens entregues já comprimidas e no tamanho de uso (Cloudinary: formato e qualidade automáticos). Original nunca é servida.
+function miniatura(url, largura = 640) {
   if (!url || typeof url !== 'string') return url || '';
   if (url.includes('/upload/f_auto,q_auto,w_1200/')) return url.replace('w_1200', `w_${largura}`);
   if (/res\.cloudinary\.com\/[^/]+\/image\/upload\/v\d+\//.test(url)) return url.replace('/upload/', `/upload/f_auto,q_auto,w_${largura}/`);
   return url;
+}
+
+// ----- Marca d'água (só na tela do site): nome da loja a 5 mm de cada borda da imagem, translúcido e discreto -----
+const MARCA_DAGUA = 'Almatiê Art';
+function htmlMarcaDagua() {
+  return `<div class="marca-dagua" aria-hidden="true"><span class="md-t">${MARCA_DAGUA}</span><span class="md-b">${MARCA_DAGUA}</span><span class="md-l">${MARCA_DAGUA}</span><span class="md-r">${MARCA_DAGUA}</span></div>`;
+}
+
+// ----- Proteção das imagens: sem menu "salvar imagem" (botão direito e toque longo), sem arrastar, sem Ctrl+S, sem print da tela via tecla -----
+function ativarProtecaoImagens() {
+  const noPainel = (el) => !!(el && el.closest && el.closest('#painelAdmin'));
+  const ehImagemProtegida = (el) => !!(el && el.closest && (el.tagName === 'IMG' || el.closest('.carrossel-container, .destaque-imagem, .galeria-carrossel-wrap, .galeria-mini')));
+  document.addEventListener('contextmenu', (e) => { if (!noPainel(e.target) && ehImagemProtegida(e.target)) e.preventDefault(); }, true);
+  document.addEventListener('dragstart', (e) => { if (!noPainel(e.target) && e.target.tagName === 'IMG') e.preventDefault(); }, true);
+  document.addEventListener('keydown', (e) => {
+    const admin = document.getElementById('painelAdmin');
+    if (admin && admin.offsetParent !== null) return;                       // o admin logado não é afetado
+    if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 's') e.preventDefault();   // "Salvar página como"
+  }, true);
+  // PrintScreen: limpa a área de transferência e esconde as imagens por um instante (não impede capturas do sistema, só dificulta)
+  document.addEventListener('keyup', (e) => {
+    if (e.key !== 'PrintScreen') return;
+    try { navigator.clipboard && navigator.clipboard.writeText(' ').catch(() => {}); } catch (_) { /* sem permissão: ignora */ }
+    document.documentElement.classList.add('sem-captura');
+    setTimeout(() => document.documentElement.classList.remove('sem-captura'), 1500);
+  }, true);
 }
 
 // Só a 1ª foto de cada card carrega de cara; as demais entram quando o slide é usado
@@ -1427,6 +1455,7 @@ function criarCardDestaque(prod) {
   el.innerHTML = `
     <div class="destaque-imagem">
       <img alt="" loading="lazy">
+      ${htmlMarcaDagua()}
       ${htmlSelos(prod)}
       ${htmlSeloPromo(prod)}
     </div>
@@ -1439,7 +1468,7 @@ function criarCardDestaque(prod) {
       </div>
     </div>`;
   const img = el.querySelector('img');
-  img.src = miniatura((prod.imagens || [])[0] || '', 600);
+  img.src = miniatura((prod.imagens || [])[0] || '', 560);
   img.alt = prod.titulo || '';
   el.querySelector('.destaque-titulo').textContent = prod.titulo || '';
   el.querySelector('.destaque-imagem').addEventListener('click', () => abrirGaleria(prod));
@@ -1481,6 +1510,7 @@ function criarCard(prod) {
     </div>
     <div class="carrossel-container">
       ${slidesHTML}
+      ${htmlMarcaDagua()}
       ${htmlSelos(prod)}
       ${htmlSeloPromo(prod)}
       ${prod.imagens && prod.imagens.length > 1 ? `
