@@ -6,8 +6,10 @@
   <title>Almatiê Art — Artes digitais para sublimação</title>
   <meta name="description" content="Artes prontas para sublimar em canecas, camisetas, DTF e muito mais. Pagou no Pix, a arte é liberada na hora.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <!-- Só diretivas que não interferem no funcionamento: bloqueia plugins, troca de <base> e envio de formulários para fora -->
-  <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
+  <!-- Política de segurança (CSP): lista de "convidados". A página só carrega scripts, estilos, imagens e conexões destes endereços
+       (o próprio site, Firebase/Google, seus Workers, Cloudinary, Google Fonts). Qualquer outro endereço é barrado pelo navegador.
+       Se algum dia precisar de um serviço novo, ele tem que entrar nesta lista. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob: https://www.gstatic.com https://apis.google.com https://upload-widget.cloudinary.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.cloudinary.com; font-src 'self' data: https://fonts.gstatic.com https://*.cloudinary.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://*.almatie-stock.workers.dev https://*.genesisgns.workers.dev https://*.cloudinary.com; frame-src https://*.cloudinary.com https://*.firebaseapp.com https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Almatiê Art">
   <meta property="og:title" content="Almatiê Art — Artes digitais para sublimação">
@@ -32,7 +34,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Quicksand:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
 

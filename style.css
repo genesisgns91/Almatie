@@ -724,8 +724,8 @@ input:focus, textarea:focus {
 
 .icone-expandir {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 13px;
+  right: 52px;
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -867,7 +867,7 @@ input:focus, textarea:focus {
 .galeria-contador {
   position: absolute;
   bottom: 14px;
-  right: 14px;
+  left: 14px;
   z-index: 3;
   padding: 4px 13px;
   border-radius: var(--radius-full);
@@ -1690,13 +1690,13 @@ input:focus, textarea:focus {
 }
 .btn-compartilhar:hover { color: var(--primary, #BE3A78); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(20, 12, 40, 0.2); }
 .btn-compartilhar:active { transform: scale(.94); }
-.btn-compartilhar-card { position: absolute; right: 10px; bottom: 10px; z-index: 3; }
+.btn-compartilhar-card { position: absolute; right: 10px; top: 10px; z-index: 3; }   /* canto superior: o inferior direito é da marca d'água */
 .btn-compartilhar-galeria { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; background: #fff; border-color: var(--border, #e6e0ee); box-shadow: none; }
 .btn-compartilhar.mostra-dica::after {
   content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); right: 0; padding: 5px 10px; border-radius: 8px;
   background: #2b2140; color: #fff; font: 600 .72rem/1.2 var(--font-body, 'Inter', sans-serif); white-space: nowrap; pointer-events: none;
 }
-@media (max-width: 480px) { .btn-compartilhar-card { right: 8px; bottom: 8px; } }
+@media (max-width: 480px) { .btn-compartilhar-card { right: 8px; top: 8px; } .carrossel-container .icone-expandir { right: 50px; top: 11px; } }
 
 /* =========================================================
    VITRINE v2 — busca, filtros em menu sanduíche, chips e paginação (prefixo sf-)
@@ -1831,9 +1831,16 @@ body.sf-trava{overflow:hidden}
   .hero-loja.sf-hero{max-width:none;margin:12px 14px 0;padding:16px 16px 16px;border-radius:20px;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;text-align:center}
   .hero-texto{width:100%}
   /* botões da faixa: texto em cima, botões embaixo em grade centralizada, no máximo 5 por linha */
-  .hero-atalhos{flex:none;width:100%;max-width:292px;flex-wrap:wrap;justify-content:center;gap:8px}
-  .hero-atalho{flex:0 0 calc((100% - 32px) / 5);max-width:52px;min-width:0;padding:0 2px;overflow:hidden}
-  .hero-atalho span{max-width:100%;overflow:hidden;text-overflow:clip;white-space:nowrap}
+  /* botões iguais e centralizados: 1 botão ocupa a linha toda; 2 a 5 se dividem em partes iguais; acima de 5 viram grade de 5 por linha */
+  .hero-atalhos{flex:none;width:100%;max-width:none;flex-wrap:wrap;justify-content:center;gap:8px;--cols:5}
+  .hero-atalhos[data-qtd="1"]{--cols:1}
+  .hero-atalhos[data-qtd="2"]{--cols:2}
+  .hero-atalhos[data-qtd="3"]{--cols:3}
+  .hero-atalhos[data-qtd="4"]{--cols:4}
+  .hero-atalho{flex:0 0 calc((100% - (var(--cols) - 1) * 8px) / var(--cols));width:calc((100% - (var(--cols) - 1) * 8px) / var(--cols));max-width:none;min-width:0;height:46px;padding:0 4px;overflow:hidden;box-sizing:border-box;justify-content:center}
+  .hero-atalhos[data-qtd="1"] .hero-atalho,.hero-atalhos[data-qtd="2"] .hero-atalho{flex-direction:row;gap:8px}
+  .hero-atalhos[data-qtd="1"] .hero-atalho span,.hero-atalhos[data-qtd="2"] .hero-atalho span{font-size:.75rem}
+  .hero-atalho span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sf-barra{gap:8px}
   .sf-btn-filtros{padding:0 14px}
   .sf-area .sf-busca .sf-campo{font-size:1rem}
@@ -1857,15 +1864,13 @@ body.sf-trava{overflow:hidden}
 }
 .marca-dagua { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; user-select: none; -webkit-user-select: none; }
 .marca-dagua span {
-  position: absolute; white-space: nowrap; font-family: var(--font-body, sans-serif); font-weight: 700;
-  font-size: 0.62rem; letter-spacing: 0.1em; line-height: 1;
-  color: rgba(255,255,255,.58); text-shadow: 0 0 3px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.35);
+  position: absolute; white-space: nowrap; line-height: 1;
+  font-family: 'Quicksand', ui-rounded, 'Nunito', 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; font-weight: 600;
+  font-size: 0.775rem; letter-spacing: 0.06em;
+  color: rgba(255,255,255,.4); text-shadow: 0 0 2px rgba(0,0,0,.28), 0 1px 2px rgba(0,0,0,.18);
 }
-.marca-dagua .md-t { top: 5mm; left: 50%; transform: translateX(-50%); }
-.marca-dagua .md-b { bottom: 5mm; left: 50%; transform: translateX(-50%); }
-.marca-dagua .md-l { left: 5mm; top: 70%; writing-mode: vertical-rl; transform: rotate(180deg); }
-.marca-dagua .md-r { right: 5mm; top: 70%; writing-mode: vertical-rl; }
-.galeria-slide .marca-dagua span { font-size: 0.8rem; }
+.marca-dagua .md-br { right: 6mm; bottom: 6mm; }
+.galeria-slide .marca-dagua span { font-size: 1rem; }
 .sem-captura .carrossel-container img, .sem-captura .destaque-imagem img, .sem-captura .galeria-carrossel-wrap img, .sem-captura .galeria-mini img { visibility: hidden; }
 @media print {
   .carrossel-container, .destaque-imagem, .galeria-carrossel-wrap, .galeria-mini { visibility: hidden !important; }

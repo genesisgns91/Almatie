@@ -804,6 +804,7 @@ function montarFaixa(secao, faixa, opcoes) {
     }
   });
   nav.hidden = !nav.children.length;
+  nav.dataset.qtd = String(Math.min(nav.children.length, 5));      // o CSS do celular divide a largura por esta quantidade (no máximo 5 por linha)
   // só a loja de verdade mostra balões (a prévia do painel e o "ao vivo" do rascunho não)
   if (opcoes && opcoes.baloes && !secao.hidden) agendarBalao(candidatosBalao);
   else if (!opcoes || !opcoes.baloes) fecharBalao(false);
@@ -1161,10 +1162,10 @@ function miniatura(url, largura = 640) {
   return url;
 }
 
-// ----- Marca d'água (só na tela do site): nome da loja a 5 mm de cada borda da imagem, translúcido e discreto -----
+// ----- Marca d'água (só na tela do site): nome da loja no canto inferior direito, a 6 mm das bordas, translúcido e discreto -----
 const MARCA_DAGUA = 'Almatiê Art';
 function htmlMarcaDagua() {
-  return `<div class="marca-dagua" aria-hidden="true"><span class="md-t">${MARCA_DAGUA}</span><span class="md-b">${MARCA_DAGUA}</span><span class="md-l">${MARCA_DAGUA}</span><span class="md-r">${MARCA_DAGUA}</span></div>`;
+  return `<div class="marca-dagua" aria-hidden="true"><span class="md-br">${MARCA_DAGUA}</span></div>`;
 }
 
 // ----- Proteção das imagens: sem menu "salvar imagem" (botão direito e toque longo), sem arrastar, sem Ctrl+S, sem print da tela via tecla -----
