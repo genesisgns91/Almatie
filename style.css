@@ -1819,6 +1819,19 @@ body.sf-trava{overflow:hidden}
 .sf-pag-info{margin:0;font-size:.8125rem;color:var(--sf-mut)}
 @media (max-width:560px){.sf-pag-lista{display:none}.sf-pag-compacta{display:block}}
 
+/* Paginação discreta no topo (linha de "Todas as artes") */
+.sf-pag-topo{margin-left:auto;display:inline-flex;align-items:center;gap:2px;font-size:.78rem;color:var(--sf-mut)}
+.sf-pag-topo.escondido{display:none}
+.sf-pag-mini{width:26px;height:26px;border:0;border-radius:50%;background:transparent;color:var(--sf-mut);font-size:1.15rem;line-height:1;cursor:pointer;transition:background-color .15s,color .15s}
+.sf-pag-mini:hover:not(:disabled){background:var(--sf-wash);color:var(--sf-ink)}
+.sf-pag-mini:disabled{opacity:.3;cursor:default}
+.sf-pag-mini-txt{min-width:44px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+/* Escolha de quantas artes por página */
+.sf-pp{display:flex;align-items:center;gap:6px;font-size:.8125rem;color:var(--sf-mut)}
+.sf-pp-btn{min-width:38px;height:30px;padding:0 10px;border:1px solid var(--sf-line);border-radius:var(--radius-full);background:#fff;color:var(--sf-ink);font-size:.8125rem;font-weight:600;cursor:pointer}
+.sf-pp-btn:hover:not(.atual){background:var(--sf-wash)}
+.sf-pp-btn.atual{background:var(--gradient-ink);color:#fff;border-color:transparent;cursor:default}
+
 /* Troca de página/filtro: entrada curta dos cards */
 .vitrine.sf-troca>.card-carrossel{animation:sf-entra .36s var(--sf-ease) backwards}
 .vitrine.sf-troca>.card-carrossel:nth-child(2){animation-delay:.03s}.vitrine.sf-troca>.card-carrossel:nth-child(3){animation-delay:.06s}.vitrine.sf-troca>.card-carrossel:nth-child(4){animation-delay:.09s}.vitrine.sf-troca>.card-carrossel:nth-child(n+5){animation-delay:.12s}

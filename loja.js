@@ -1146,7 +1146,12 @@ function abrirArteDoLink() {
 }
 
 // ----- Utilidades da vitrine -----
-const ITENS_POR_PAGINA = 12;
+const OPCOES_POR_PAGINA = [20, 40, 80];
+let ITENS_POR_PAGINA = 20;
+try {
+  const salvo = Number(localStorage.getItem('almatie_por_pagina'));
+  if (OPCOES_POR_PAGINA.includes(salvo)) ITENS_POR_PAGINA = salvo;
+} catch (e) { /* sem armazenamento: usa 20 */ }
 let paginaAtual = 1;
 let filtrouNoPainel = false;
 let timerBusca = null;
@@ -1375,7 +1380,9 @@ function listaDePaginas(atual, total) {
 function renderizarPaginacao(total) {
   const nav = document.getElementById('paginacao');
   const paginas = Math.ceil(total / ITENS_POR_PAGINA);
-  if (paginas <= 1) { nav.innerHTML = ''; nav.classList.add('escondido'); return; }
+  const topo = document.getElementById('paginacaoTopo');
+  // Com 20 ou menos artes não há o que paginar nem o que escolher
+  if (total <= OPCOES_POR_PAGINA[0]) { nav.innerHTML = ''; nav.classList.add('escondido'); topo.innerHTML = ''; topo.classList.add('escondido'); return; }
   nav.classList.remove('escondido');
   const ini = (paginaAtual - 1) * ITENS_POR_PAGINA + 1;
   const fim = Math.min(total, paginaAtual * ITENS_POR_PAGINA);
@@ -1384,7 +1391,16 @@ function renderizarPaginacao(total) {
   const numeros = listaDePaginas(paginaAtual, paginas).map((n) => n === '…'
     ? '<li class="sf-pag-reticencias" aria-hidden="true">…</li>'
     : `<li><button type="button" class="sf-pag-btn${n === paginaAtual ? ' atual' : ''}" data-pagina="${n}" aria-label="Página ${n}"${n === paginaAtual ? ' aria-current="page"' : ''}>${n}</button></li>`).join('');
-  nav.innerHTML = `<div class="sf-pag-linha">${seta(-1, 'Anterior', chevron('m15 18-6-6 6-6'))}<ol class="sf-pag-lista">${numeros}</ol><span class="sf-pag-compacta" aria-hidden="true">Página ${paginaAtual} de ${paginas}</span>${seta(1, 'Próxima', chevron('m9 18 6-6-6-6'))}</div><p class="sf-pag-info">Mostrando ${ini}–${fim} de ${total} artes</p>`;
+  nav.innerHTML = `<div class="sf-pag-linha">${seta(-1, 'Anterior', chevron('m15 18-6-6 6-6'))}<ol class="sf-pag-lista">${numeros}</ol><span class="sf-pag-compacta" aria-hidden="true">Página ${paginaAtual} de ${paginas}</span>${seta(1, 'Próxima', chevron('m9 18 6-6-6-6'))}</div><p class="sf-pag-info">Mostrando ${ini}–${fim} de ${total} artes</p>${seletorPorPagina()}`;
+  // Versão discreta no topo (só quando há mais de uma página)
+  const ant = paginaAtual > 1, prox = paginaAtual < paginas;
+  topo.classList.toggle('escondido', paginas <= 1);
+  topo.innerHTML = paginas <= 1 ? '' : `<button type="button" class="sf-pag-mini" data-pagina="${paginaAtual - 1}" ${ant ? '' : 'disabled'} aria-label="Página anterior">‹</button><span class="sf-pag-mini-txt">${paginaAtual} / ${paginas}</span><button type="button" class="sf-pag-mini" data-pagina="${paginaAtual + 1}" ${prox ? '' : 'disabled'} aria-label="Próxima página">›</button>`;
+}
+
+function seletorPorPagina() {
+  const bots = OPCOES_POR_PAGINA.map((n) => `<button type="button" class="sf-pp-btn${n === ITENS_POR_PAGINA ? ' atual' : ''}" data-por-pagina="${n}" aria-pressed="${n === ITENS_POR_PAGINA}">${n}</button>`).join('');
+  return `<div class="sf-pp" role="group" aria-label="Artes por página"><span>Artes por página:</span>${bots}</div>`;
 }
 
 function irParaPagina(n) {
@@ -1424,9 +1440,25 @@ function iniciarInterfaceVitrine() {
     const chip = e.target.closest('.sf-chip');
     if (chip) { filtrouNoPainel = false; selecionarFiltro(chip.dataset.nivel, 'TODOS'); }
   });
-  document.getElementById('paginacao').addEventListener('click', (e) => {
+  const cliquePagina = (e) => {
     const b = e.target.closest('button[data-pagina]');
     if (b && !b.disabled) irParaPagina(Number(b.dataset.pagina));
+  };
+  document.getElementById('paginacao').addEventListener('click', cliquePagina);
+  document.getElementById('paginacaoTopo').addEventListener('click', cliquePagina);
+  document.getElementById('paginacao').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-por-pagina]');
+    if (!b) return;
+    const n = Number(b.dataset.porPagina);
+    if (!OPCOES_POR_PAGINA.includes(n) || n === ITENS_POR_PAGINA) return;
+    // mantém na tela a primeira arte que o cliente estava vendo
+    const primeira = (paginaAtual - 1) * ITENS_POR_PAGINA;
+    ITENS_POR_PAGINA = n;
+    try { localStorage.setItem('almatie_por_pagina', String(n)); } catch (err) { /* ok */ }
+    paginaAtual = Math.floor(primeira / n) + 1;
+    renderizarVitrine();
+    animarTroca();
+    rolarParaBarra();
   });
   document.addEventListener('keydown', (e) => {
     if (!painelAberto()) return;
